@@ -123,13 +123,22 @@ export function AIChatPanel({
     setIsParsingFile(true);
     
     try {
+      console.log('📸 Processing image:', file.name, file.type, file.size);
+      
       // Convert image to base64
       const reader = new FileReader();
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
+        throw new Error('Failed to read image file');
+      };
+      
       reader.onload = async (e) => {
-        const base64Image = e.target?.result as string;
-        
-        // Create a prompt for Claude Vision to analyze the image
-        const prompt = `I've uploaded an image of a form or checklist. Please analyze this image and extract all the questions/fields you can see. Then create a digital form with those fields.
+        try {
+          const base64Image = e.target?.result as string;
+          console.log('✅ Image converted to base64, size:', base64Image.length);
+          
+          // Create a prompt for Claude Vision to analyze the image
+          const prompt = `I've uploaded an image of a form or checklist. Please analyze this image and extract all the questions/fields you can see. Then create a digital form with those fields.
 
 **Instructions:**
 1. Read all text in the image carefully
@@ -139,63 +148,77 @@ export function AIChatPanel({
 5. Create the form using CREATE_FORM with all fields
 
 Please extract and build the form now.`;
-        
-        // Add user message showing image upload
-        setMessages(prev => [...prev, {
-          role: 'user',
-          content: `🖼️ Uploaded image: ${file.name}\n\n${prompt}\n\n[Image: ${file.name}]`
-        }]);
-        
-        // Send to API with image data
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [...messages, {
-              role: 'user',
-              content: prompt
-            }],
-            image: base64Image, // Send image data
-            currentPage,
-            currentFields,
-          }),
-        });
-        
-        if (!response.ok) throw new Error('Failed to process image');
-        
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let aiResponse = '';
-        
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-            
-            for (const line of lines) {
-              if (line.startsWith('0:')) {
-                const content = line.slice(2).trim().replace(/^"|"$/g, '');
-                if (content) {
-                  aiResponse += content;
+          
+          // Add user message showing image upload
+          setMessages(prev => [...prev, {
+            role: 'user',
+            content: `🖼️ Uploaded image: ${file.name}`
+          }]);
+          
+          console.log('🚀 Sending image to API...');
+          
+          // Send to API with image data
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: [...messages, {
+                role: 'user',
+                content: prompt
+              }],
+              image: base64Image, // Send image data
+              currentPage,
+              currentFields,
+            }),
+          });
+          
+          console.log('📡 API response status:', response.status);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API error response:', errorText);
+            throw new Error(`API error: ${response.status} - ${errorText}`);
+          }
+          
+          const responseReader = response.body?.getReader();
+          const decoder = new TextDecoder();
+          let aiResponse = '';
+          
+          if (responseReader) {
+            console.log('📖 Reading streamed response...');
+            while (true) {
+              const { done, value } = await responseReader.read();
+              if (done) break;
+              
+              const chunk = decoder.decode(value);
+              const lines = chunk.split('\n');
+              
+              for (const line of lines) {
+                if (line.startsWith('0:')) {
+                  const content = line.slice(2).trim().replace(/^"|"$/g, '');
+                  if (content) {
+                    aiResponse += content;
+                  }
                 }
               }
             }
+            console.log('✅ Response complete, length:', aiResponse.length);
           }
+          
+          setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+          setIsParsingFile(false);
+          setUploadedImage(null);
+        } catch (innerError) {
+          console.error('Error in onload handler:', innerError);
+          throw innerError;
         }
-        
-        setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-        setIsParsingFile(false);
-        setUploadedImage(null);
       };
       
       reader.readAsDataURL(file);
       
     } catch (error) {
-      console.error('Failed to process image:', error);
-      alert(`Failed to process image: ${error}`);
+      console.error('❌ Failed to process image:', error);
+      alert(`Failed to process image: ${error instanceof Error ? error.message : String(error)}`);
       setIsParsingFile(false);
       setUploadedImage(null);
     } finally {
