@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2 } from "lucide-react";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/page";
 import type { FormSchema } from "@/lib/types/form-schema";
 import { convertBackendFormToFrontend } from "@/lib/converters/form-types";
+import { parseExcelFile, generateFormPrompt, type ParsedExcelData } from "@/lib/utils/excel-parser";
 
 interface Message {
   role: "user" | "assistant";
@@ -38,16 +39,71 @@ export function AIChatPanel({
   reportData
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isParsingFile, setIsParsingFile] = useState(false);
   const processedMessageIds = useRef<Set<string>>(new Set());
   
   // Ensure client-only rendering to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  // Handle Excel file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Check if it's an Excel file
+    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv');
+    if (!isExcel) {
+      alert('Please upload an Excel file (.xlsx, .xls, or .csv)');
+      return;
+    }
+    
+    setUploadedFile(file);
+    setIsParsingFile(true);
+    
+    try {
+      // Parse the Excel file
+      const parsedData = await parseExcelFile(file);
+      console.log('📊 Parsed Excel data:', parsedData);
+      
+      // Generate a prompt for the AI
+      const prompt = generateFormPrompt(parsedData);
+      console.log('🤖 Generated prompt:', prompt);
+      
+      // Add user message showing file upload
+      setMessages(prev => [...prev, {
+        role: 'user',
+        content: `📎 Uploaded: ${file.name}\n\n${prompt}`
+      }]);
+      
+      // Auto-submit to AI
+      await handleSubmit(null, prompt);
+      
+    } catch (error) {
+      console.error('Failed to parse Excel file:', error);
+      alert(`Failed to parse Excel file: ${error}`);
+    } finally {
+      setIsParsingFile(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+  
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
   
   // Clean message for display (doesn't modify state, just for rendering)
   const cleanMessageForDisplay = (msg: string) => {
@@ -678,21 +734,27 @@ export function AIChatPanel({
     }
   }, [messages, isLoading, mode, onFormUpdate, onReportUpdate, currentFields, currentSections]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | null, customPrompt?: string) => {
+    if (e) e.preventDefault();
+    const messageContent = customPrompt || input.trim();
     console.log('=== FORM SUBMITTED ===');
-    console.log('Input value:', input);
+    console.log('Input value:', messageContent);
     console.log('Is loading:', isLoading);
     
-    if (!input.trim() || isLoading) {
+    if (!messageContent || isLoading) {
       console.log('Rejected: empty input or loading');
       return;
     }
     
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: messageContent };
     console.log('Sending message:', userMessage);
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    
+    // Only add message to state if it's not from Excel upload (already added)
+    if (!customPrompt) {
+      setMessages(prev => [...prev, userMessage]);
+      setInput('');
+    }
+    
     setIsLoading(true);
     
     try {
@@ -940,21 +1002,52 @@ export function AIChatPanel({
 
           {/* Chat Input */}
           <div className="border-t border-white/20 p-3 bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4]">
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            
             <form onSubmit={handleSubmit} className="flex gap-2">
+              {/* File Upload Button (only in form mode) */}
+              {mode === 'form' && (
+                <Button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isParsingFile}
+                  size="icon"
+                  className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
+                  title="Upload Excel file"
+                >
+                  {isParsingFile ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileSpreadsheet className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me anything..."
-                disabled={isLoading}
+                placeholder={mode === 'reporting' ? "Ask me anything..." : "Describe your form or upload Excel..."}
+                disabled={isLoading || isParsingFile}
                 className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
               />
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !input.trim() || isParsingFile}
                 className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] shrink-0 disabled:opacity-50"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>
