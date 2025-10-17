@@ -3,6 +3,38 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #6 - October 17, 2025**
+**Commit:** `21e24f7` - feat: Clean AI chat UX - Hide JSON/code, show status bubbles  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Clean Chat Display**: Removed all JSON, code blocks, and technical output from chat
+- ✅ **Status Bubbles**: Show real-time progress (📊 Analyzing, ✨ Creating, 📝 Adding fields)
+- ✅ **Thinking State**: Spinner with "Thinking..." during AI processing
+- ✅ **Smart Parsing**: Extract operations and convert to user-friendly status messages
+- ✅ **Multiple Status Cards**: Each operation gets its own colored bubble
+- ✅ **Aggressive Cleaning**: Remove Excel prompts, instructions, and all technical text
+- ✅ **Natural Language Only**: Chat shows only conversational AI responses
+- ✅ **Professional UX**: Crisp, clean interface - no messy text
+
+**Before/After:**
+- ❌ Before: Shows `CREATE_FORM: {...}`, `ADD_FIELD: {...}`, long JSON blocks
+- ✅ After: Shows "📊 Analyzing file..." → "✅ Found 10 questions" → "✨ Creating form..."
+
+**User Experience:**
+1. Upload Excel file
+2. See "📊 Analyzing [filename]..."
+3. See "✅ Found X questions"
+4. See "✨ Creating form..."
+5. See "📝 Adding 10 fields..."
+6. Final message: "✅ Done!" or natural AI response
+7. No JSON or code visible anywhere
+
+**Files Changed:** 1 file, +154 insertions, -42 deletions
+
+---
+
 ### **Deploy #5 - October 17, 2025**
 **Commit:** `af0e376` - feat: Add Excel upload to auto-generate forms from spreadsheets  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
