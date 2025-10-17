@@ -197,6 +197,8 @@ ALWAYS output your form operations in this EXACT format (replace values but keep
 CREATE_FORM:
 { "title": "Your Form Title", "description": "Form description", "fields": [{ "id": "field_id", "type": "single-text", "label": "Field Label", "placeholder": "Placeholder", "required": true, "options": ["Option 1", "Option 2"] }] }
 
+⚠️ CRITICAL: Output the COMPLETE JSON object on a SINGLE LINE. Do NOT truncate. Include ALL fields in the array. Ensure all brackets are closed: {...}
+
 **For adding a field use this format:**
 ADD_FIELD:
 { "id": "new_field_id", "type": "phone", "label": "Phone Number", "placeholder": "Enter phone", "required": false }
