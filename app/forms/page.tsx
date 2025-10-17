@@ -1853,7 +1853,7 @@ export default function FormsPage() {
       <AIChatPanel
         isOpen={isChatOpen}
         onToggle={() => setIsChatOpen(!isChatOpen)}
-        mode={activeView === "reporting" ? "reporting" : "form"}
+        currentPage={activeView}
         currentFields={formFields}
         currentSections={reportSections}
         reportData={reportData}

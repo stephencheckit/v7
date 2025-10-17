@@ -20,7 +20,7 @@ interface Message {
 interface AIChatPanelProps {
   isOpen: boolean;
   onToggle: () => void;
-  mode?: 'form' | 'reporting';
+  currentPage?: 'builder' | 'distribution' | 'reporting'; // What page/tab user is on
   onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
   onReportUpdate?: (sections: any[]) => void;
   currentFields?: FrontendFormField[];
@@ -31,7 +31,7 @@ interface AIChatPanelProps {
 export function AIChatPanel({ 
   isOpen, 
   onToggle, 
-  mode = 'form',
+  currentPage = 'builder',
   onFormUpdate, 
   onReportUpdate,
   currentFields = [],
@@ -167,10 +167,10 @@ export function AIChatPanel({
     try {
       const content = lastMessage.content;
       console.log('📝 Parsing complete message (length:', content.length, ')');
-      console.log('🎯 Mode:', mode);
+      console.log('🎯 Current Page:', currentPage);
       
-      // REPORTING MODE: Parse report operations
-      if (mode === 'reporting' && onReportUpdate) {
+      // REPORTING PAGE: Parse report operations
+      if (currentPage === 'reporting' && onReportUpdate) {
         console.log('📊 Parsing reporting operations...');
         
         // Parse ADD_CHART, ADD_INSIGHT, UPDATE_SECTION, etc.
@@ -246,7 +246,7 @@ export function AIChatPanel({
           onReportUpdate(newSections);
         }
         
-        return; // Don't process form operations in reporting mode
+        return; // Don't process form operations on reporting page
       }
       
       // FORM MODE: Parse form operations
@@ -732,7 +732,7 @@ export function AIChatPanel({
     } catch (error) {
       console.error("❌ Failed to process AI response:", error);
     }
-  }, [messages, isLoading, mode, onFormUpdate, onReportUpdate, currentFields, currentSections]);
+  }, [messages, isLoading, currentPage, onFormUpdate, onReportUpdate, currentFields, currentSections]);
 
   const handleSubmit = async (e?: React.FormEvent | null, customPrompt?: string) => {
     if (e) e.preventDefault();
@@ -758,15 +758,19 @@ export function AIChatPanel({
     setIsLoading(true);
     
     try {
-      const apiEndpoint = mode === 'reporting' ? '/api/report-chat' : '/api/chat';
+      // Use single unified API endpoint
+      const apiEndpoint = '/api/chat';
       console.log(`Making API call to ${apiEndpoint}...`);
       
-      // Add context based on mode
-      let systemContext = '';
-      if (mode === 'form' && currentFields.length > 0) {
-        systemContext = `\n\n**Current Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
-      } else if (mode === 'reporting' && currentSections.length > 0) {
-        systemContext = `\n\n**Current Report State:**\nThe report currently has ${currentSections.length} section(s):\n${currentSections.map((s, i) => `${i + 1}. [${s.type}] ${s.title}`).join('\n')}`;
+      // Build context based on current page
+      let systemContext = `\n\n**Current Context:**\nUser is on the "${currentPage}" page.`;
+      
+      if (currentPage === 'builder' && currentFields.length > 0) {
+        systemContext += `\n\n**Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
+      } else if (currentPage === 'reporting' && currentSections.length > 0) {
+        systemContext += `\n\n**Report State:**\nThe report currently has ${currentSections.length} section(s):\n${currentSections.map((s, i) => `${i + 1}. [${s.type}] ${s.title}`).join('\n')}`;
+      } else if (currentPage === 'distribution') {
+        systemContext += `\n\n**Distribution Settings:**\nUser is configuring WHO/WHEN/WHERE/HOW settings for form distribution.`;
       }
       
       const contextualMessage = {
@@ -775,13 +779,11 @@ export function AIChatPanel({
       };
       
       const requestBody: any = {
-        messages: [...messages, contextualMessage]
+        messages: [...messages, contextualMessage],
+        currentPage, // Let AI know what page we're on
+        currentFields, // Always send current form state
+        reportData // Always send report data if available
       };
-      
-      // Add report data when in reporting mode
-      if (mode === 'reporting' && reportData) {
-        requestBody.reportData = reportData;
-      }
       
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -857,11 +859,18 @@ export function AIChatPanel({
     setInput(prompt);
   };
 
-  const suggestedPrompts = mode === 'reporting' 
+  // Contextual prompts based on current page
+  const suggestedPrompts = currentPage === 'reporting' 
     ? [
         "Show me compliance trends",
         "Generate a report for Google",
         "What are the key findings?",
+      ]
+    : currentPage === 'distribution'
+    ? [
+        "Set up email distribution",
+        "Configure access controls",
+        "Schedule form availability",
       ]
     : [
         "Create a contact form",
@@ -894,7 +903,7 @@ export function AIChatPanel({
               <div>
                 <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Assistant</h3>
                 <p className="text-xs text-gray-600">
-                  {mode === 'reporting' ? 'Chat to build your report' : 'Chat to build your form'}
+                  {currentPage === 'reporting' ? 'Chat to build your report' : currentPage === 'distribution' ? 'Chat to configure distribution' : 'Chat to build your form'}
                 </p>
               </div>
             </div>
@@ -933,9 +942,11 @@ export function AIChatPanel({
                   </div>
                   <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
                     <p className="text-xs text-gray-800 mb-2">
-                      {mode === 'reporting'
-                        ? "📊 Hi! I'm your AI reporting assistant. Ask me to analyze your data or generate insights."
-                        : "👋 Hi! I'm your AI form builder. Tell me what form you'd like to create and I'll build it for you."
+                      {currentPage === 'reporting'
+                        ? "📊 Hi! I'm your AI assistant. I can help analyze data and generate insights for your reports."
+                        : currentPage === 'distribution'
+                        ? "📤 Hi! I'm your AI assistant. I can help you configure distribution settings and access controls."
+                        : "👋 Hi! I'm your AI assistant. I can help you build forms, configure settings, or generate reports - just tell me what you need!"
                       }
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1012,8 +1023,8 @@ export function AIChatPanel({
             />
             
             <form onSubmit={handleSubmit} className="flex gap-2">
-              {/* File Upload Button (only in form mode) */}
-              {mode === 'form' && (
+              {/* File Upload Button (only on builder page) */}
+              {currentPage === 'builder' && (
                 <Button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -1033,7 +1044,11 @@ export function AIChatPanel({
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={mode === 'reporting' ? "Ask me anything..." : "Describe your form or upload Excel..."}
+                placeholder={
+                  currentPage === 'reporting' ? "Ask about your data..." 
+                  : currentPage === 'distribution' ? "Ask about distribution settings..." 
+                  : "Describe your form or upload Excel..."
+                }
                 disabled={isLoading || isParsingFile}
                 className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
               />
