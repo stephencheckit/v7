@@ -16,15 +16,39 @@ let currentForm: FormSchema | null = null;
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, image } = await req.json();
 
     console.log('[API] Received messages:', JSON.stringify(messages, null, 2));
+    if (image) console.log('[API] Received image data');
     console.log('[API] Starting streamText with Anthropic...');
+
+    // If an image is provided, format the last message to include it
+    let processedMessages = messages;
+    if (image && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      processedMessages = [
+        ...messages.slice(0, -1),
+        {
+          role: lastMessage.role,
+          content: [
+            {
+              type: 'image',
+              image: image, // base64 encoded image
+            },
+            {
+              type: 'text',
+              text: lastMessage.content,
+            },
+          ],
+        },
+      ];
+      console.log('[API] Formatted message with image for Claude Vision');
+    }
 
     const result = streamText({
       model: anthropic('claude-3-7-sonnet-20250219'),
       system: FORM_BUILDER_SYSTEM_PROMPT,
-      messages,
+      messages: processedMessages,
       // TOOLS DISABLED - Using text parsing workaround for Phase 1
       /*tools: {
       // ====================================================================

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X } from "lucide-react";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
 import { convertBackendFormToFrontend } from "@/lib/converters/form-types";
@@ -40,11 +40,13 @@ export function AIChatPanel({
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const processedMessageIds = useRef<Set<string>>(new Set());
   
@@ -102,6 +104,112 @@ export function AIChatPanel({
     setUploadedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle Image file upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Check if it's an image file
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      alert('Please upload an image file (JPG, PNG, etc.)');
+      return;
+    }
+    
+    setUploadedImage(file);
+    setIsParsingFile(true);
+    
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Image = e.target?.result as string;
+        
+        // Create a prompt for Claude Vision to analyze the image
+        const prompt = `I've uploaded an image of a form or checklist. Please analyze this image and extract all the questions/fields you can see. Then create a digital form with those fields.
+
+**Instructions:**
+1. Read all text in the image carefully
+2. Identify each question or field
+3. Determine the appropriate field type for each (text, yes/no, multiple choice, number, date, etc.)
+4. Preserve the original order and wording
+5. Create the form using CREATE_FORM with all fields
+
+Please extract and build the form now.`;
+        
+        // Add user message showing image upload
+        setMessages(prev => [...prev, {
+          role: 'user',
+          content: `🖼️ Uploaded image: ${file.name}\n\n${prompt}\n\n[Image: ${file.name}]`
+        }]);
+        
+        // Send to API with image data
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [...messages, {
+              role: 'user',
+              content: prompt
+            }],
+            image: base64Image, // Send image data
+            currentPage,
+            currentFields,
+          }),
+        });
+        
+        if (!response.ok) throw new Error('Failed to process image');
+        
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let aiResponse = '';
+        
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+              if (line.startsWith('0:')) {
+                const content = line.slice(2).trim().replace(/^"|"$/g, '');
+                if (content) {
+                  aiResponse += content;
+                }
+              }
+            }
+          }
+        }
+        
+        setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+        setIsParsingFile(false);
+        setUploadedImage(null);
+      };
+      
+      reader.readAsDataURL(file);
+      
+    } catch (error) {
+      console.error('Failed to process image:', error);
+      alert(`Failed to process image: ${error}`);
+      setIsParsingFile(false);
+      setUploadedImage(null);
+    } finally {
+      // Reset file input
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setUploadedImage(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
   
@@ -1013,7 +1121,7 @@ export function AIChatPanel({
 
           {/* Chat Input */}
           <div className="border-t border-white/20 p-3 bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4]">
-            {/* Hidden file input */}
+            {/* Hidden file inputs */}
             <input
               ref={fileInputRef}
               type="file"
@@ -1021,24 +1129,47 @@ export function AIChatPanel({
               onChange={handleFileUpload}
               className="hidden"
             />
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
             
             <form onSubmit={handleSubmit} className="flex gap-2">
-              {/* File Upload Button (only on builder page) */}
+              {/* File Upload Buttons (only on builder page) */}
               {currentPage === 'builder' && (
-                <Button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || isParsingFile}
-                  size="icon"
-                  className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
-                  title="Upload Excel file"
-                >
-                  {isParsingFile ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileSpreadsheet className="h-4 w-4" />
-                  )}
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isLoading || isParsingFile}
+                    size="icon"
+                    className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
+                    title="Upload Excel file"
+                  >
+                    {isParsingFile && !uploadedImage ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isLoading || isParsingFile}
+                    size="icon"
+                    className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
+                    title="Upload image of form"
+                  >
+                    {isParsingFile && uploadedImage ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ImagePlus className="h-4 w-4" />
+                    )}
+                  </Button>
+                </>
               )}
               
               <Input
