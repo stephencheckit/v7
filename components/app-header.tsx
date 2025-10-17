@@ -61,7 +61,7 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-6" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-6">
         <SidebarTrigger>
           <Menu className="h-5 w-5" />
         </SidebarTrigger>
