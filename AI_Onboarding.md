@@ -3,7 +3,34 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **Deploy #6 - October 17, 2025**
+### **Deploy #7 - October 17, 2025**
+**Commit:** `bcd39f1` - revert: Back to Deploy #5 - Form building working again  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ⏪ **Reverted Deploy #6** - Chat UX cleaning broke form generation
+- ✅ **Restored Working State** - Back to Deploy #5 (Excel upload feature)
+- ✅ **Form Building Works** - AI correctly outputs JSON and creates forms
+- 📝 **Note:** Chat shows JSON/code (not ideal UX), but functionality > aesthetics
+
+**Why Revert:**
+- Chat cleaning removed too much - AI couldn't output JSON properly
+- Forms weren't being created (no fields appearing)
+- Excel upload functionality was preserved but form building broke
+- Need different approach: CSS-based hiding or better AI prompt engineering
+
+**Current State:**
+- ✅ Form building: WORKING
+- ✅ Excel upload: WORKING  
+- ⚠️ Chat UX: Shows JSON (acceptable for now)
+- 🔄 Next: Try CSS-based approach to hide JSON without breaking parsing
+
+**Files Changed:** 2 files, +46 insertions, -188 deletions (net revert)
+
+---
+
+### **Deploy #6 - October 17, 2025** ❌ REVERTED
 **Commit:** `21e24f7` - feat: Clean AI chat UX - Hide JSON/code, show status bubbles  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
 **Branch:** `main`
