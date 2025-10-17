@@ -22,10 +22,9 @@ export function AppHeader() {
   const searchableItems = [
     { id: 1, title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard" },
     { id: 2, title: "My Forms", description: "Manage your forms", icon: FileText, link: "/forms" },
-    { id: 3, title: "Templates", description: "Browse form templates", icon: Layout, link: "/templates" },
-    { id: 4, title: "Settings", description: "Account settings", icon: Settings, link: "/settings" },
-    { id: 5, title: "Form Builder", description: "Build and edit forms", icon: FileText, link: "/forms" },
-    { id: 6, title: "Distribution Settings", description: "Configure form distribution", icon: FileText, link: "/forms?tab=distribution" },
+    { id: 3, title: "Settings", description: "Account settings", icon: Settings, link: "/settings" },
+    { id: 4, title: "Form Builder", description: "Build and edit forms", icon: FileText, link: "/forms" },
+    { id: 5, title: "Distribution Settings", description: "Configure form distribution", icon: FileText, link: "/forms?tab=distribution" },
   ];
 
   // Filter results based on search query
