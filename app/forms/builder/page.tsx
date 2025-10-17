@@ -1636,7 +1636,7 @@ export default function FormsPage() {
                               <Card className="bg-white/50 border-0 p-5 hover:bg-white/70 cursor-pointer transition-all hover:scale-105">
                                 <div className="flex items-center gap-4">
                                   <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0">
-                                    <Link className="h-6 w-6 text-white" />
+                                    <LinkIcon className="h-6 w-6 text-white" />
                                   </div>
                                   <div>
                                     <div className="font-bold text-[#0a0a0a]">URL Automation</div>
