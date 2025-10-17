@@ -70,7 +70,7 @@ export function AppHeader() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
-              placeholder="Search... (Press Enter)"
+              placeholder="Search..."
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
