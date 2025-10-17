@@ -657,6 +657,14 @@ export default function FormsPage() {
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
   const submitButtonInputRef = React.useRef<HTMLInputElement>(null);
   
+  // Reporting state
+  const [reportSections, setReportSections] = useState<any[]>([]);
+  const [reportData, setReportData] = useState({
+    totalResponses: 247,
+    dateRange: 'Last 30 days',
+    availableFields: [] as FormField[],
+  });
+  
   // Fix hydration issues with DnD library
   React_useEffect(() => {
     setIsMounted(true);
@@ -701,6 +709,14 @@ export default function FormsPage() {
 
   const [activeWidget, setActiveWidget] = useState<any>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  
+  // Update report data when form fields change
+  React_useEffect(() => {
+    setReportData(prev => ({
+      ...prev,
+      availableFields: formFields,
+    }));
+  }, [formFields]);
 
   // Update CSS variable for header margin
   React.useEffect(() => {
@@ -1858,11 +1874,17 @@ export default function FormsPage() {
       <AIChatPanel
         isOpen={isChatOpen}
         onToggle={() => setIsChatOpen(!isChatOpen)}
+        mode={activeView === "reporting" ? "reporting" : "form"}
         currentFields={formFields}
+        currentSections={reportSections}
+        reportData={reportData}
         onFormUpdate={(fields, formMeta) => {
           setFormFields(fields);
           if (formMeta?.title) setFormName(formMeta.title);
           if (formMeta?.description) setFormDescription(formMeta.description);
+        }}
+        onReportUpdate={(sections) => {
+          setReportSections(sections);
         }}
       />
 

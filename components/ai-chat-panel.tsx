@@ -19,11 +19,24 @@ interface Message {
 interface AIChatPanelProps {
   isOpen: boolean;
   onToggle: () => void;
-  onFormUpdate: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
+  mode?: 'form' | 'reporting';
+  onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
+  onReportUpdate?: (sections: any[]) => void;
   currentFields?: FrontendFormField[];
+  currentSections?: any[];
+  reportData?: any;
 }
 
-export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = [] }: AIChatPanelProps) {
+export function AIChatPanel({ 
+  isOpen, 
+  onToggle, 
+  mode = 'form',
+  onFormUpdate, 
+  onReportUpdate,
+  currentFields = [],
+  currentSections = [],
+  reportData
+}: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,12 +55,21 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
     let cleaned = msg.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
     cleaned = cleaned.replace(/```\s*(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\([^)]*\{[\s\S]*?\}\s*\)\s*```/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
-    // Remove new format: CREATE_FORM: {...}, ADD_FIELD: {...}, UPDATE_FIELD: {...}, REMOVE_FIELD: {...}, MOVE_FIELD: {...}
+    
+    // Remove form operations
     cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\n\}/g, '');
     cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\n?\}/g, '');
     cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
     cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
     cleaned = cleaned.replace(/MOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    
+    // Remove reporting operations
+    cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/ADD_INSIGHT:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/UPDATE_SECTION:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/REMOVE_SECTION:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/GENERATE_REPORT:\s*```json[\s\S]*?```/g, '');
+    
     // Clean up extra whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
     return cleaned;
@@ -88,7 +110,89 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
     try {
       const content = lastMessage.content;
       console.log('📝 Parsing complete message (length:', content.length, ')');
+      console.log('🎯 Mode:', mode);
       
+      // REPORTING MODE: Parse report operations
+      if (mode === 'reporting' && onReportUpdate) {
+        console.log('📊 Parsing reporting operations...');
+        
+        // Parse ADD_CHART, ADD_INSIGHT, UPDATE_SECTION, etc.
+        const addChartRegex = /ADD_CHART:\s*```json\s*(\{[\s\S]*?\})\s*```/g;
+        const addInsightRegex = /ADD_INSIGHT:\s*```json\s*(\{[\s\S]*?\})\s*```/g;
+        const generateReportRegex = /GENERATE_REPORT:\s*```json\s*(\{[\s\S]*?\})\s*```/g;
+        
+        const chartMatches = Array.from(content.matchAll(addChartRegex));
+        const insightMatches = Array.from(content.matchAll(addInsightRegex));
+        const reportMatches = Array.from(content.matchAll(generateReportRegex));
+        
+        const newSections = [...currentSections];
+        
+        // Process ADD_CHART
+        for (const match of chartMatches) {
+          try {
+            const chartData = JSON.parse(match[1]);
+            console.log('📊 Found ADD_CHART:', chartData);
+            newSections.push({
+              type: 'chart',
+              id: chartData.id || `chart-${Date.now()}`,
+              title: chartData.title,
+              chartType: chartData.type || 'bar',
+              dataSource: chartData.data_source,
+              description: chartData.description
+            });
+          } catch (e) {
+            console.error('Failed to parse ADD_CHART:', e);
+          }
+        }
+        
+        // Process ADD_INSIGHT
+        for (const match of insightMatches) {
+          try {
+            const insightData = JSON.parse(match[1]);
+            console.log('💡 Found ADD_INSIGHT:', insightData);
+            newSections.push({
+              type: 'insight',
+              id: insightData.id || `insight-${Date.now()}`,
+              title: insightData.title,
+              content: insightData.content,
+              importance: insightData.importance || 'medium'
+            });
+          } catch (e) {
+            console.error('Failed to parse ADD_INSIGHT:', e);
+          }
+        }
+        
+        // Process GENERATE_REPORT (creates multiple sections at once)
+        for (const match of reportMatches) {
+          try {
+            const reportData = JSON.parse(match[1]);
+            console.log('📑 Found GENERATE_REPORT:', reportData);
+            
+            // Clear existing sections and add all sections from report
+            newSections.length = 0;
+            if (reportData.sections) {
+              reportData.sections.forEach((section: any) => {
+                newSections.push({
+                  ...section,
+                  id: section.id || `${section.type}-${Date.now()}-${Math.random()}`
+                });
+              });
+            }
+          } catch (e) {
+            console.error('Failed to parse GENERATE_REPORT:', e);
+          }
+        }
+        
+        // Update report sections if any were added
+        if (newSections.length !== currentSections.length) {
+          console.log('✅ Updating report sections:', newSections.length);
+          onReportUpdate(newSections);
+        }
+        
+        return; // Don't process form operations in reporting mode
+      }
+      
+      // FORM MODE: Parse form operations
       // Extract create_form calls from multiple formats:
       // Format 1: CREATE_FORM:\n{...} (capture until we find a closing brace at the start of a line or followed by narrative text)
       // Format 2: <tool name="create_form">{...}</tool>
@@ -150,7 +254,7 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
           console.log('Backend form:', backendForm);
           const { fields, title, description } = convertBackendFormToFrontend(backendForm);
           console.log('Frontend fields:', fields);
-          onFormUpdate(fields, { title, description });
+          onFormUpdate?.(fields, { title, description });
         } catch (parseError) {
           console.error('Failed to parse form JSON:', parseError);
         }
@@ -246,7 +350,7 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
                 };
                 
                 const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-                onFormUpdate(fields, { title, description });
+                onFormUpdate?.(fields, { title, description });
                 
                 // Don't process add_field if we updated
                 return;
@@ -333,7 +437,7 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
                 };
                 
                 const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-                onFormUpdate(fields, { title, description });
+                onFormUpdate?.(fields, { title, description });
                 
                 // Don't process other operations if we moved
                 return;
@@ -397,7 +501,7 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
                 };
                 
                 const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-                onFormUpdate(fields, { title, description });
+                onFormUpdate?.(fields, { title, description });
                 
                 // Don't process add_field if we removed
                 return;
@@ -531,7 +635,7 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
           };
           
           const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-          onFormUpdate(fields, { title, description });
+          onFormUpdate?.(fields, { title, description });
         } else {
           console.log('⚠️ No fields were added (parsing may have failed)');
         }
@@ -543,7 +647,7 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
     } catch (error) {
       console.error("❌ Failed to process AI response:", error);
     }
-  }, [messages, isLoading, onFormUpdate, currentFields]);
+  }, [messages, isLoading, mode, onFormUpdate, onReportUpdate, currentFields, currentSections]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -563,23 +667,35 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
     setIsLoading(true);
     
     try {
-      console.log('Making API call to /api/chat...');
-      // Add system context with current form if it exists
-      const systemContext = currentFields.length > 0
-        ? `\n\n**Current Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`
-        : '';
+      const apiEndpoint = mode === 'reporting' ? '/api/report-chat' : '/api/chat';
+      console.log(`Making API call to ${apiEndpoint}...`);
+      
+      // Add context based on mode
+      let systemContext = '';
+      if (mode === 'form' && currentFields.length > 0) {
+        systemContext = `\n\n**Current Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
+      } else if (mode === 'reporting' && currentSections.length > 0) {
+        systemContext = `\n\n**Current Report State:**\nThe report currently has ${currentSections.length} section(s):\n${currentSections.map((s, i) => `${i + 1}. [${s.type}] ${s.title}`).join('\n')}`;
+      }
       
       const contextualMessage = {
         ...userMessage,
         content: userMessage.content + systemContext
       };
       
-      const response = await fetch('/api/chat', {
+      const requestBody: any = {
+        messages: [...messages, contextualMessage]
+      };
+      
+      // Add report data when in reporting mode
+      if (mode === 'reporting' && reportData) {
+        requestBody.reportData = reportData;
+      }
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, contextualMessage],
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       console.log('Response received:', response.status, response.statusText);
@@ -650,11 +766,17 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
     setInput(prompt);
   };
 
-  const suggestedPrompts = [
-    "Create a contact form",
-    "Build a feedback survey",
-    "Make a registration form",
-  ];
+  const suggestedPrompts = mode === 'reporting' 
+    ? [
+        "Show me compliance trends",
+        "Generate a report for Google",
+        "What are the key findings?",
+      ]
+    : [
+        "Create a contact form",
+        "Build a feedback survey",
+        "Make a registration form",
+      ];
 
   return (
     <div
@@ -680,7 +802,9 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Assistant</h3>
-                <p className="text-xs text-gray-600">Chat to build your form</p>
+                <p className="text-xs text-gray-600">
+                  {mode === 'reporting' ? 'Chat to build your report' : 'Chat to build your form'}
+                </p>
               </div>
             </div>
             <button
@@ -718,7 +842,10 @@ export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = []
                   </div>
                   <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
                     <p className="text-xs text-gray-800 mb-2">
-                      👋 Hi! I'm your AI form builder. Tell me what form you'd like to create and I'll build it for you.
+                      {mode === 'reporting'
+                        ? "📊 Hi! I'm your AI reporting assistant. Ask me to analyze your data or generate insights."
+                        : "👋 Hi! I'm your AI form builder. Tell me what form you'd like to create and I'll build it for you."
+                      }
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {suggestedPrompts.map((prompt, idx) => (
