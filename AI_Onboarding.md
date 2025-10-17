@@ -3,6 +3,29 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #10 - October 17, 2025**
+**Commit:** `13eb5e9` - feat: Update sample form names to food safety examples  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Sample Form Names Only**: Changed suggested prompts in Builder tab to food safety examples
+  - "Create kitchen inspection checklist" (was: "Create a contact form")
+  - "Build temperature log form" (was: "Build a feedback survey")
+  - "Make food safety audit" (was: "Make a registration form")
+- ✅ **Everything Else Stays Generic**: All other messaging, welcome text, and prompts remain unchanged
+
+**Note:** Deploy #9 was reverted - it changed too much messaging. This deploy is minimal and focused.
+
+**Files Changed:** 1 file (ai-chat-panel.tsx)
+
+---
+
+### **Deploy #9 - October 17, 2025** ❌ REVERTED
+_Full food safety rebrand - reverted per user request (too much changed)_
+
+---
+
 ### **Deploy #8 - October 17, 2025**
 **Commit:** `51cb8d6` - feat: Unified AI chat - context-aware across all pages  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
