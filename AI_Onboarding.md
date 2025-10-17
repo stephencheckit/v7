@@ -1,10 +1,48 @@
 # AI Onboarding Document - V7 Form Builder
 
+## Deployment Log
+*Most recent deployments listed first*
+
+### **Deploy #1 - October 17, 2025**
+**Commit:** `6b710e2` - feat: Implement AI-powered form builder with complete CRUD operations  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **AI Chat Integration**: Full Anthropic Claude 3.7 Sonnet integration with streaming responses
+- ✅ **Form Builder UI**: Complete drag-and-drop form builder with 13 widget types
+- ✅ **CRUD Operations**: CREATE_FORM, ADD_FIELD, UPDATE_FIELD, REMOVE_FIELD, MOVE_FIELD
+- ✅ **Text Parsing**: Robust regex-based parsing for AI responses (workaround for tool schema issues)
+- ✅ **Field Reordering**: Dynamic positioning (top, bottom, before, after) for form fields
+- ✅ **Options Handling**: Automatic conversion of string arrays to label/value objects
+- ✅ **Performance Fixes**: Infinite loop prevention, processed message tracking
+- ✅ **Hydration Fixes**: Resolved SSR hydration mismatches for AI chat and DnD library
+- ✅ **Supabase Backend**: Type converters, database queries, and client setup
+- ✅ **Preview Page**: Form preview functionality for testing
+- ✅ **Clean UX**: Hidden tool call JSON blocks, Cursor-like chat experience
+
+**Files Changed:** 39 files, +13,266 insertions, -71 deletions
+
+**New Dependencies:**
+- @ai-sdk/anthropic: ^1.0.10
+- @ai-sdk/react: ^1.0.16
+- ai: ^4.0.28
+- @supabase/supabase-js: ^2.48.1
+
+**Documentation Added:**
+- AI_Onboarding.md (this file)
+- CURSOR_INSPIRED_ARCHITECTURE.md
+- INTEGRATION_PLAN.md
+- INTEGRATION_PROGRESS.md
+- SUPABASE_SETUP_SUMMARY.md
+
+---
+
 ## Project Overview
 **Project Name:** V7 - Next-Gen AI-Powered Conversational Form Builder  
 **Started:** October 16, 2025  
-**Status:** Planning Phase  
-**Current Version:** 0.1.0
+**Status:** MVP Complete - Ready for Demo  
+**Current Version:** 0.2.0
 
 ## Product Purpose
 Build a cursor-like conversational interface that allows users to create dynamic forms through natural language. The system will intelligently generate forms with pre-built field types for data capture, featuring real-time streaming responses and an intuitive chat-based UX.
