@@ -177,13 +177,13 @@ export function AIChatPanel({
     cleaned = cleaned.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
     
-    // Remove form operations with JSON (all variations)
-    cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/UPDATE_FORM_META:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/MOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    // Remove form operations with JSON (all variations, including incomplete ones)
+    cleaned = cleaned.replace(/CREATE_FORM:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
+    cleaned = cleaned.replace(/ADD_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
+    cleaned = cleaned.replace(/UPDATE_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
+    cleaned = cleaned.replace(/UPDATE_FORM_META:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
+    cleaned = cleaned.replace(/REMOVE_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
+    cleaned = cleaned.replace(/MOVE_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
     
     // Remove reporting operations with JSON
     cleaned = cleaned.replace(/ADD_CHART:\s*\{[\s\S]*?\}/g, '');
