@@ -100,11 +100,12 @@ export default function FormsPage() {
                 </h1>
                 <Button
                   onClick={handleCreateNew}
-                  size="lg"
-                  className="bg-gradient-to-r from-[#c4dfc4] to-[#c8e0f5] hover:from-[#c4dfc4]/90 hover:to-[#c8e0f5]/90 text-[#0a0a0a] font-semibold"
+                  size="sm"
+                  variant="ghost"
+                  className="text-white hover:bg-white/10"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create New Form
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New
                 </Button>
               </div>
               <p className="text-muted-foreground">
