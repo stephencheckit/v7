@@ -353,14 +353,15 @@ export async function getTemplatesByCategory(category: string) {
 
 /**
  * Increment template use count
+ * TODO: Create RPC function in Supabase before enabling
  */
-export async function incrementTemplateUseCount(id: string) {
-  const { data, error } = await supabase
-    .rpc('increment_template_use_count', { template_id: id });
+// export async function incrementTemplateUseCount(id: string) {
+//   const { data, error } = await supabase
+//     .rpc('increment_template_use_count', { template_id: id });
 
-  if (error) throw error;
-  return data;
-}
+//   if (error) throw error;
+//   return data;
+// }
 
 // ============================================================================
 // AI CHAT HISTORY OPERATIONS
