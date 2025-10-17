@@ -27,7 +27,7 @@ const menuItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "My Forms",
+    title: "Forms",
     url: "/forms",
     icon: FileText,
   },
