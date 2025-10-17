@@ -102,7 +102,7 @@ export default function FormsPage() {
                   onClick={handleCreateNew}
                   size="sm"
                   variant="outline"
-                  className="text-white hover:bg-white/10 border-white"
+                  className="text-white hover:bg-white hover:text-black border-white transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create New
