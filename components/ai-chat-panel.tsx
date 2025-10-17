@@ -873,9 +873,9 @@ export function AIChatPanel({
         "Schedule form availability",
       ]
     : [
-        "Create a contact form",
-        "Build a feedback survey",
-        "Make a registration form",
+        "Create kitchen inspection checklist",
+        "Build temperature log form",
+        "Make food safety audit",
       ];
 
   return (
