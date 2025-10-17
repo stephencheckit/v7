@@ -3,6 +3,48 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #5 - October 17, 2025**
+**Commit:** `af0e376` - feat: Add Excel upload to auto-generate forms from spreadsheets  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Excel Upload Feature**: Upload `.xlsx`/`.xls`/`.csv` files to auto-generate forms
+- ✅ **Smart Parser**: Scans entire spreadsheet to find questions (any column, any row)
+- ✅ **File Upload Button**: 📊 icon added to AI chat panel (form mode only)
+- ✅ **Auto-Detection**: Finds questions > 20 chars, skips headers automatically
+- ✅ **Schedule Detection**: Identifies daily/weekly patterns and AM/PM shifts
+- ✅ **AI Integration**: Parser → AI prompt → Complete form generation
+- ✅ **Typo Fixing**: AI automatically corrects spelling errors in questions
+- ✅ **Metadata Fields**: Auto-adds Date + Shift fields for checklists
+- ✅ **Comprehensive Scanning**: Works with questions in Column A, B, C, or anywhere
+- ✅ **xlsx Library**: Installed for client-side Excel parsing
+
+**Demo Use Case:**
+- User uploads "Dining Room Daily Checklist" Excel file
+- 10 questions found in Column B automatically
+- Date field + Shift dropdown (AM/PM) + all 10 questions created
+- Form ready in ~5 seconds (vs. 15 minutes manual entry)
+
+**Files Changed:** 6 files, +600 insertions, -13 deletions  
+**New Files:**
+- `lib/utils/excel-parser.ts` - Excel parsing logic (smart scanning)
+- `EXCEL_UPLOAD_FEATURE.md` - Complete feature documentation
+
+**New Dependencies:**
+- xlsx: ^0.18.5 (client-side Excel file parsing)
+
+**User Experience:**
+1. Click 📊 upload button in AI chat
+2. Select Excel file
+3. AI analyzes structure (5 seconds)
+4. Complete form appears with proper field types
+5. All typos fixed, questions properly ordered
+
+**Demo Script Ready:** Upload Excel → Instant form generation 🎉
+
+---
+
 ### **Deploy #4 - October 17, 2025**
 **Commit:** `469d34d` - feat: Start with blank form for clean slate experience  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
