@@ -9,14 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function SettingsPage() {
   return (
     <AppLayout>
-      <div className="p-8">
-        <div className="mx-auto max-w-4xl space-y-8">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">Settings</h1>
-            <p className="text-muted-foreground">
-              Manage your account and application preferences
-            </p>
-          </div>
+      <div className="w-full h-full overflow-auto">
+        <div className="p-8">
+          <div className="mx-auto max-w-[1600px] space-y-8">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-white">Settings</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your account and application preferences
+              </p>
+            </div>
 
           <Tabs defaultValue="account" className="space-y-6">
             <TabsList>
@@ -127,6 +128,7 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
           </Tabs>
+          </div>
         </div>
       </div>
     </AppLayout>
