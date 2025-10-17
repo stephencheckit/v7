@@ -218,6 +218,14 @@ OR
 OR
 { "id": "field_id_to_move", "position": "after", "target_id": "other_field_id" }
 
+**For updating the form name and/or description use this format:**
+UPDATE_FORM_META:
+{ "title": "New Form Title" }
+OR
+{ "description": "New form description text" }
+OR
+{ "title": "New Form Title", "description": "New description" }
+
 IMPORTANT NOTES:
 - When updating a field, you MUST use the EXACT field ID from the current form
 - You can change the field type in UPDATE_FIELD (e.g., binary → multiple-choice)

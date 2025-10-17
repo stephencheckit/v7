@@ -60,6 +60,7 @@ export function AIChatPanel({
     cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\n\}/g, '');
     cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\n?\}/g, '');
     cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/UPDATE_FORM_META:\s*\{[\s\S]*?\}/g, '');
     cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
     cleaned = cleaned.replace(/MOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
     
@@ -259,9 +260,37 @@ export function AIChatPanel({
           console.error('Failed to parse form JSON:', parseError);
         }
         } else {
-          console.log('✅ No create_form - checking for update_field and add_field...');
+          console.log('✅ No create_form - checking for update operations...');
           
-          // First check for UPDATE_FIELD
+          // First check for UPDATE_FORM_META (update form title/description)
+          const updateFormMetaRegex = /UPDATE_FORM_META:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+          const formMetaMatches = Array.from(content.matchAll(updateFormMetaRegex));
+          
+          if (formMetaMatches.length > 0) {
+            console.log(`📝 Found ${formMetaMatches.length} UPDATE_FORM_META match(es)`);
+            
+            for (const match of formMetaMatches) {
+              try {
+                const jsonStr = match[1].trim();
+                const metaData = JSON.parse(jsonStr);
+                console.log('Found update_form_meta:', metaData);
+                
+                // Call onFormUpdate with current fields but updated metadata
+                const formMeta: { title?: string; description?: string } = {};
+                if (metaData.title) formMeta.title = metaData.title;
+                if (metaData.description) formMeta.description = metaData.description;
+                
+                console.log('✅ Updating form metadata:', formMeta);
+                onFormUpdate?.(currentFields, formMeta);
+                
+                // Continue processing other operations (don't return)
+              } catch (e) {
+                console.error('Failed to parse update_form_meta JSON:', e);
+              }
+            }
+          }
+          
+          // Check for UPDATE_FIELD
           // Match UPDATE_FIELD: {...} - capture until closing brace followed by newline or end
           const updateFieldRegex = /UPDATE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
           const updateMatches = Array.from(content.matchAll(updateFieldRegex));
