@@ -862,20 +862,20 @@ export function AIChatPanel({
   // Contextual prompts based on current page
   const suggestedPrompts = currentPage === 'reporting' 
     ? [
-        "Show me food safety trends",
-        "Generate compliance report",
-        "What are critical violations?",
+        "Show me compliance trends",
+        "Generate a report for Google",
+        "What are the key findings?",
       ]
     : currentPage === 'distribution'
     ? [
-        "Assign to kitchen managers",
-        "Schedule daily inspections",
-        "Set shift-based access",
+        "Set up email distribution",
+        "Configure access controls",
+        "Schedule form availability",
       ]
     : [
-        "Create kitchen inspection checklist",
-        "Build temperature log form",
-        "Make food safety audit",
+        "Create a contact form",
+        "Build a feedback survey",
+        "Make a registration form",
       ];
 
   return (
@@ -903,7 +903,7 @@ export function AIChatPanel({
               <div>
                 <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Assistant</h3>
                 <p className="text-xs text-gray-600">
-                  {currentPage === 'reporting' ? 'Food Safety Reporting' : currentPage === 'distribution' ? 'Checklist Distribution' : 'Build Checklists & Forms'}
+                  {currentPage === 'reporting' ? 'Chat to build your report' : currentPage === 'distribution' ? 'Chat to configure distribution' : 'Chat to build your form'}
                 </p>
               </div>
             </div>
@@ -943,10 +943,10 @@ export function AIChatPanel({
                   <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
                     <p className="text-xs text-gray-800 mb-2">
                       {currentPage === 'reporting'
-                        ? "📊 Hi! I'm your food safety reporting assistant. I can analyze compliance data and generate audit reports."
+                        ? "📊 Hi! I'm your AI assistant. I can help analyze data and generate insights for your reports."
                         : currentPage === 'distribution'
-                        ? "📤 Hi! I'm your distribution assistant. I can help you assign checklists to teams, schedule inspections, and control access."
-                        : "👋 Hi! I'm your food safety assistant. I can help you build inspection checklists, temperature logs, and compliance forms!"
+                        ? "📤 Hi! I'm your AI assistant. I can help you configure distribution settings and access controls."
+                        : "👋 Hi! I'm your AI assistant. I can help you build forms, configure settings, or generate reports - just tell me what you need!"
                       }
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1045,9 +1045,9 @@ export function AIChatPanel({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  currentPage === 'reporting' ? "Ask about compliance data..." 
-                  : currentPage === 'distribution' ? "Configure checklist assignments..." 
-                  : "Describe your checklist or upload Excel..."
+                  currentPage === 'reporting' ? "Ask about your data..." 
+                  : currentPage === 'distribution' ? "Ask about distribution settings..." 
+                  : "Describe your form or upload Excel..."
                 }
                 disabled={isLoading || isParsingFile}
                 className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
