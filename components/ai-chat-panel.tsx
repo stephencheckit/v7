@@ -46,7 +46,6 @@ export function AIChatPanel({
   const [isMounted, setIsMounted] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
-  const [statusMessages, setStatusMessages] = useState<string[]>([]);
   const processedMessageIds = useRef<Set<string>>(new Set());
   
   // Ensure client-only rendering to avoid hydration mismatch
@@ -106,113 +105,30 @@ export function AIChatPanel({
     }
   };
   
-  // Extract operations and convert to user-friendly status messages
-  const extractStatusMessages = (content: string): string[] => {
-    const statuses: string[] = [];
-    
-    // Check for Excel upload
-    if (content.includes('📎 Uploaded:')) {
-      const fileMatch = content.match(/📎 Uploaded: (.+)/);
-      if (fileMatch) {
-        statuses.push(`📊 Analyzing ${fileMatch[1]}...`);
-      }
-      const questionMatch = content.match(/Questions Found \((\d+) total\)/);
-      if (questionMatch) {
-        statuses.push(`✅ Found ${questionMatch[1]} questions`);
-      }
-    }
-    
-    // Check for form operations
-    if (content.includes('CREATE_FORM:')) {
-      statuses.push('✨ Creating form...');
-    }
-    if (content.includes('ADD_FIELD:')) {
-      const fieldMatches = content.match(/ADD_FIELD:/g);
-      if (fieldMatches) {
-        statuses.push(`📝 Adding ${fieldMatches.length} field${fieldMatches.length > 1 ? 's' : ''}...`);
-      }
-    }
-    if (content.includes('UPDATE_FIELD:')) {
-      statuses.push('🔄 Updating field...');
-    }
-    if (content.includes('UPDATE_FORM_META:')) {
-      statuses.push('✏️ Updating form details...');
-    }
-    if (content.includes('REMOVE_FIELD:')) {
-      statuses.push('🗑️ Removing field...');
-    }
-    if (content.includes('MOVE_FIELD:')) {
-      statuses.push('↕️ Reordering fields...');
-    }
-    
-    // Check for reporting operations
-    if (content.includes('ADD_CHART:')) {
-      statuses.push('📊 Adding chart...');
-    }
-    if (content.includes('ADD_INSIGHT:')) {
-      statuses.push('💡 Adding insight...');
-    }
-    if (content.includes('GENERATE_REPORT:')) {
-      statuses.push('📄 Generating report...');
-    }
-    
-    return statuses;
-  };
-  
   // Clean message for display (doesn't modify state, just for rendering)
   const cleanMessageForDisplay = (msg: string) => {
-    // Remove ALL code blocks (including json, javascript, etc.)
-    let cleaned = msg.replace(/```[\s\S]*?```/g, '');
-    
-    // Remove any standalone JSON arrays or objects (the big culprit!)
-    // This catches things like: ,\n{\n  "id": "something",\n  "type": "...",\n}
-    cleaned = cleaned.replace(/,\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/,\s*\[[\s\S]*?\]/g, '');
-    
-    // Remove JSON arrays that start a line
-    cleaned = cleaned.replace(/^\s*\[[\s\S]*?\]\s*$/gm, '');
-    cleaned = cleaned.replace(/^\s*\{[\s\S]*?\}\s*$/gm, '');
-    
     // Remove tool call blocks (all formats)
-    cleaned = cleaned.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
+    let cleaned = msg.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
+    cleaned = cleaned.replace(/```\s*(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\([^)]*\{[\s\S]*?\}\s*\)\s*```/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
     
-    // Remove form operations with JSON (all variations, including incomplete ones)
-    cleaned = cleaned.replace(/CREATE_FORM:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
-    cleaned = cleaned.replace(/ADD_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
-    cleaned = cleaned.replace(/UPDATE_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
-    cleaned = cleaned.replace(/UPDATE_FORM_META:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
-    cleaned = cleaned.replace(/REMOVE_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
-    cleaned = cleaned.replace(/MOVE_FIELD:[\s\S]*?(?=\n\n[A-Z]|\n\nThe |$)/g, '');
+    // Remove form operations
+    cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\n\}/g, '');
+    cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\n?\}/g, '');
+    cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/UPDATE_FORM_META:\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/MOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
     
-    // Remove reporting operations with JSON
-    cleaned = cleaned.replace(/ADD_CHART:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/ADD_INSIGHT:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/UPDATE_SECTION:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/REMOVE_SECTION:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/GENERATE_REPORT:\s*\{[\s\S]*?\}/g, '');
+    // Remove reporting operations
+    cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/ADD_INSIGHT:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/UPDATE_SECTION:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/REMOVE_SECTION:\s*```json[\s\S]*?```/g, '');
+    cleaned = cleaned.replace(/GENERATE_REPORT:\s*```json[\s\S]*?```/g, '');
     
-    // Remove Excel prompt sections
-    cleaned = cleaned.replace(/\*\*Form Title:\*\*[\s\S]*?\*\*Questions Found[\s\S]*?Please:/g, '');
-    cleaned = cleaned.replace(/Please:\s*\n\d+\.[\s\S]*?(\n\n|$)/g, '');
-    
-    // Remove any lines that look like JSON properties
-    cleaned = cleaned.replace(/^\s*"[^"]+"\s*:\s*.+$/gm, '');
-    cleaned = cleaned.replace(/^\s*\}\s*$/gm, '');
-    cleaned = cleaned.replace(/^\s*\{\s*$/gm, '');
-    cleaned = cleaned.replace(/^\s*\],?\s*$/gm, '');
-    cleaned = cleaned.replace(/^\s*\[,?\s*$/gm, '');
-    
-    // Clean up extra whitespace and bullet points
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-    cleaned = cleaned.replace(/^\d+\.\s+/gm, '');
-    cleaned = cleaned.trim();
-    
-    // If message is now empty or just "...", show a default
-    if (!cleaned || cleaned === '...' || cleaned.length < 3) {
-      return '✅ Done!';
-    }
-    
+    // Clean up extra whitespace
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
     return cleaned;
   };
 
@@ -252,9 +168,6 @@ export function AIChatPanel({
       const content = lastMessage.content;
       console.log('📝 Parsing complete message (length:', content.length, ')');
       console.log('🎯 Mode:', mode);
-      console.log('🔍 RAW MESSAGE CONTENT:', content.substring(0, 500)); // First 500 chars
-      console.log('🔍 Looking for CREATE_FORM:', content.includes('CREATE_FORM:'));
-      console.log('🔍 Looking for ADD_FIELD:', content.includes('ADD_FIELD:'));
       
       // REPORTING MODE: Parse report operations
       if (mode === 'reporting' && onReportUpdate) {
@@ -898,8 +811,7 @@ export function AIChatPanel({
       
       console.log('Stream reader acquired, adding loading message...');
       // Add a temporary loading message
-      setMessages(prev => [...prev, { role: 'assistant', content: 'thinking' }]);
-      setStatusMessages([]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '...' }]);
       
       while (true) {
         const { done, value } = await reader.read();
@@ -911,12 +823,6 @@ export function AIChatPanel({
           // Just append all text - it's already in plain text format
           assistantMessage += chunk;
           
-          // Extract status messages as we stream
-          const statuses = extractStatusMessages(assistantMessage);
-          if (statuses.length > 0) {
-            setStatusMessages(statuses);
-          }
-          
         // Store the RAW message (we'll clean it later AFTER parsing in useEffect)
         setMessages(prev => {
           const newMessages = [...prev];
@@ -927,9 +833,6 @@ export function AIChatPanel({
           return newMessages;
         });
       }
-      
-      // Clear status messages when done
-      setStatusMessages([]);
       
       // Raw message stored - useEffect will parse and clean it
       console.log('✅ Stream complete. Message length:', assistantMessage.length);
@@ -1051,71 +954,37 @@ export function AIChatPanel({
               )}
 
               {/* Chat Messages */}
-              {isMounted && messages.map((message: any, idx: number) => {
-                const isThinking = message.role === "assistant" && message.content === "thinking";
-                const cleanedContent = message.role === "assistant" ? cleanMessageForDisplay(message.content) : message.content;
-                
-                // Skip rendering if it's a thinking placeholder and we have status messages
-                if (isThinking && statusMessages.length > 0) {
-                  return null;
-                }
-                
-                return (
-                  <div
-                    key={idx}
-                    className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
-                        {isThinking ? (
-                          <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
-                        ) : (
-                          <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
-                        )}
-                      </div>
-                    )}
-                    <Card
-                      className={`p-3 shadow-sm ${
-                        message.role === "user"
-                          ? "max-w-[85%] bg-white border-0"
-                          : "flex-1 bg-white border-gray-200"
-                      }`}
-                    >
-                      {isThinking ? (
-                        <p className="text-xs text-gray-500 italic flex items-center gap-2">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Thinking...
-                        </p>
-                      ) : (
-                        <p className="text-xs text-gray-800 whitespace-pre-wrap">
-                          {cleanedContent}
-                        </p>
-                      )}
-                    </Card>
-                    {message.role === "user" && (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
-                        <span className="text-xs font-medium text-gray-700">U</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              
-              {/* Status Messages During Processing */}
-              {statusMessages.length > 0 && (
-                <div className="space-y-2">
-                  {statusMessages.map((status, idx) => (
-                    <div key={idx} className="flex gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
-                        <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
-                      </div>
-                      <Card className="flex-1 p-2 bg-gradient-to-r from-[#c4dfc4]/20 to-[#c8e0f5]/20 border-[#c4dfc4]/50">
-                        <p className="text-xs text-gray-700 font-medium">{status}</p>
-                      </Card>
+              {isMounted && messages.map((message: any, idx: number) => (
+                <div
+                  key={idx}
+                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
+                >
+                  {message.role === "assistant" && (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
+                      <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
                     </div>
-                  ))}
+                  )}
+                  <Card
+                    className={`p-3 shadow-sm ${
+                      message.role === "user"
+                        ? "max-w-[85%] bg-white border-0"
+                        : "flex-1 bg-white border-gray-200"
+                    }`}
+                  >
+                    <p className="text-xs text-gray-800 whitespace-pre-wrap">
+                      {message.role === "assistant" 
+                        ? cleanMessageForDisplay(message.content)
+                        : message.content
+                      }
+                    </p>
+                  </Card>
+                  {message.role === "user" && (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
+                      <span className="text-xs font-medium text-gray-700">U</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
 
               {/* Loading Indicator */}
               {isLoading && (
