@@ -3,6 +3,38 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #2 - October 17, 2025**
+**Commit:** `6745c4e` - feat: Integrate AI chat panel for reporting mode  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Reporting Tab**: Added third tab (Builder | Distribution | Reporting) to forms page
+- ✅ **AI Reporting Chat**: New `/api/report-chat` endpoint with reporting-specific system prompt
+- ✅ **Dual-Mode AI Chat**: AIChatPanel now supports both 'form' and 'reporting' modes
+- ✅ **Report Section Parsing**: Parse ADD_CHART, ADD_INSIGHT, GENERATE_REPORT from AI responses
+- ✅ **Context-Aware AI**: Different suggested prompts and welcome messages per mode
+- ✅ **White Label Settings**: UI for logo upload, color theme, font selection, client name
+- ✅ **Response Data Panel**: Display total responses, date range, seed test data button
+- ✅ **Report Canvas**: Initial layout for executive summary, key metrics, charts
+- ✅ **Interactive Charts**: ComplianceChart component with Recharts (bar/pie/line switching)
+- ✅ **Editable Sections**: EditableSection component for commentary and insights
+- ✅ **Data Seeding Script**: generateFakeResponses() for 100-500 test responses
+
+**Files Changed:** 3 files, +231 insertions, -25 deletions  
+**New Files:**
+- `app/api/report-chat/route.ts`
+- `lib/ai/reporting-prompt.ts` (previous commit)
+- `lib/seed/form-responses.ts` (previous commit)
+- `components/charts/compliance-chart.tsx` (previous commit)
+- `components/reports/editable-section.tsx` (previous commit)
+
+**Dependencies Added:**
+- recharts: ^2.15.1
+- jspdf: ^2.5.2
+
+---
+
 ### **Deploy #1 - October 17, 2025**
 **Commit:** `6b710e2` - feat: Implement AI-powered form builder with complete CRUD operations  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
