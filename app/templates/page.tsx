@@ -52,14 +52,15 @@ const templates = [
 export default function TemplatesPage() {
   return (
     <AppLayout>
-      <div className="p-8">
-        <div className="mx-auto max-w-7xl space-y-8">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">Templates</h1>
-            <p className="text-muted-foreground">
-              Start with a pre-built template and customize it to your needs
-            </p>
-          </div>
+      <div className="w-full h-full overflow-auto">
+        <div className="p-8">
+          <div className="mx-auto max-w-[1600px] space-y-8">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-white">Templates</h1>
+              <p className="text-muted-foreground mt-1">
+                Start with a pre-built template and customize it to your needs
+              </p>
+            </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {templates.map((template, idx) => (
@@ -91,6 +92,7 @@ export default function TemplatesPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
           </div>
         </div>
       </div>
