@@ -651,7 +651,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
 export default function FormsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
-  const [activeView, setActiveView] = useState<"builder" | "distribution">("builder");
+  const [activeView, setActiveView] = useState<"builder" | "distribution" | "reporting">("builder");
   const [activeDistributionSection, setActiveDistributionSection] = useState<"who" | "when" | "where" | "how" | null>("who");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
@@ -923,10 +923,11 @@ export default function FormsPage() {
                 {/* Form Sub-Header - Only for Middle Panel */}
                 <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                   <div className="flex items-center justify-between gap-4 px-6 py-2">
-                    <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution")} className="w-auto">
+                    <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution" | "reporting")} className="w-auto">
                       <TabsList className="bg-[#1a1a1a]">
                         <TabsTrigger value="builder">Builder</TabsTrigger>
                         <TabsTrigger value="distribution">Distribution</TabsTrigger>
+                        <TabsTrigger value="reporting">Reporting</TabsTrigger>
                       </TabsList>
                     </Tabs>
                     <div className="flex items-center gap-2">
@@ -1204,10 +1205,11 @@ export default function FormsPage() {
                     {/* Form Sub-Header - Only for Middle Panel */}
                     <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                       <div className="flex items-center justify-between gap-4 px-6 py-2">
-                        <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution")} className="w-auto">
+                        <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution" | "reporting")} className="w-auto">
                           <TabsList className="bg-[#1a1a1a]">
                             <TabsTrigger value="builder">Builder</TabsTrigger>
                             <TabsTrigger value="distribution">Distribution</TabsTrigger>
+                            <TabsTrigger value="reporting">Reporting</TabsTrigger>
                           </TabsList>
                         </Tabs>
                         <div className="flex items-center gap-2">
@@ -1662,6 +1664,184 @@ export default function FormsPage() {
                             </div>
                           </Card>
                         )}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </>
+              )}
+
+              {activeView === "reporting" && (
+                <>
+                  {/* Left Panel - White Label Settings */}
+                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                    <div className="p-4 space-y-4">
+                      <div>
+                        <h2 className="text-sm font-semibold text-gray-100 mb-3">White Label Settings</h2>
+                        <Card className="bg-[#1a1a1a] border-border/50 p-4 space-y-4">
+                          {/* Logo Upload */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-300 mb-2 block">Client Logo</label>
+                            <div className="border-2 border-dashed border-border/50 rounded-lg p-4 text-center hover:border-[#c4dfc4]/50 transition-colors cursor-pointer">
+                              <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-xs text-muted-foreground">Click to upload</p>
+                              <p className="text-[10px] text-muted-foreground/70 mt-1">PNG, JPG up to 2MB</p>
+                            </div>
+                          </div>
+
+                          {/* Color Theme */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-300 mb-2 block">Brand Color</label>
+                            <div className="grid grid-cols-5 gap-2">
+                              {['#c4dfc4', '#c8e0f5', '#ddc8f5', '#f5edc8', '#f5c8c8'].map((color) => (
+                                <button
+                                  key={color}
+                                  className="h-8 w-8 rounded-md border-2 border-white/20 hover:border-white/40 transition-colors"
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
+                            </div>
+                            <Input 
+                              type="color" 
+                              className="mt-2 h-10 cursor-pointer" 
+                              defaultValue="#c4dfc4"
+                            />
+                          </div>
+
+                          {/* Font Selection */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-300 mb-2 block">Font Family</label>
+                            <select className="w-full rounded-md border-0 bg-[#0a0a0a] px-3 py-2 text-sm text-gray-100">
+                              <option>Inter (Default)</option>
+                              <option>Arial</option>
+                              <option>Helvetica</option>
+                              <option>Georgia</option>
+                              <option>Times New Roman</option>
+                              <option>Courier</option>
+                            </select>
+                          </div>
+
+                          {/* Client Name */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-300 mb-2 block">Client Name</label>
+                            <Input 
+                              placeholder="e.g., Google"
+                              className="bg-[#0a0a0a] border-border/50 text-gray-100"
+                            />
+                          </div>
+                        </Card>
+                      </div>
+
+                      <div>
+                        <h2 className="text-sm font-semibold text-gray-100 mb-3">Response Data</h2>
+                        <Card className="bg-[#1a1a1a] border-border/50 p-4">
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Total Responses:</span>
+                              <span className="text-gray-100 font-semibold">247</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Date Range:</span>
+                              <span className="text-gray-100">Last 30 days</span>
+                            </div>
+                            <Separator className="bg-border/50 my-2" />
+                            <Button variant="outline" size="sm" className="w-full hover:bg-white/5">
+                              Seed Test Data
+                            </Button>
+                          </div>
+                        </Card>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle Panel - Report Canvas */}
+                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+                    {/* Form Sub-Header */}
+                    <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
+                      <div className="flex items-center justify-between gap-4 px-6 py-2">
+                        <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution" | "reporting")} className="w-auto">
+                          <TabsList className="bg-[#1a1a1a]">
+                            <TabsTrigger value="builder">Builder</TabsTrigger>
+                            <TabsTrigger value="distribution">Distribution</TabsTrigger>
+                            <TabsTrigger value="reporting">Reporting</TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" className="hover:bg-white/5">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Export PDF
+                          </Button>
+                          <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                            247 Responses
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Report Content */}
+                    <ScrollArea className="flex-1">
+                      <div className="p-8 max-w-4xl mx-auto">
+                        <Card className="bg-[#1a1a1a] border-border/50 p-8">
+                          {/* Report Header */}
+                          <div className="mb-8">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <h1 className="text-3xl font-bold text-gray-100 mb-2">Food Safety Inspection Report</h1>
+                                <p className="text-muted-foreground">Generated for Google • {new Date().toLocaleDateString()}</p>
+                              </div>
+                              <div className="h-16 w-16 bg-[#c4dfc4] rounded-lg flex items-center justify-center">
+                                <span className="text-2xl">📊</span>
+                              </div>
+                            </div>
+                            <Separator className="bg-border/50" />
+                          </div>
+
+                          {/* Executive Summary */}
+                          <div className="mb-8">
+                            <h2 className="text-xl font-semibold text-gray-100 mb-4">Executive Summary</h2>
+                            <div className="bg-[#0a0a0a] rounded-lg p-6 border border-border/50">
+                              <p className="text-gray-300 leading-relaxed">
+                                Based on 247 inspection responses collected over the past 30 days, we've identified key trends in food safety compliance. 
+                                Overall compliance rates show 89% adherence to handwashing protocols, with temperature checks maintaining a 94% compliance rate. 
+                                Areas for improvement include...
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Placeholder for Charts */}
+                          <div className="space-y-8">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-100 mb-4">Key Metrics</h3>
+                              <div className="grid grid-cols-3 gap-4">
+                                <Card className="bg-[#0a0a0a] border-border/50 p-4 text-center">
+                                  <div className="text-3xl font-bold text-[#c4dfc4]">89%</div>
+                                  <div className="text-sm text-muted-foreground mt-1">Handwashing Compliance</div>
+                                </Card>
+                                <Card className="bg-[#0a0a0a] border-border/50 p-4 text-center">
+                                  <div className="text-3xl font-bold text-[#c8e0f5]">94%</div>
+                                  <div className="text-sm text-muted-foreground mt-1">Temperature Checks</div>
+                                </Card>
+                                <Card className="bg-[#0a0a0a] border-border/50 p-4 text-center">
+                                  <div className="text-3xl font-bold text-[#ddc8f5]">76%</div>
+                                  <div className="text-sm text-muted-foreground mt-1">Equipment Sanitization</div>
+                                </Card>
+                              </div>
+                            </div>
+
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-100 mb-4">Compliance Trends</h3>
+                              <div className="bg-[#0a0a0a] rounded-lg p-6 border border-border/50 h-64 flex items-center justify-center">
+                                <p className="text-muted-foreground">Chart will be generated here</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="mt-8 pt-6 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground text-center">
+                              Report prepared by Checkit • Confidential
+                            </p>
+                          </div>
+                        </Card>
                       </div>
                     </ScrollArea>
                   </div>
