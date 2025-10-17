@@ -20,54 +20,105 @@ export async function POST(req: Request) {
 
     console.log('[API] Received messages:', JSON.stringify(messages, null, 2));
     if (image) console.log('[API] Received image data');
-    console.log('[API] Starting streamText with Anthropic...');
 
-    // If an image is provided, format the last message to include it
-    let processedMessages = messages;
+    // If an image is provided, call Anthropic API directly
     if (image && messages.length > 0) {
+      console.log('[API] Using direct Anthropic API for vision request...');
+      
       const lastMessage = messages[messages.length - 1];
       
       // Extract media type and base64 data from data URL
-      // Format: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
       const matches = image.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
         console.error('[API] Invalid image format - expected data URL');
         throw new Error('Invalid image format');
       }
       
-      const mediaType = matches[1]; // e.g., "image/jpeg"
-      const base64Data = matches[2]; // the actual base64 string
+      const mediaType = matches[1];
+      const base64Data = matches[2];
       
       console.log('[API] Image media type:', mediaType);
       console.log('[API] Base64 data length:', base64Data.length);
       
-      processedMessages = [
-        ...messages.slice(0, -1),
-        {
-          role: lastMessage.role,
-          content: [
+      // Call Anthropic API directly
+      const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-3-7-sonnet-20250219',
+          max_tokens: 4096,
+          system: FORM_BUILDER_SYSTEM_PROMPT,
+          messages: [
+            ...messages.slice(0, -1).map((msg: any) => ({
+              role: msg.role,
+              content: typeof msg.content === 'string' ? msg.content : msg.content,
+            })),
             {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: mediaType,
-                data: base64Data,
-              },
-            },
-            {
-              type: 'text',
-              text: lastMessage.content,
+              role: lastMessage.role,
+              content: [
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: mediaType,
+                    data: base64Data,
+                  },
+                },
+                {
+                  type: 'text',
+                  text: lastMessage.content,
+                },
+              ],
             },
           ],
+        }),
+      });
+
+      if (!anthropicResponse.ok) {
+        const errorText = await anthropicResponse.text();
+        console.error('[API] Anthropic API error:', errorText);
+        throw new Error(`Anthropic API error: ${anthropicResponse.status}`);
+      }
+
+      const data = await anthropicResponse.json();
+      console.log('[API] Anthropic response received');
+      
+      // Convert to text stream format expected by the client
+      const textContent = data.content
+        .filter((block: any) => block.type === 'text')
+        .map((block: any) => block.text)
+        .join('\n');
+      
+      // Create a streaming response that matches the AI SDK format
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          // Send the text content in the format expected by the client
+          const lines = textContent.split('\n');
+          for (const line of lines) {
+            controller.enqueue(encoder.encode(`0:"${line.replace(/"/g, '\\"')}"\n`));
+          }
+          controller.close();
         },
-      ];
-      console.log('[API] Formatted message with image for Claude Vision');
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+        },
+      });
     }
 
+    // Normal text-only flow using AI SDK
+    console.log('[API] Starting streamText with Anthropic...');
     const result = streamText({
       model: anthropic('claude-3-7-sonnet-20250219'),
       system: FORM_BUILDER_SYSTEM_PROMPT,
-      messages: processedMessages,
+      messages: messages,
       // TOOLS DISABLED - Using text parsing workaround for Phase 1
       /*tools: {
       // ====================================================================
