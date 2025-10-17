@@ -3,6 +3,29 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #3 - October 17, 2025**
+**Commit:** `636afcb` - feat: Add UPDATE_FORM_META - AI can now update form title and description  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Form Metadata Updates**: AI can now update form title and/or description via chat
+- ✅ **New Operation**: `UPDATE_FORM_META: { "title": "...", "description": "..." }`
+- ✅ **System Prompt Updated**: Added instructions and examples for form metadata updates
+- ✅ **Parsing Logic**: Added regex-based parsing for UPDATE_FORM_META in ai-chat-panel.tsx
+- ✅ **Clean Display**: UPDATE_FORM_META blocks hidden from chat (Cursor-like UX maintained)
+- ✅ **Non-Blocking**: Metadata updates don't prevent other operations from processing
+- ✅ **Food Safety Demo**: Added 4 compliance fields (hand washing, temperature, equipment, score)
+
+**Example Commands Now Working:**
+- "Change the form title to Restaurant Health Inspection"
+- "Update the description to 'Weekly compliance checklist'"
+- "Rename this form to Food Safety Audit"
+
+**Files Changed:** 3 files, +83 insertions, -4 deletions
+
+---
+
 ### **Deploy #2 - October 17, 2025**
 **Commit:** `6745c4e` - feat: Integrate AI chat panel for reporting mode  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
