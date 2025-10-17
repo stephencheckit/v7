@@ -26,6 +26,21 @@ export async function POST(req: Request) {
     let processedMessages = messages;
     if (image && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
+      
+      // Extract media type and base64 data from data URL
+      // Format: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+      const matches = image.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches) {
+        console.error('[API] Invalid image format - expected data URL');
+        throw new Error('Invalid image format');
+      }
+      
+      const mediaType = matches[1]; // e.g., "image/jpeg"
+      const base64Data = matches[2]; // the actual base64 string
+      
+      console.log('[API] Image media type:', mediaType);
+      console.log('[API] Base64 data length:', base64Data.length);
+      
       processedMessages = [
         ...messages.slice(0, -1),
         {
@@ -33,7 +48,11 @@ export async function POST(req: Request) {
           content: [
             {
               type: 'image',
-              image: image, // base64 encoded image
+              source: {
+                type: 'base64',
+                media_type: mediaType,
+                data: base64Data,
+              },
             },
             {
               type: 'text',
