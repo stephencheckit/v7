@@ -69,7 +69,7 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-[#0a0a0a] to-[#0a0a0a]/60 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold tracking-tight text-white">
                   Dashboard
                 </h1>
                 <p className="text-muted-foreground mt-1">
