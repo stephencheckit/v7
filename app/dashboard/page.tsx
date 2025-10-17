@@ -70,10 +70,10 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-[#0a0a0a] to-[#0a0a0a]/60 bg-clip-text text-transparent">
-                  Food Safety Command Center
+                  Dashboard
                 </h1>
                 <p className="text-muted-foreground mt-1">
-                  Real-time compliance monitoring across all locations
+                  Food Safety Command Center - Real-time compliance monitoring
                 </p>
               </div>
             </div>
