@@ -252,6 +252,9 @@ export function AIChatPanel({
       const content = lastMessage.content;
       console.log('📝 Parsing complete message (length:', content.length, ')');
       console.log('🎯 Mode:', mode);
+      console.log('🔍 RAW MESSAGE CONTENT:', content.substring(0, 500)); // First 500 chars
+      console.log('🔍 Looking for CREATE_FORM:', content.includes('CREATE_FORM:'));
+      console.log('🔍 Looking for ADD_FIELD:', content.includes('ADD_FIELD:'));
       
       // REPORTING MODE: Parse report operations
       if (mode === 'reporting' && onReportUpdate) {

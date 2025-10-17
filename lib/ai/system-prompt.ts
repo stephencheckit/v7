@@ -197,7 +197,16 @@ ALWAYS output your form operations in this EXACT format (replace values but keep
 CREATE_FORM:
 { "title": "Your Form Title", "description": "Form description", "fields": [{ "id": "field_id", "type": "single-text", "label": "Field Label", "placeholder": "Placeholder", "required": true, "options": ["Option 1", "Option 2"] }] }
 
-⚠️ CRITICAL: Output the COMPLETE JSON object on a SINGLE LINE. Do NOT truncate. Include ALL fields in the array. Ensure all brackets are closed: {...}
+⚠️ CRITICAL RULES:
+1. You MUST output the JSON - do NOT just describe what you would do
+2. Output the COMPLETE JSON object on a SINGLE LINE after CREATE_FORM:
+3. Do NOT truncate - include ALL fields in the array
+4. Ensure all brackets are closed: {...}
+5. DO NOT say "I'll create..." without actually outputting the JSON
+6. ALWAYS include the CREATE_FORM: line followed by the full JSON
+
+WRONG: "I'll create a form with 5 questions..." ❌
+RIGHT: "I'll create a form with 5 questions...\n\nCREATE_FORM:\n{...full json here...}" ✅
 
 **For adding a field use this format:**
 ADD_FIELD:
