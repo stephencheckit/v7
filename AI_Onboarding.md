@@ -3,6 +3,55 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #13 - October 17, 2025**
+**Commits:** `3953d99` + `d11b6f4` - feat: Image upload for form building  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Image Upload Feature**: Upload photos of paper forms and convert to digital forms automatically
+- ✅ **Claude Vision Integration**: Uses Claude 3.7 Sonnet's vision capabilities to read images
+- ✅ **New Image Button**: Added 📷 icon next to Excel upload button in form builder
+- ✅ **Intelligent Field Detection**: AI identifies question types from images (Yes/No, text, multiple choice, etc.)
+- ✅ **Base64 Encoding**: Images converted to base64 and sent to Claude API
+- ✅ **Loading States**: Spinner shows while processing image
+- ✅ **Comprehensive Docs**: Created IMAGE_UPLOAD_FEATURE.md with examples
+
+**How It Works:**
+1. User clicks image icon in builder chat
+2. Selects JPG/PNG of paper form/checklist
+3. Image converted to base64
+4. Sent to Claude Vision with extraction prompt
+5. AI reads all text and questions
+6. AI determines appropriate field types
+7. Creates digital form with CREATE_FORM
+8. Form appears in builder, ready to edit
+
+**Use Cases:**
+- Photo of paper checklist → digital checklist
+- Scanned form → web form  
+- Screenshot of form → editable form
+- Whiteboard sketch → structured form
+- Competitor forms → your own version
+
+**Technical Details:**
+- Model: Claude 3.7 Sonnet with vision
+- Formats: JPG, PNG, GIF, WEBP
+- Max size: ~5MB recommended
+- Processing: Client-side base64, server-side vision API
+- Cost: Vision calls cost more than text-only
+
+**User Experience:**
+- Click image icon
+- Upload photo
+- Watch AI extract fields
+- Form builds automatically
+- Edit/refine as needed
+
+**Files Changed:** 2 files (+187 lines) + 1 new doc
+
+---
+
 ### **Deploy #12 - October 17, 2025**
 **Commits:** `2c04bfa` + `ef70faf` - feat: Restructure Forms page  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
