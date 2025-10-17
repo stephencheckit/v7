@@ -670,8 +670,8 @@ export default function FormsPage() {
     setIsMounted(true);
   }, []);
   
-  const [formName, setFormName] = useState("Food Safety Inspection");
-  const [formDescription, setFormDescription] = useState("Daily compliance checklist for food safety standards");
+  const [formName, setFormName] = useState("Untitled Form");
+  const [formDescription, setFormDescription] = useState("Add a description for your form");
   const [isEditingFormName, setIsEditingFormName] = useState(false);
   const [isEditingFormDescription, setIsEditingFormDescription] = useState(false);
   const [showFormDescription, setShowFormDescription] = useState(true);
@@ -684,70 +684,7 @@ export default function FormsPage() {
   const [distributionWhere, setDistributionWhere] = useState<string[]>(["URL"]);
   const [distributionHow, setDistributionHow] = useState<string[]>(["Text"]);
   
-  const [formFields, setFormFields] = useState<FormField[]>([
-    {
-      id: "field-1",
-      type: "text",
-      name: "fullName",
-      label: "Full Name",
-      placeholder: "John Doe",
-      required: true,
-      color: "#c4dfc4",
-      icon: Type,
-    },
-    {
-      id: "field-2",
-      type: "email",
-      name: "email",
-      label: "Email Address",
-      placeholder: "john@example.com",
-      required: true,
-      color: "#c4dfc4",
-      icon: Mail,
-    },
-    {
-      id: "hand_washing_compliance",
-      type: "multiple-choice",
-      name: "handWashing",
-      label: "Hand Washing Compliance",
-      placeholder: "",
-      required: true,
-      color: "#c8e0f5",
-      icon: CheckSquare,
-      options: ["Always", "Usually", "Sometimes", "Rarely", "Never"],
-    },
-    {
-      id: "temperature_checks",
-      type: "multiple-choice",
-      name: "tempChecks",
-      label: "Temperature Check Frequency",
-      placeholder: "",
-      required: true,
-      color: "#c8e0f5",
-      icon: CheckSquare,
-      options: ["Every Hour", "Every 2 Hours", "Every 4 Hours", "Once Daily", "Not Done"],
-    },
-    {
-      id: "equipment_sanitized",
-      type: "binary",
-      name: "equipmentClean",
-      label: "Equipment Properly Sanitized?",
-      placeholder: "",
-      required: true,
-      color: "#ddc8f5",
-      icon: ThumbsUp,
-    },
-    {
-      id: "overall_compliance_score",
-      type: "number",
-      name: "complianceScore",
-      label: "Overall Compliance Score (0-100)",
-      placeholder: "85",
-      required: true,
-      color: "#f5edc8",
-      icon: Hash,
-    },
-  ]);
+  const [formFields, setFormFields] = useState<FormField[]>([]);
 
   const [activeWidget, setActiveWidget] = useState<any>(null);
   const [overId, setOverId] = useState<string | null>(null);
