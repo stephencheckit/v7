@@ -1,0 +1,810 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2 } from "lucide-react";
+import type { FormField as FrontendFormField } from "@/app/forms/page";
+import type { FormSchema } from "@/lib/types/form-schema";
+import { convertBackendFormToFrontend } from "@/lib/converters/form-types";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface AIChatPanelProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  onFormUpdate: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
+  currentFields?: FrontendFormField[];
+}
+
+export function AIChatPanel({ isOpen, onToggle, onFormUpdate, currentFields = [] }: AIChatPanelProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const processedMessageIds = useRef<Set<string>>(new Set());
+  
+  // Ensure client-only rendering to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  // Clean message for display (doesn't modify state, just for rendering)
+  const cleanMessageForDisplay = (msg: string) => {
+    // Remove tool call blocks (all formats)
+    let cleaned = msg.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
+    cleaned = cleaned.replace(/```\s*(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\([^)]*\{[\s\S]*?\}\s*\)\s*```/g, '');
+    cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
+    // Remove new format: CREATE_FORM: {...}, ADD_FIELD: {...}, UPDATE_FIELD: {...}, REMOVE_FIELD: {...}, MOVE_FIELD: {...}
+    cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\n\}/g, '');
+    cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\n?\}/g, '');
+    cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/MOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    // Clean up extra whitespace
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+    return cleaned;
+  };
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Watch for AI messages and extract form data from text
+  // Only run when a COMPLETE message is received (not during streaming)
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    
+    // Skip if no message, not from assistant, or currently loading (streaming)
+    if (!lastMessage || lastMessage.role !== 'assistant' || isLoading) {
+      return;
+    }
+    
+    // Create a unique ID for this message to avoid reprocessing
+    const messageId = `${lastMessage.content.substring(0, 50)}-${messages.length}`;
+    
+    // Skip if we've already processed this message
+    if (processedMessageIds.current.has(messageId)) {
+      console.log('⏭️ Already processed this message, skipping...');
+      return;
+    }
+    
+    console.log('🔄 Processing complete AI message...');
+    console.log('📨 Last message:', lastMessage);
+    
+    // Mark as processed BEFORE doing any work
+    processedMessageIds.current.add(messageId);
+    
+    try {
+      const content = lastMessage.content;
+      console.log('📝 Parsing complete message (length:', content.length, ')');
+      
+      // Extract create_form calls from multiple formats:
+      // Format 1: CREATE_FORM:\n{...} (capture until we find a closing brace at the start of a line or followed by narrative text)
+      // Format 2: <tool name="create_form">{...}</tool>
+      // Format 3: create_form({...})
+      
+      // Better regex: capture from CREATE_FORM: to the next pattern that looks like narrative text
+      // Match until we see } followed by a newline and then text that starts with "I've" or similar
+      let createFormMatch = content.match(/CREATE_FORM:\s*(\{[\s\S]*?\n\})\s*(?=\n\n|$)/);
+      if (!createFormMatch) {
+        createFormMatch = content.match(/<tool name="create_form">\s*\n?\s*(\{[\s\S]*?\})\s*\n?\s*<\/tool>/);
+      }
+      if (!createFormMatch) {
+        createFormMatch = content.match(/create_form\s*\(\s*(\{[\s\S]*?\})\s*\)/);
+      }
+      
+      if (createFormMatch) {
+        const jsonStr = createFormMatch[1];
+        console.log('Found create_form JSON:', jsonStr);
+        
+        try {
+          const formData = JSON.parse(jsonStr);
+          console.log('Parsed form data:', formData);
+          
+            // Convert field names to IDs and map to backend format
+            const backendForm = {
+              id: `form-${Date.now()}`,
+              title: formData.title || 'Untitled Form',
+              description: formData.description || '',
+              fields: formData.fields.map((field: any) => {
+                // Convert options from string array to {label, value} format if needed
+                let options = undefined;
+                if (field.options && Array.isArray(field.options)) {
+                  options = field.options.map((opt: any) => {
+                    if (typeof opt === 'string') {
+                      return {
+                        label: opt,
+                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                      };
+                    }
+                    return opt; // Already in correct format
+                  });
+                }
+                
+                return {
+                  id: field.name || field.id || `field-${Date.now()}-${Math.random()}`,
+                  type: field.type,
+                  label: field.label,
+                  placeholder: field.placeholder,
+                  description: field.description,
+                  required: field.required !== false,
+                  options,
+                };
+              }),
+              submitButton: { label: 'Submit' },
+              createdAt: new Date().toISOString(),
+              version: 1,
+            };
+          
+          console.log('Backend form:', backendForm);
+          const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+          console.log('Frontend fields:', fields);
+          onFormUpdate(fields, { title, description });
+        } catch (parseError) {
+          console.error('Failed to parse form JSON:', parseError);
+        }
+        } else {
+          console.log('✅ No create_form - checking for update_field and add_field...');
+          
+          // First check for UPDATE_FIELD
+          // Match UPDATE_FIELD: {...} - capture until closing brace followed by newline or end
+          const updateFieldRegex = /UPDATE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+          const updateMatches = Array.from(content.matchAll(updateFieldRegex));
+          
+          console.log(`🔍 Checking for UPDATE_FIELD... found ${updateMatches.length} match(es)`);
+          if (updateMatches.length > 0) {
+            console.log('📋 UPDATE_FIELD matches:', updateMatches.map((m, i) => `Match ${i+1}: ${m[0].substring(0, 150)}...`));
+            
+            for (const match of updateMatches) {
+              try {
+                const jsonStr = match[1].trim();
+                const updateData = JSON.parse(jsonStr);
+                console.log('Found update_field:', updateData);
+                
+                const fieldId = updateData.id;
+                const existingFieldIndex = currentFields.findIndex(f => f.id === fieldId);
+                
+                if (existingFieldIndex === -1) {
+                  console.warn('⚠️ Field not found for update:', fieldId);
+                  continue;
+                }
+                
+                // Convert options if needed
+                let options = undefined;
+                if (updateData.options && Array.isArray(updateData.options)) {
+                  options = updateData.options.map((opt: any) => {
+                    if (typeof opt === 'string') {
+                      return {
+                        label: opt,
+                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                      };
+                    }
+                    return opt;
+                  });
+                }
+                
+                // Create updated field by merging existing with updates
+                const updatedFields = [...currentFields];
+                const existingField = currentFields[existingFieldIndex];
+                
+                console.log('🔄 BEFORE update:', existingField);
+                console.log('📝 UPDATE data:', updateData);
+                console.log('📋 Converted options:', options);
+                
+                updatedFields[existingFieldIndex] = {
+                  ...existingField,
+                  ...updateData,
+                  options,
+                };
+                
+                console.log('✅ AFTER update:', updatedFields[existingFieldIndex]);
+                console.log('📊 Changed properties:', {
+                  type: existingField.type !== updatedFields[existingFieldIndex].type,
+                  label: existingField.label !== updatedFields[existingFieldIndex].label,
+                  options: JSON.stringify(existingField.options) !== JSON.stringify(updatedFields[existingFieldIndex].options),
+                  required: existingField.required !== updatedFields[existingFieldIndex].required,
+                });
+                
+                // Convert to backend format and update
+                const backendForm = {
+                  id: `form-${Date.now()}`,
+                  title: 'Food Safety Form',
+                  description: '',
+                  fields: updatedFields.map((field: any) => {
+                    let fieldOptions = field.options;
+                    if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
+                      fieldOptions = fieldOptions.map((opt: string) => ({
+                        label: opt,
+                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                      }));
+                    }
+                    
+                    return {
+                      id: field.id,
+                      type: field.type,
+                      label: field.label,
+                      placeholder: field.placeholder,
+                      description: field.description,
+                      required: field.required !== false,
+                      options: fieldOptions,
+                    };
+                  }),
+                  submitButton: { label: 'Submit' },
+                  createdAt: new Date().toISOString(),
+                  version: 1,
+                };
+                
+                const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+                onFormUpdate(fields, { title, description });
+                
+                // Don't process add_field if we updated
+                return;
+              } catch (e) {
+                console.error('Failed to parse update_field JSON:', e);
+              }
+            }
+          }
+          
+          // Check for MOVE_FIELD (reorder fields)
+          const moveFieldRegex = /MOVE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+          const moveMatches = Array.from(content.matchAll(moveFieldRegex));
+          
+          if (moveMatches.length > 0) {
+            console.log(`🔍 Found ${moveMatches.length} move_field match(es)`);
+            
+            for (const match of moveMatches) {
+              try {
+                const jsonStr = match[1].trim();
+                const moveData = JSON.parse(jsonStr);
+                console.log('Found move_field:', moveData);
+                
+                const fieldId = moveData.id;
+                const position = moveData.position;
+                const targetId = moveData.target_id;
+                
+                const fieldIndex = currentFields.findIndex(f => f.id === fieldId);
+                
+                if (fieldIndex === -1) {
+                  console.warn('⚠️ Field not found for moving:', fieldId);
+                  continue;
+                }
+                
+                // Remove the field from its current position
+                const field = currentFields[fieldIndex];
+                const updatedFields = [...currentFields];
+                updatedFields.splice(fieldIndex, 1);
+                
+                // Insert at new position
+                let newIndex = 0;
+                if (position === 'top') {
+                  newIndex = 0;
+                } else if (position === 'bottom') {
+                  newIndex = updatedFields.length;
+                } else if (position === 'before' && targetId) {
+                  newIndex = updatedFields.findIndex(f => f.id === targetId);
+                  if (newIndex === -1) newIndex = 0;
+                } else if (position === 'after' && targetId) {
+                  newIndex = updatedFields.findIndex(f => f.id === targetId) + 1;
+                  if (newIndex === 0) newIndex = updatedFields.length;
+                }
+                
+                updatedFields.splice(newIndex, 0, field);
+                
+                console.log('✅ Moved field:', fieldId, 'to position:', position, newIndex);
+                
+                // Convert to backend format and update
+                const backendForm = {
+                  id: `form-${Date.now()}`,
+                  title: 'Food Safety Form',
+                  description: '',
+                  fields: updatedFields.map((field: any) => {
+                    let fieldOptions = field.options;
+                    if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
+                      fieldOptions = fieldOptions.map((opt: string) => ({
+                        label: opt,
+                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                      }));
+                    }
+                    
+                    return {
+                      id: field.id,
+                      type: field.type,
+                      label: field.label,
+                      placeholder: field.placeholder,
+                      description: field.description,
+                      required: field.required !== false,
+                      options: fieldOptions,
+                    };
+                  }),
+                  submitButton: { label: 'Submit' },
+                  createdAt: new Date().toISOString(),
+                  version: 1,
+                };
+                
+                const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+                onFormUpdate(fields, { title, description });
+                
+                // Don't process other operations if we moved
+                return;
+              } catch (e) {
+                console.error('Failed to parse move_field JSON:', e);
+              }
+            }
+          }
+          
+          // Check for REMOVE_FIELD
+          // Match REMOVE_FIELD: {...} - capture until closing brace followed by newline or end
+          const removeFieldRegex = /REMOVE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+          const removeMatches = Array.from(content.matchAll(removeFieldRegex));
+          
+          if (removeMatches.length > 0) {
+            console.log(`🔍 Found ${removeMatches.length} remove_field match(es)`);
+            
+            for (const match of removeMatches) {
+              try {
+                const jsonStr = match[1].trim();
+                const removeData = JSON.parse(jsonStr);
+                console.log('Found remove_field:', removeData);
+                
+                const fieldId = removeData.id;
+                const updatedFields = currentFields.filter(f => f.id !== fieldId);
+                
+                if (updatedFields.length === currentFields.length) {
+                  console.warn('⚠️ Field not found for removal:', fieldId);
+                  continue;
+                }
+                
+                console.log('✅ Removed field:', fieldId);
+                
+                // Convert to backend format and update
+                const backendForm = {
+                  id: `form-${Date.now()}`,
+                  title: 'Food Safety Form',
+                  description: '',
+                  fields: updatedFields.map((field: any) => {
+                    let fieldOptions = field.options;
+                    if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
+                      fieldOptions = fieldOptions.map((opt: string) => ({
+                        label: opt,
+                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                      }));
+                    }
+                    
+                    return {
+                      id: field.id,
+                      type: field.type,
+                      label: field.label,
+                      placeholder: field.placeholder,
+                      description: field.description,
+                      required: field.required !== false,
+                      options: fieldOptions,
+                    };
+                  }),
+                  submitButton: { label: 'Submit' },
+                  createdAt: new Date().toISOString(),
+                  version: 1,
+                };
+                
+                const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+                onFormUpdate(fields, { title, description });
+                
+                // Don't process add_field if we removed
+                return;
+              } catch (e) {
+                console.error('Failed to parse remove_field JSON:', e);
+              }
+            }
+          }
+          
+          // Check for add_field calls in multiple formats:
+        // Format 0: ADD_FIELD:\n{...}  (NEW EXPLICIT FORMAT)
+        // Format 1: <tool name="add_field">{...}</tool>
+        // Format 2: add_field({...}) or Calling add_field({...}) - need to handle nested braces
+        // Format 3: ```add_field({...})```
+        const addFieldRegex0 = /ADD_FIELD:\s*\n?\s*(\{[\s\S]*?\})/g;
+        const addFieldRegex1 = /<tool name="add_field">\s*\n?\s*(\{[\s\S]*?\})\s*\n?\s*<\/tool>/g;
+        
+        // Better regex for nested JSON - capture everything between add_field( and )
+        // Allow optional "Calling " prefix
+        const addFieldRegex2 = /(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)/g;
+        const addFieldRegex3 = /```\s*(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)\s*```/g;
+        
+        const matches0 = Array.from(content.matchAll(addFieldRegex0));
+        const matches1 = Array.from(content.matchAll(addFieldRegex1));
+        const matches2 = Array.from(content.matchAll(addFieldRegex2));
+        const matches3 = Array.from(content.matchAll(addFieldRegex3));
+        const allMatches = [...matches0, ...matches1, ...matches2, ...matches3];
+        
+        console.log(`🔍 Found ${allMatches.length} add_field match(es)`);
+        if (allMatches.length > 0) {
+          console.log('📋 Match details:', allMatches.map((m, i) => `Match ${i+1}: ${m[0].substring(0, 100)}...`));
+        }
+        
+        const addedFields = [];
+        for (const match of allMatches) {
+          try {
+            const jsonStr = match[1].trim();
+            console.log('Attempting to parse add_field JSON:', jsonStr.substring(0, 200));
+            const addFieldData = JSON.parse(jsonStr);
+            console.log('Found add_field:', addFieldData);
+            
+            // Handle multiple formats:
+            // Format 0: ADD_FIELD: { id, type, label, ... } (direct field object, no explanation wrapper)
+            // Format 1: { explanation, field: {...} }
+            // Format 2: { explanation, id, type, label, ... }
+            // Format 3: { explanation, field_id, type, label, ... }
+            // Format 4: { explanation, field_name, field_type, ... }
+            
+            // If it has 'explanation' key, extract the field data, otherwise use the whole object as field data
+            const fieldData = addFieldData.explanation ? (addFieldData.field || addFieldData) : addFieldData;
+            
+            // Normalize field ID and type
+            const fieldId = fieldData.id || fieldData.field_id || fieldData.field_name || `field-${Date.now()}-${Math.random()}`;
+            const fieldType = fieldData.type || fieldData.field_type;
+            
+            if (fieldId && fieldType && fieldData.label) {
+              // Check if this field already exists (avoid duplicates from multiple useEffect runs)
+              const fieldExists = currentFields.some(f => f.id === fieldId);
+              if (fieldExists) {
+                console.log('⏭️ Field already exists, skipping:', fieldId);
+                continue;
+              }
+              
+                // Convert options from string array to {label, value} format if needed
+                let options = undefined;
+                if (fieldData.options && Array.isArray(fieldData.options)) {
+                  options = fieldData.options.map((opt: any) => {
+                    if (typeof opt === 'string') {
+                      return {
+                        label: opt,
+                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                      };
+                    }
+                    return opt; // Already in correct format
+                  });
+                }
+                
+                const newField = {
+                  id: fieldId,
+                  type: fieldType,
+                  label: fieldData.label,
+                  placeholder: fieldData.placeholder || fieldData.help_text,
+                  description: fieldData.description || fieldData.help_text,
+                  required: fieldData.required !== false,
+                  options,
+                };
+                console.log('✅ Adding field:', newField);
+                addedFields.push(newField);
+            } else {
+              console.warn('⚠️ Invalid field data (missing id/type/label):', { fieldId, fieldType, label: fieldData.label, fieldData });
+            }
+          } catch (e) {
+            console.error('Failed to parse add_field JSON:', e);
+            console.error('Raw match:', match[0].substring(0, 300));
+            console.error('Captured group:', match[1].substring(0, 300));
+          }
+        }
+        
+        // If we found add_field calls, merge with existing form
+          if (addedFields.length > 0) {
+            console.log('🎉 Adding fields to existing form:', addedFields);
+            console.log('📋 Current fields:', currentFields);
+            const updatedFields = [...currentFields, ...addedFields].map((field: any) => {
+              // Ensure options are in correct format
+              let options = field.options;
+              if (options && Array.isArray(options) && options.length > 0 && typeof options[0] === 'string') {
+                options = options.map((opt: string) => ({
+                  label: opt,
+                  value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                }));
+              }
+              
+              return {
+                id: field.id,
+                type: field.type,
+                label: field.label,
+                placeholder: field.placeholder,
+                description: field.description,
+                required: field.required !== false,
+                options,
+              };
+            });
+          const backendForm = {
+            id: `form-${Date.now()}`,
+            title: 'Contact Form', // Keep existing title
+            description: '',
+            fields: updatedFields,
+            submitButton: { label: 'Submit' },
+            createdAt: new Date().toISOString(),
+            version: 1,
+          };
+          
+          const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+          onFormUpdate(fields, { title, description });
+        } else {
+          console.log('⚠️ No fields were added (parsing may have failed)');
+        }
+      }
+      
+        // Note: We don't clean the message here to avoid infinite loops
+        // The raw JSON blocks will be visible in the chat
+        // TODO: Implement a display-only cleaning mechanism that doesn't trigger re-renders
+    } catch (error) {
+      console.error("❌ Failed to process AI response:", error);
+    }
+  }, [messages, isLoading, onFormUpdate, currentFields]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('=== FORM SUBMITTED ===');
+    console.log('Input value:', input);
+    console.log('Is loading:', isLoading);
+    
+    if (!input.trim() || isLoading) {
+      console.log('Rejected: empty input or loading');
+      return;
+    }
+    
+    const userMessage: Message = { role: 'user', content: input };
+    console.log('Sending message:', userMessage);
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+    
+    try {
+      console.log('Making API call to /api/chat...');
+      // Add system context with current form if it exists
+      const systemContext = currentFields.length > 0
+        ? `\n\n**Current Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`
+        : '';
+      
+      const contextualMessage = {
+        ...userMessage,
+        content: userMessage.content + systemContext
+      };
+      
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, contextualMessage],
+        }),
+      });
+      
+      console.log('Response received:', response.status, response.statusText);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error('Failed to get response');
+      }
+      
+      console.log('Response is OK, starting to read stream...');
+      
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = '';
+      
+      if (!reader) {
+        console.error('No reader available!');
+        throw new Error('No stream reader');
+      }
+      
+      console.log('Stream reader acquired, adding loading message...');
+      // Add a temporary loading message
+      setMessages(prev => [...prev, { role: 'assistant', content: '...' }]);
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+          
+          const chunk = decoder.decode(value, { stream: true });
+          // Just append all text - it's already in plain text format
+          assistantMessage += chunk;
+          
+        // Store the RAW message (we'll clean it later AFTER parsing in useEffect)
+        setMessages(prev => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = { 
+            role: 'assistant', 
+            content: assistantMessage  // Store RAW message for parsing
+          };
+          return newMessages;
+        });
+      }
+      
+      // Raw message stored - useEffect will parse and clean it
+      console.log('✅ Stream complete. Message length:', assistantMessage.length);
+      
+    } catch (error) {
+      console.error('=== CHAT ERROR ===');
+      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : error);
+      console.error('Full error:', error);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error. Please try again.' 
+      }]);
+    } finally {
+      console.log('=== FINALLY BLOCK - Setting isLoading to false ===');
+      setIsLoading(false);
+    }
+  };
+
+  const handleSuggestedPrompt = (prompt: string) => {
+    console.log('Suggested prompt clicked:', prompt);
+    setInput(prompt);
+  };
+
+  const suggestedPrompts = [
+    "Create a contact form",
+    "Build a feedback survey",
+    "Make a registration form",
+  ];
+
+  return (
+    <div
+      className={`fixed top-0 right-0 h-screen border-l flex flex-col transition-all duration-300 z-50 ${
+        isOpen
+          ? "w-96 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] border-border shadow-lg"
+          : "w-12 bg-gradient-to-b from-[#c4dfc4] to-[#b5d0b5] border-[#c4dfc4]"
+      }`}
+    >
+      {/* Header */}
+      <div
+        className={`flex items-center transition-all duration-300 ${
+          isOpen
+            ? "border-b border-white/20 bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4] p-4 justify-between h-16"
+            : "flex-col pt-4 pb-4 justify-center"
+        }`}
+      >
+        {isOpen ? (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
+                <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Assistant</h3>
+                <p className="text-xs text-gray-600">Chat to build your form</p>
+              </div>
+            </div>
+            <button
+              onClick={onToggle}
+              className="hover:bg-gray-100 p-2 rounded-lg transition-colors"
+              title="Collapse AI Assistant"
+            >
+              <PanelRightClose className="h-4 w-4 text-gray-600" />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onToggle}
+            className="hover:bg-[#b5d0b5] p-2 rounded-lg transition-colors"
+            title="Open AI Assistant"
+          >
+            <Sparkles className="h-5 w-5 text-[#0a0a0a]" />
+          </button>
+        )}
+      </div>
+
+      {/* Chat Messages */}
+      {isOpen && (
+        <>
+          <div
+            ref={scrollRef}
+            className="flex-1 p-4 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] overflow-y-auto"
+          >
+            <div className="space-y-4">
+              {/* Welcome Message */}
+              {messages.length === 0 && (
+                <div className="flex gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
+                    <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+                  </div>
+                  <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
+                    <p className="text-xs text-gray-800 mb-2">
+                      👋 Hi! I'm your AI form builder. Tell me what form you'd like to create and I'll build it for you.
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {suggestedPrompts.map((prompt, idx) => (
+                        <Badge
+                          key={idx}
+                          onClick={() => handleSuggestedPrompt(prompt)}
+                          className="cursor-pointer bg-gray-100 text-gray-700 hover:bg-gray-200 border-0 text-xs"
+                        >
+                          {prompt}
+                        </Badge>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+              )}
+
+              {/* Chat Messages */}
+              {isMounted && messages.map((message: any, idx: number) => (
+                <div
+                  key={idx}
+                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
+                >
+                  {message.role === "assistant" && (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
+                      <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+                    </div>
+                  )}
+                  <Card
+                    className={`p-3 shadow-sm ${
+                      message.role === "user"
+                        ? "max-w-[85%] bg-white border-0"
+                        : "flex-1 bg-white border-gray-200"
+                    }`}
+                  >
+                    <p className="text-xs text-gray-800 whitespace-pre-wrap">
+                      {message.role === "assistant" 
+                        ? cleanMessageForDisplay(message.content)
+                        : message.content
+                      }
+                    </p>
+                  </Card>
+                  {message.role === "user" && (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
+                      <span className="text-xs font-medium text-gray-700">U</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="flex gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
+                    <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
+                  </div>
+                  <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
+                    <p className="text-xs text-gray-500">Thinking...</p>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Chat Input */}
+          <div className="border-t border-white/20 p-3 bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4]">
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask me anything..."
+                disabled={isLoading}
+                className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isLoading || !input.trim()}
+                className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] shrink-0 disabled:opacity-50"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+

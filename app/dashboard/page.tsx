@@ -16,11 +16,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppLayout } from "@/components/app-layout";
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <AppLayout>
+      <div className="p-8">
+        <div className="mx-auto max-w-7xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -34,61 +36,61 @@ export default function DashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card className="bg-[#c4dfc4] border-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-[#0a0a0a]">
                 Total Forms
               </CardTitle>
-              <Badge variant="secondary">+12%</Badge>
+              <Badge className="bg-[#0a0a0a] text-[#c4dfc4]">+12%</Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">45</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-[#0a0a0a]">45</div>
+              <p className="text-xs text-[#0a0a0a]/70">
                 +3 from last month
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#f5edc8] border-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-[#0a0a0a]">
                 Submissions
               </CardTitle>
-              <Badge variant="secondary">+8%</Badge>
+              <Badge className="bg-[#0a0a0a] text-[#f5edc8]">+8%</Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2,350</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-[#0a0a0a]">2,350</div>
+              <p className="text-xs text-[#0a0a0a]/70">
                 +180 from last week
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#c8e0f5] border-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-[#0a0a0a]">
                 Active Forms
               </CardTitle>
-              <Badge variant="secondary">Live</Badge>
+              <Badge className="bg-[#0a0a0a] text-[#c8e0f5]">Live</Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">32</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-[#0a0a0a]">32</div>
+              <p className="text-xs text-[#0a0a0a]/70">
                 71% conversion rate
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-[#ddc8f5] border-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-[#0a0a0a]">
                 Completion Rate
               </CardTitle>
-              <Badge variant="secondary">+5%</Badge>
+              <Badge className="bg-[#0a0a0a] text-[#ddc8f5]">+5%</Badge>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">68%</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-[#0a0a0a]">68%</div>
+              <p className="text-xs text-[#0a0a0a]/70">
                 Above industry avg
               </p>
             </CardContent>
@@ -189,8 +191,9 @@ export default function DashboardPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 
