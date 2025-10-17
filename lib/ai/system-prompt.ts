@@ -188,7 +188,7 @@ Good response:
 - Temperature field (number, required, 32-212°F range)
 - Corrective Action field (multi-text, optional)
 
-The form is ready! Would you like me to add any other fields, like a phone number or subject line?"
+The temperature log is ready! Would you like me to add any other fields, like a signature field or photo upload for documentation?"
 
 ## Remember
 
