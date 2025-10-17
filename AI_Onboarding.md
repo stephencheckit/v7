@@ -3,6 +3,43 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #12 - October 17, 2025**
+**Commits:** `2c04bfa` + `ef70faf` - feat: Restructure Forms page  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **NEW Forms Landing Page** (`/forms`):
+  - "Create New Form" button
+  - Table showing all historical forms with columns:
+    * Form Name, Questions, Responses, Field Types (badges)
+    * Schedule, Created By, Last Used, Status, View button
+  - Stats cards: Total Forms (5), Total Responses (2,849), Active Forms (4), Avg Questions (13)
+  - NO AI chat on this page (just table view)
+  - Click row or View button → navigate to builder
+  - 5 mock forms with food safety themes
+- ✅ **Form Builder Page** (moved to `/forms/builder`):
+  - Added breadcrumb navigation: "Forms > [Form Name]"
+  - Breadcrumb shows next to Builder/Distribution/Reporting tabs
+  - Breadcrumb link back to /forms list
+  - AI chat available in builder view
+  - All three views (Builder/Distribution/Reporting) have breadcrumb
+- ✅ **Navigation Flow**:
+  1. Land on /forms → see table of all forms
+  2. Click "Create New" → /forms/builder (new blank form)
+  3. Click existing form → /forms/builder?id=X (load that form)
+  4. Click "Forms" breadcrumb → back to list
+
+**User Experience:**
+- Clean separation: List view vs. Builder view
+- AI chat only shows when building/editing forms (not in list)
+- Easy navigation back to list with breadcrumb
+- Professional table view with all relevant form metadata
+
+**Files Changed:** 2 files (created forms/page.tsx, moved to forms/builder/page.tsx)
+
+---
+
 ### **Deploy #11 - October 17, 2025**
 **Commits:** `9a0fb13` + `961f241` - feat: Transform dashboard + fix header  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
