@@ -74,6 +74,7 @@ export function AppHeader() {
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
+              autoComplete="off"
               className="w-full pl-9 bg-[#1a1a1a] border-white/10 text-gray-100 placeholder:text-gray-500 focus-visible:ring-[#c4dfc4]/50"
             />
           </div>
