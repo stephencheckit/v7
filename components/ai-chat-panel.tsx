@@ -161,14 +161,23 @@ export function AIChatPanel({
   
   // Clean message for display (doesn't modify state, just for rendering)
   const cleanMessageForDisplay = (msg: string) => {
-    // Remove ALL code blocks
+    // Remove ALL code blocks (including json, javascript, etc.)
     let cleaned = msg.replace(/```[\s\S]*?```/g, '');
+    
+    // Remove any standalone JSON arrays or objects (the big culprit!)
+    // This catches things like: ,\n{\n  "id": "something",\n  "type": "...",\n}
+    cleaned = cleaned.replace(/,\s*\{[\s\S]*?\}/g, '');
+    cleaned = cleaned.replace(/,\s*\[[\s\S]*?\]/g, '');
+    
+    // Remove JSON arrays that start a line
+    cleaned = cleaned.replace(/^\s*\[[\s\S]*?\]\s*$/gm, '');
+    cleaned = cleaned.replace(/^\s*\{[\s\S]*?\}\s*$/gm, '');
     
     // Remove tool call blocks (all formats)
     cleaned = cleaned.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
     
-    // Remove form operations with JSON
+    // Remove form operations with JSON (all variations)
     cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\}/g, '');
     cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\}/g, '');
     cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
@@ -186,6 +195,13 @@ export function AIChatPanel({
     // Remove Excel prompt sections
     cleaned = cleaned.replace(/\*\*Form Title:\*\*[\s\S]*?\*\*Questions Found[\s\S]*?Please:/g, '');
     cleaned = cleaned.replace(/Please:\s*\n\d+\.[\s\S]*?(\n\n|$)/g, '');
+    
+    // Remove any lines that look like JSON properties
+    cleaned = cleaned.replace(/^\s*"[^"]+"\s*:\s*.+$/gm, '');
+    cleaned = cleaned.replace(/^\s*\}\s*$/gm, '');
+    cleaned = cleaned.replace(/^\s*\{\s*$/gm, '');
+    cleaned = cleaned.replace(/^\s*\],?\s*$/gm, '');
+    cleaned = cleaned.replace(/^\s*\[,?\s*$/gm, '');
     
     // Clean up extra whitespace and bullet points
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
