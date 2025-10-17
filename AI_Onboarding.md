@@ -4,7 +4,7 @@
 *Most recent deployments listed first*
 
 ### **Deploy #11 - October 17, 2025**
-**Commit:** `9a0fb13` - feat: Transform dashboard into Food Safety Command Center  
+**Commits:** `9a0fb13` + `961f241` - feat: Transform dashboard + fix header  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
 **Branch:** `main`
 
@@ -27,6 +27,7 @@
 - ✅ **Live Activity Feed**: Real-time updates from all locations
 - ✅ **Full-Width Layout**: Page extends across full view (no chat panel)
 - ✅ **Modern Design**: Gradient cards, trending indicators, futuristic look
+- ✅ **Fixed Header**: Removed margin causing cut-off - header now full width on all pages
 
 **User Experience:**
 - Dashboard is now the "nerve center" for food safety operations
