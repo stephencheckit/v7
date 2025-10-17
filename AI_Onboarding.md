@@ -3,6 +3,40 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #8 - October 17, 2025**
+**Commit:** `51cb8d6` - feat: Unified AI chat - context-aware across all pages  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Unified AI Chat**: Single chat interface works across all pages
+- ✅ **Context Awareness**: AI knows which page user is on (builder/distribution/reporting)
+- ✅ **Smart Defaults**: Prefers actions for current page, but can do anything
+- ✅ **Dynamic UI**: Welcome messages, prompts, and placeholders change per page
+- ✅ **Single Endpoint**: Uses /api/chat for all contexts (no more mode switching)
+- ✅ **Cross-Page Actions**: Can add fields while on distribution page if user asks
+- ✅ **Page-Specific Features**: Excel upload only on builder, contextual suggestions per page
+
+**How It Works:**
+- Chat receives `currentPage` prop instead of `mode`
+- AI gets context: "User is on the 'builder' page"
+- Suggested prompts adapt:
+  - Builder: "Create a contact form"
+  - Distribution: "Set up email distribution"  
+  - Reporting: "Show me compliance trends"
+- AI can still do cross-page actions (flexible, not rigid)
+
+**User Experience:**
+1. Switch between Builder/Distribution/Reporting tabs
+2. AI chat adapts to context automatically
+3. Suggested prompts change based on page
+4. Can still ask for anything (e.g., "add field" while on distribution)
+5. Seamless, intelligent assistance
+
+**Files Changed:** 3 files, +63 insertions, -40 deletions
+
+---
+
 ### **Deploy #7 - October 17, 2025**
 **Commit:** `bcd39f1` - revert: Back to Deploy #5 - Form building working again  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
