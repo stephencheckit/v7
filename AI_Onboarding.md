@@ -3,6 +3,43 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #15 - October 18, 2025**
+**Commits:** `bd8d89f` - feat: Clean chat UX  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Clean Chat Display**: Hide all JSON/code blocks from user view
+- ✅ **Flexible Regex for Cleaning**: Use same nested brace pattern as parser to remove compact JSON
+- ✅ **Concise AI Responses**: Updated system prompt to make Claude brief and to-the-point
+- ✅ **Minimal Commentary**: No more verbose explanations, just results
+- ✅ **Image Upload UX**: Just output form + "✓ Created [name] with X fields"
+- ✅ **Fallback Message**: Show "✓ Done" if cleaned message is too short
+
+**Problem Solved:**
+- Users were seeing large JSON blocks cluttering the chat
+- AI was being too verbose with explanations
+- Image uploads showed unnecessary commentary about what was being extracted
+
+**Solution:**
+1. **Enhanced cleanMessageForDisplay()**: Updated all regex patterns to use flexible nested brace matching (same as parser)
+2. **System Prompt Updates**: 
+   - Added "Be BRIEF" guideline
+   - Provided good/bad response examples
+   - Special instructions for image uploads
+   - Keep responses under 1-2 sentences
+3. **Better UX**: Users see clean, minimal chat with just the information they need
+
+**How It Works Now:**
+- User uploads image → AI analyzes
+- Chat shows: "✓ Created Food Safety Inspection Checklist with 24 fields"
+- No JSON, no verbose explanations, just clean results
+- All JSON operations hidden from view but still parsed correctly
+
+**Files Changed:** 2 files (components/ai-chat-panel.tsx, lib/ai/system-prompt.ts)
+
+---
+
 ### **Deploy #14 - October 18, 2025**
 **Commits:** `3c7b00d` + `98beeaa` - fix: Image upload vision parsing  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
