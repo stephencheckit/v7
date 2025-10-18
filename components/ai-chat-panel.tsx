@@ -386,9 +386,10 @@ Please extract and build the form now.`;
       // Format 2: <tool name="create_form">{...}</tool>
       // Format 3: create_form({...})
       
-      // Better regex: capture from CREATE_FORM: to the next pattern that looks like narrative text
-      // Match until we see } followed by a newline and then text that starts with "I've" or similar
-      let createFormMatch = content.match(/CREATE_FORM:\s*(\{[\s\S]*?\n\})\s*(?=\n\n|$)/);
+      // Better regex: capture from CREATE_FORM: to the end of the JSON object
+      // Match CREATE_FORM: followed by JSON, handling various formatting scenarios
+      // This handles: text before CREATE_FORM:, compact JSON, and formatted JSON
+      let createFormMatch = content.match(/CREATE_FORM:\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/);
       if (!createFormMatch) {
         createFormMatch = content.match(/<tool name="create_form">\s*\n?\s*(\{[\s\S]*?\})\s*\n?\s*<\/tool>/);
       }
