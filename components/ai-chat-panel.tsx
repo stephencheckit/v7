@@ -398,8 +398,15 @@ Please extract and build the form now.`;
       }
       
       if (createFormMatch) {
-        const jsonStr = createFormMatch[1];
-        console.log('Found create_form JSON:', jsonStr);
+        let jsonStr = createFormMatch[1];
+        console.log('Found create_form JSON (raw):', jsonStr.substring(0, 100) + '...');
+        
+        // Unescape JSON if it was escaped by the streaming format
+        // The streaming format wraps content in quotes and escapes inner quotes
+        if (jsonStr.includes('\\"')) {
+          jsonStr = jsonStr.replace(/\\"/g, '"');
+          console.log('Unescaped JSON:', jsonStr.substring(0, 100) + '...');
+        }
         
         try {
           const formData = JSON.parse(jsonStr);
