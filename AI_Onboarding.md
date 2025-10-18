@@ -3,6 +3,48 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #14 - October 18, 2025**
+**Commits:** `3c7b00d` + `98beeaa` - fix: Image upload vision parsing  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Direct Anthropic API Integration**: Bypass Vercel AI SDK for vision requests to ensure proper formatting
+- ✅ **Improved CREATE_FORM Regex**: Enhanced parser to handle concatenated JSON without newlines from streaming responses
+- ✅ **Vision Format Fix**: Properly extract media type and base64 data, format with `source.type`, `source.media_type`, and `source.data`
+- ✅ **Streaming Response Handler**: Convert Anthropic Messages API response to format expected by client
+- ✅ **Robust JSON Parsing**: Updated regex to handle nested braces and compact JSON (up to 3 levels deep)
+
+**Problem Solved:**
+- Image uploads were returning empty responses (0 length)
+- Vercel AI SDK wasn't properly handling vision content format
+- Claude Vision responses were being received but parser couldn't extract CREATE_FORM due to concatenated text and no newlines
+
+**Solution:**
+1. **API Route**: When image detected, call Anthropic Messages API directly instead of using AI SDK
+2. **Proper Vision Format**: Extract media type from data URL, format as `{type: 'base64', media_type: 'image/png', data: '...'}`
+3. **Flexible Regex**: Updated CREATE_FORM regex from `\n\}` to nested brace pattern `\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}` to handle compact JSON
+
+**How It Works Now:**
+1. User uploads image → converted to base64 data URL
+2. API extracts media type (e.g., "image/png") and raw base64 string
+3. Calls Anthropic directly with proper vision format
+4. Claude Vision analyzes image and extracts all form fields
+5. Response streamed back in AI SDK-compatible format
+6. Parser extracts CREATE_FORM JSON even without newlines
+7. Form builds automatically with all fields from image
+
+**Technical Details:**
+- Model: Claude 3.7 Sonnet (`claude-3-7-sonnet-20250219`)
+- API: Direct Anthropic Messages API v1
+- Format: Proper vision content blocks with base64 source
+- Regex: Nested brace matching for up to 3 levels of JSON nesting
+- Streaming: Converts Anthropic response to text stream format
+
+**Files Changed:** 2 files (api/chat/route.ts, components/ai-chat-panel.tsx, lib/ai/system-prompt.ts)
+
+---
+
 ### **Deploy #13 - October 17, 2025**
 **Commits:** `3953d99` + `d11b6f4` - feat: Image upload for form building  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
