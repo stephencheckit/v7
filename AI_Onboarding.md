@@ -3,6 +3,101 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #17 - October 18, 2025**
+**Commits:** `cba60bd` - feat: Video AI Form Filler with OpenAI Vision  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Video AI Form Filler**: Real-time camera-based form auto-fill using OpenAI Vision
+- ✅ **useVideoRecording Hook**: Camera control, snapshot capture, stream management
+- ✅ **AI Analysis API**: OpenAI GPT-4o Vision endpoint for form question answering
+- ✅ **Video Recording UI**: Camera feed, record buttons, live stats display
+- ✅ **4-Second Snapshots**: Automatic capture and analysis every 4 seconds
+- ✅ **Visual AI Feedback**: Blue tint, sparkle badges for AI-filled fields
+- ✅ **High Confidence Filtering**: Only fills answers with >80% confidence
+- ✅ **Manual Override**: Users can edit any AI-suggested answer
+- ✅ **Comprehensive Setup Guide**: VIDEO_AI_SETUP.md with instructions
+
+**How It Works:**
+1. User clicks "Preview" on form
+2. Clicks "Start Camera" → camera feed appears
+3. Clicks "Start Recording"
+4. Every 4 seconds:
+   - Snapshot captured from video feed
+   - Sent to OpenAI Vision with all form questions
+   - AI analyzes image and answers questions it can see
+   - Only high confidence answers (>80%) are filled
+5. AI-filled fields show blue background + "AI Filled" badge
+6. User can manually override any answer
+7. Submit form with AI + manual answers
+
+**Example Use Case - Food Safety Inspection:**
+- **Question**: "Are employees wearing proper hairnets?"
+- **AI sees**: Kitchen staff with hairnets
+- **Result**: Auto-fills "Yes" (95% confidence)
+- **Question**: "Refrigerator temperature?"
+- **AI sees**: Digital display showing 38°F
+- **Result**: Auto-fills "38" (90% confidence)
+- **Question**: "Floor cleanliness?"
+- **AI sees**: Unclear angle
+- **Result**: Leaves blank (45% confidence - below threshold)
+
+**Supported Question Types:**
+- Binary (Yes/No): AI responds "Yes" | "No" | null
+- Multiple Choice: AI selects from provided options
+- Text: AI provides brief descriptions
+- Number: AI provides numeric values
+- Dropdowns: AI selects from options
+
+**Technical Details:**
+- **Model**: GPT-4o (OpenAI's latest vision model)
+- **Snapshot Frequency**: Every 4 seconds
+- **Resolution**: 1280x720 JPEG
+- **Confidence Threshold**: 80% minimum
+- **Analysis Time**: ~3-5 seconds per snapshot
+- **Cost**: ~$0.01 per image (~$1.50 for 10-minute inspection)
+
+**Visual Feedback:**
+- Blue tinted background for AI-filled fields
+- "AI Filled" badge with sparkle icon
+- Recording indicator (red dot + "Recording")
+- Live stats: "Snapshots: 5", "Answered: 3 / 10"
+- "Analyzing..." spinner during AI processing
+
+**Setup Required:**
+User must add `OPENAI_API_KEY` to `.env.local` file. See `VIDEO_AI_SETUP.md` for:
+- How to get an OpenAI API key
+- Environment variable setup
+- Usage instructions
+- Troubleshooting guide
+- Cost estimates
+
+**Files Created:**
+- `hooks/use-video-recording.ts` (camera management)
+- `app/api/analyze-video-form/route.ts` (AI analysis endpoint)
+- `VIDEO_AI_SETUP.md` (setup & usage guide)
+
+**Files Modified:**
+- `app/preview/page.tsx` (added video UI and AI integration)
+
+**Privacy & Security:**
+- All video processing client-side (browser only)
+- Only snapshots sent to OpenAI (not continuous video)
+- Snapshots not stored after analysis
+- API key in local .env only
+- No video data saved to database
+
+**Impact:**
+This is a game-changer for food safety inspections:
+- Drastically reduces form completion time
+- Enables hands-free inspection (hold camera while inspecting)
+- Reduces human error in data entry
+- Provides timestamped visual evidence
+- Makes inspections faster and more thorough
+
+---
+
 ### **Deploy #15 - October 18, 2025**
 **Commits:** `bd8d89f` - feat: Clean chat UX  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
