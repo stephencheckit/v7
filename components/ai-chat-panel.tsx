@@ -243,13 +243,14 @@ Please extract and build the form now.`;
     cleaned = cleaned.replace(/```\s*(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\([^)]*\{[\s\S]*?\}\s*\)\s*```/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
     
-    // Remove form operations
-    cleaned = cleaned.replace(/CREATE_FORM:\s*\{[\s\S]*?\n\}/g, '');
-    cleaned = cleaned.replace(/ADD_FIELD:\s*\{[\s\S]*?\n?\}/g, '');
-    cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/UPDATE_FORM_META:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
-    cleaned = cleaned.replace(/MOVE_FIELD:\s*\{[\s\S]*?\}/g, '');
+    // Remove form operations - use same flexible regex as parser
+    // This handles compact JSON without newlines and nested braces
+    cleaned = cleaned.replace(/CREATE_FORM:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/ADD_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/UPDATE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/UPDATE_FORM_META:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/MOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     
     // Remove reporting operations
     cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
@@ -260,6 +261,12 @@ Please extract and build the form now.`;
     
     // Clean up extra whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+    
+    // If the message is now too short or empty after cleaning, provide a better default
+    if (cleaned.length < 10) {
+      return '✓ Done';
+    }
+    
     return cleaned;
   };
 
