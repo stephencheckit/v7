@@ -653,7 +653,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
 export default function FormsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
-  const [activeView, setActiveView] = useState<"builder" | "workflow" | "distribution" | "reporting">("builder");
+  const [activeView, setActiveView] = useState<"builder" | "distribution" | "reporting">("builder");
   const [activeDistributionSection, setActiveDistributionSection] = useState<"who" | "when" | "where" | "how" | null>("who");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
@@ -930,10 +930,9 @@ export default function FormsPage() {
                         <span className="text-white">{formName || "New Form"}</span>
                       </div>
                       {/* Tabs */}
-                      <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "workflow" | "distribution" | "reporting")} className="w-auto">
+                      <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution" | "reporting")} className="w-auto">
                         <TabsList className="bg-[#1a1a1a]">
                           <TabsTrigger value="builder">Builder</TabsTrigger>
-                          <TabsTrigger value="workflow">Workflow</TabsTrigger>
                           <TabsTrigger value="distribution">Distribution</TabsTrigger>
                           <TabsTrigger value="reporting">Reporting</TabsTrigger>
                         </TabsList>
@@ -1087,203 +1086,6 @@ export default function FormsPage() {
                 </>
               )}
 
-              {activeView === "workflow" && (
-                <>
-                  {/* Left Panel - Workflow Actions */}
-                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                    <div className="p-6">
-                      <h3 className="text-sm font-semibold text-white mb-4">WORKFLOW ACTIONS</h3>
-                      <p className="text-xs text-gray-400 mb-6">
-                        Add follow-up actions to form fields. Select a field and choose an action.
-                      </p>
-                      
-                      <div className="space-y-4">
-                        {/* Task Assignment */}
-                        <Card className="p-4 bg-[#c4dfc4] border-0 cursor-pointer hover:scale-105 transition-transform">
-                          <div className="flex items-start gap-3">
-                            <div className="h-8 w-8 rounded-md bg-[#0a0a0a] flex items-center justify-center flex-shrink-0">
-                              <CheckSquare className="h-4 w-4 text-[#c4dfc4]" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-[#0a0a0a] text-sm">Assign Task</h4>
-                              <p className="text-xs text-[#0a0a0a]/70 mt-1">
-                                Assign a follow-up task to a person or team
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Training Assignment */}
-                        <Card className="p-4 bg-[#c8e0f5] border-0 cursor-pointer hover:scale-105 transition-transform">
-                          <div className="flex items-start gap-3">
-                            <div className="h-8 w-8 rounded-md bg-[#0a0a0a] flex items-center justify-center flex-shrink-0">
-                              <Sparkles className="h-4 w-4 text-[#c8e0f5]" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-[#0a0a0a] text-sm">Assign Training</h4>
-                              <p className="text-xs text-[#0a0a0a]/70 mt-1">
-                                Require training module completion
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Approval Request */}
-                        <Card className="p-4 bg-[#ddc8f5] border-0 cursor-pointer hover:scale-105 transition-transform">
-                          <div className="flex items-start gap-3">
-                            <div className="h-8 w-8 rounded-md bg-[#0a0a0a] flex items-center justify-center flex-shrink-0">
-                              <ThumbsUp className="h-4 w-4 text-[#ddc8f5]" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-[#0a0a0a] text-sm">Request Approval</h4>
-                              <p className="text-xs text-[#0a0a0a]/70 mt-1">
-                                Require manager or team lead approval
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Information Request */}
-                        <Card className="p-4 bg-[#f5edc8] border-0 cursor-pointer hover:scale-105 transition-transform">
-                          <div className="flex items-start gap-3">
-                            <div className="h-8 w-8 rounded-md bg-[#0a0a0a] flex items-center justify-center flex-shrink-0">
-                              <Upload className="h-4 w-4 text-[#f5edc8]" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-[#0a0a0a] text-sm">Request Info</h4>
-                              <p className="text-xs text-[#0a0a0a]/70 mt-1">
-                                Request document, photo, or video upload
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-
-                        {/* Conditional Logic */}
-                        <Card className="p-4 bg-[#f5c8c8] border-0 cursor-pointer hover:scale-105 transition-transform">
-                          <div className="flex items-start gap-3">
-                            <div className="h-8 w-8 rounded-md bg-[#0a0a0a] flex items-center justify-center flex-shrink-0">
-                              <Zap className="h-4 w-4 text-[#f5c8c8]" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-[#0a0a0a] text-sm">If/Then Logic</h4>
-                              <p className="text-xs text-[#0a0a0a]/70 mt-1">
-                                Trigger actions based on answers
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Middle Panel - Workflow Builder */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
-                    {/* Form Sub-Header */}
-                    <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
-                      <div className="flex items-center justify-between gap-4 px-6 py-2">
-                        <div className="flex items-center gap-3">
-                          {/* Breadcrumb */}
-                          <div className="flex items-center gap-2 text-sm text-gray-400 mr-4">
-                            <NextLink href="/forms" className="hover:text-white transition-colors">
-                              Forms
-                            </NextLink>
-                            <ChevronRight className="h-4 w-4" />
-                            <span className="text-white">{formName || "New Form"}</span>
-                          </div>
-                          {/* Tabs */}
-                          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "workflow" | "distribution" | "reporting")} className="w-auto">
-                            <TabsList className="bg-[#1a1a1a]">
-                              <TabsTrigger value="builder">Builder</TabsTrigger>
-                              <TabsTrigger value="workflow">Workflow</TabsTrigger>
-                              <TabsTrigger value="distribution">Distribution</TabsTrigger>
-                              <TabsTrigger value="reporting">Reporting</TabsTrigger>
-                            </TabsList>
-                          </Tabs>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                            {formFields.length} Fields
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Workflow Content */}
-                    <ScrollArea className="flex-1">
-                      <div className="p-8">
-                        <div className="max-w-4xl mx-auto">
-                          <div className="mb-8">
-                            <h2 className="text-3xl font-bold text-white mb-2">Workflow Automation</h2>
-                            <p className="text-gray-400">
-                              Define follow-up actions for each form field. Click "+ Add Action" next to any field to create automated workflows.
-                            </p>
-                          </div>
-
-                          {formFields.length === 0 ? (
-                            <Card className="bg-[#1a1a1a] border-border/50 p-12 text-center">
-                              <Layers className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                              <h3 className="text-lg font-semibold text-white mb-2">No Fields Yet</h3>
-                              <p className="text-gray-400 mb-4">
-                                Create form fields in the Builder tab first, then come back here to add workflow actions.
-                              </p>
-                              <Button onClick={() => setActiveView("builder")} variant="outline">
-                                Go to Builder
-                              </Button>
-                            </Card>
-                          ) : (
-                            <div className="space-y-4">
-                              {formFields.map((field, index) => (
-                                <Card key={field.id} className="bg-[#1a1a1a] border-border/50 p-6 hover:border-white/20 transition-colors">
-                                  <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-3 mb-2">
-                                        <Badge variant="outline" className="text-xs">
-                                          Field {index + 1}
-                                        </Badge>
-                                        <h3 className="text-lg font-semibold text-white">{field.label}</h3>
-                                      </div>
-                                      <p className="text-sm text-gray-400 mb-4">
-                                        Type: <span className="text-gray-300">{field.type}</span>
-                                        {field.placeholder && (
-                                          <>
-                                            {" • "}
-                                            <span className="italic">{field.placeholder}</span>
-                                          </>
-                                        )}
-                                      </p>
-                                      
-                                      {/* Workflow Actions for this field */}
-                                      <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                                          <Zap className="h-4 w-4" />
-                                          <span>Workflow Actions</span>
-                                        </div>
-                                        
-                                        {/* Placeholder for actions - will be dynamic */}
-                                        <div className="bg-[#0a0a0a] rounded-lg p-4 border border-dashed border-gray-700">
-                                          <p className="text-sm text-gray-500 text-center">
-                                            No actions yet. Click "+ Add Action" to create a workflow.
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    
-                                    <Button size="sm" variant="outline" className="flex-shrink-0">
-                                      <Plus className="h-4 w-4 mr-2" />
-                                      Add Action
-                                    </Button>
-                                  </div>
-                                </Card>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </ScrollArea>
-                  </div>
-                </>
-              )}
-
               {activeView === "distribution" && (
                 <>
                   {/* Left Panel - Distribution Options */}
@@ -1421,10 +1223,9 @@ export default function FormsPage() {
                             <span className="text-white">{formName || "New Form"}</span>
                           </div>
                           {/* Tabs */}
-                          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "workflow" | "distribution" | "reporting")} className="w-auto">
+                          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution" | "reporting")} className="w-auto">
                             <TabsList className="bg-[#1a1a1a]">
                               <TabsTrigger value="builder">Builder</TabsTrigger>
-                              <TabsTrigger value="workflow">Workflow</TabsTrigger>
                               <TabsTrigger value="distribution">Distribution</TabsTrigger>
                               <TabsTrigger value="reporting">Reporting</TabsTrigger>
                             </TabsList>
@@ -1986,10 +1787,9 @@ export default function FormsPage() {
                             <span className="text-white">{formName || "New Form"}</span>
                           </div>
                           {/* Tabs */}
-                          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "workflow" | "distribution" | "reporting")} className="w-auto">
+                          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "builder" | "distribution" | "reporting")} className="w-auto">
                             <TabsList className="bg-[#1a1a1a]">
                               <TabsTrigger value="builder">Builder</TabsTrigger>
-                              <TabsTrigger value="workflow">Workflow</TabsTrigger>
                               <TabsTrigger value="distribution">Distribution</TabsTrigger>
                               <TabsTrigger value="reporting">Reporting</TabsTrigger>
                             </TabsList>

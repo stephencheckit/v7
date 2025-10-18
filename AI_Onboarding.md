@@ -3,56 +3,6 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **Deploy #16 - October 18, 2025**
-**Commits:** `289422c` - feat: Workflow tab with automation builder  
-**Status:** ✅ DEPLOYED to GitHub & Vercel  
-**Branch:** `main`
-
-**What Was Deployed:**
-- ✅ **New Workflow Tab**: Added between Builder and Distribution
-- ✅ **5 Workflow Action Types**:
-  - 🟢 Assign Task (assign follow-up task to person/team)
-  - 🔵 Assign Training (require training module completion)
-  - 🟣 Request Approval (require manager/lead approval)
-  - 🟡 Request Info (request document/photo/video upload)
-  - 🔴 If/Then Logic (trigger actions based on answers)
-- ✅ **Visual Form Field Display**: Shows all form fields from Builder
-- ✅ **Action Placeholders**: Each field has "+ Add Action" button
-- ✅ **Empty State**: Directs users to Builder if no fields exist
-- ✅ **Clean Visual Design**: Color-coded cards, simple interface
-
-**Purpose:**
-Enable food safety operations leaders to define follow-up actions for each form field:
-- Assign corrective tasks when violations are found
-- Require training when knowledge gaps are identified
-- Request manager approval for critical items
-- Collect supporting documentation (photos, videos)
-- Create conditional workflows based on answers
-
-**How It Works:**
-1. Build form in Builder tab (e.g., food safety inspection checklist)
-2. Switch to Workflow tab
-3. See all form fields displayed
-4. Click "+ Add Action" next to any field
-5. Choose workflow action type (Task, Training, Approval, etc.)
-6. Define action details (who, what, when, due date)
-7. Actions trigger automatically based on form responses
-
-**Example Use Case:**
-- Field: "Are proper uniforms being worn?" (Yes/No)
-- If "No" → Assign Task: "Correct uniform violation" to Manager, Due: Same day
-- If "No" → Assign Training: "Uniform Standards Training" to Employee
-- If "No" → Request Info: "Photo of violation" for documentation
-
-**Current State:**
-- Foundation complete with visual interface
-- Action buttons in place (interactivity to be added in next phase)
-- Supports any number of fields from the form
-
-**Files Changed:** 1 file (+204 lines in app/forms/builder/page.tsx)
-
----
-
 ### **Deploy #15 - October 18, 2025**
 **Commits:** `bd8d89f` - feat: Clean chat UX  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
