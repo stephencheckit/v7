@@ -3,6 +3,46 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #18 - October 19, 2025**
+**Commits:** `7620b50` - Revert light mode implementation - back to dark mode only  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Reverted Light Mode**: Removed full light/dark theme toggle implementation
+- ✅ **Back to Dark Mode**: Restored dark mode as the only theme
+- ✅ **Removed Theme Toggle**: Deleted ThemeProvider context and theme toggle button
+- ✅ **Restored Dark Class**: Layout now uses hardcoded `dark` class on HTML element
+- ✅ **Kept Semantic Colors**: Maintained improved CSS variable usage (bg-card, text-foreground, border-border, etc.)
+
+**Why Reverted:**
+User feedback indicated light mode was "not working great" and requested to return to regular dark mode only.
+
+**What Was Kept:**
+- Improved semantic color classes across all components
+- Better use of Tailwind CSS variables (text-foreground, bg-card, border-border, text-muted-foreground)
+- Consistent theming approach (even though only dark mode)
+
+**Files Deleted:**
+- `contexts/theme-context.tsx`
+- `components/theme-toggle.tsx`
+
+**Files Modified:**
+- `app/layout.tsx` (removed ThemeProvider, restored dark class)
+- `app/globals.css` (restored dark as default color-scheme)
+- `components/app-header.tsx` (removed theme toggle button)
+- `app/dashboard/page.tsx` (kept semantic color improvements)
+- `app/forms/page.tsx` (kept semantic color improvements)
+- `components/ai-chat-panel.tsx` (kept semantic color improvements)
+
+**Current State:**
+- ✅ Application back to dark mode only
+- ✅ No light mode toggle in UI
+- ✅ All pages using consistent dark theme
+- ✅ Improved color variable usage maintained
+
+---
+
 ### **Deploy #17 - October 18, 2025**
 **Commits:** `cba60bd` - feat: Video AI Form Filler with OpenAI Vision  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
