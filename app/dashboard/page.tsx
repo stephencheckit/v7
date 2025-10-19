@@ -69,7 +69,7 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight text-foreground">
+                <h1 className="text-4xl font-bold tracking-tight text-white">
                   Dashboard
                 </h1>
                 <p className="text-muted-foreground mt-1">
@@ -146,7 +146,7 @@ export default function DashboardPage() {
             {/* Charts Grid */}
             <div className="grid gap-6 md:grid-cols-2">
               {/* Compliance Distribution Pie Chart */}
-              <Card className="shadow-lg border-border">
+              <Card className="shadow-lg border-gray-200">
                 <CardHeader>
                   <CardTitle>Compliance Distribution</CardTitle>
                   <CardDescription>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Temperature Monitoring */}
-              <Card className="shadow-lg border-border">
+              <Card className="shadow-lg border-gray-200">
                 <CardHeader>
                   <CardTitle>Temperature Monitoring</CardTitle>
                   <CardDescription>
@@ -212,7 +212,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Violation Trends */}
-              <Card className="shadow-lg border-border">
+              <Card className="shadow-lg border-gray-200">
                 <CardHeader>
                   <CardTitle>Violation Trends</CardTitle>
                   <CardDescription>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Inspection Scores */}
-              <Card className="shadow-lg border-border">
+              <Card className="shadow-lg border-gray-200">
                 <CardHeader>
                   <CardTitle>Location Inspection Scores</CardTitle>
                   <CardDescription>
@@ -257,7 +257,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Live Feed */}
-            <Card className="shadow-lg border-border">
+            <Card className="shadow-lg border-gray-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="relative flex h-3 w-3">

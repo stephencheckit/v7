@@ -60,14 +60,14 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background shadow-sm px-6">
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-6">
         <SidebarTrigger>
           <Menu className="h-5 w-5" />
         </SidebarTrigger>
 
         <div className="flex flex-1 items-center gap-4">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
               placeholder="Search..."
@@ -75,7 +75,7 @@ export function AppHeader() {
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
               autoComplete="off"
-              className="w-full pl-9 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-[#c4dfc4]/50"
+              className="w-full pl-9 bg-[#1a1a1a] border-white/10 text-gray-100 placeholder:text-gray-500 focus-visible:ring-[#c4dfc4]/50"
             />
           </div>
         </div>
@@ -103,9 +103,9 @@ export function AppHeader() {
 
       {/* Search Results Modal */}
       <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-card border-border/50 text-card-foreground">
+        <DialogContent className="sm:max-w-[500px] bg-[#1a1a1a] border-border/50 text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Search Results</DialogTitle>
+            <DialogTitle className="text-gray-100">Search Results</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
             {searchResults.length > 0 ? (
@@ -114,20 +114,20 @@ export function AppHeader() {
                   <button
                     key={item.id}
                     onClick={() => handleResultClick(item.link)}
-                    className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left group"
+                    className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-[#2a2a2a] transition-colors text-left group"
                   >
                     <div className="h-10 w-10 rounded-lg bg-[#c4dfc4]/20 flex items-center justify-center shrink-0 group-hover:bg-[#c4dfc4]/30 transition-colors">
                       <item.icon className="h-5 w-5 text-[#c4dfc4]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-foreground">{item.title}</div>
-                      <div className="text-sm text-muted-foreground">{item.description}</div>
+                      <div className="font-medium text-gray-100">{item.title}</div>
+                      <div className="text-sm text-gray-400">{item.description}</div>
                     </div>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-gray-400">
                 <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No results found for &quot;{searchQuery}&quot;</p>
               </div>

@@ -95,14 +95,14 @@ export default function FormsPage() {
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <h1 className="text-4xl font-bold tracking-tight text-foreground">
+                <h1 className="text-4xl font-bold tracking-tight text-white">
                   Forms
                 </h1>
                 <Button
                   onClick={handleCreateNew}
                   size="sm"
                   variant="outline"
-                  className="text-foreground hover:bg-gradient-to-r hover:from-[#c4dfc4] hover:to-[#c8e0f5] hover:text-[#0a0a0a] border-foreground/20 hover:border-[#c8e0f5] transition-all"
+                  className="text-white hover:bg-gradient-to-r hover:from-[#c4dfc4] hover:to-[#c8e0f5] hover:text-[#0a0a0a] border-white hover:border-[#c8e0f5] transition-all"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create New
@@ -163,38 +163,38 @@ export default function FormsPage() {
             </div>
 
             {/* Forms Table */}
-            <Card className="shadow-lg border-border">
+            <Card className="shadow-lg border-gray-200">
               <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4 text-foreground">All Forms</h2>
+                <h2 className="text-xl font-semibold mb-4 text-white">All Forms</h2>
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-border hover:bg-transparent">
-                      <TableHead className="text-muted-foreground">Form Name</TableHead>
-                      <TableHead className="text-muted-foreground">Questions</TableHead>
-                      <TableHead className="text-muted-foreground">Responses</TableHead>
-                      <TableHead className="text-muted-foreground">Field Types</TableHead>
-                      <TableHead className="text-muted-foreground">Schedule</TableHead>
-                      <TableHead className="text-muted-foreground">Created By</TableHead>
-                      <TableHead className="text-muted-foreground">Last Used</TableHead>
-                      <TableHead className="text-muted-foreground">Status</TableHead>
-                      <TableHead className="text-right text-muted-foreground">Actions</TableHead>
+                    <TableRow className="border-gray-700 hover:bg-transparent">
+                      <TableHead className="text-gray-400">Form Name</TableHead>
+                      <TableHead className="text-gray-400">Questions</TableHead>
+                      <TableHead className="text-gray-400">Responses</TableHead>
+                      <TableHead className="text-gray-400">Field Types</TableHead>
+                      <TableHead className="text-gray-400">Schedule</TableHead>
+                      <TableHead className="text-gray-400">Created By</TableHead>
+                      <TableHead className="text-gray-400">Last Used</TableHead>
+                      <TableHead className="text-gray-400">Status</TableHead>
+                      <TableHead className="text-right text-gray-400">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {forms.map((form) => (
                       <TableRow 
                         key={form.id} 
-                        className="border-border hover:bg-muted/50 cursor-pointer"
+                        className="border-gray-700 hover:bg-gray-800/50 cursor-pointer"
                         onClick={() => handleViewForm(form.id)}
                       >
-                        <TableCell className="font-medium text-foreground">{form.name}</TableCell>
-                        <TableCell className="text-foreground">
+                        <TableCell className="font-medium text-white">{form.name}</TableCell>
+                        <TableCell className="text-gray-300">
                           <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <FileText className="h-4 w-4 text-gray-400" />
                             {form.questions}
                           </div>
                         </TableCell>
-                        <TableCell className="text-foreground">
+                        <TableCell className="text-gray-300">
                           {form.responses.toLocaleString()}
                         </TableCell>
                         <TableCell>
@@ -203,7 +203,7 @@ export default function FormsPage() {
                               <Badge
                                 key={idx}
                                 variant="outline"
-                                className="text-xs"
+                                className="text-xs bg-gray-800 text-gray-300 border-gray-600"
                               >
                                 {type}
                               </Badge>
@@ -211,28 +211,28 @@ export default function FormsPage() {
                             {form.types.length > 2 && (
                               <Badge
                                 variant="outline"
-                                className="text-xs"
+                                className="text-xs bg-gray-800 text-gray-300 border-gray-600"
                               >
                                 +{form.types.length - 2}
                               </Badge>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-foreground">
+                        <TableCell className="text-gray-300">
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <Calendar className="h-4 w-4 text-gray-400" />
                             {form.schedule}
                           </div>
                         </TableCell>
-                        <TableCell className="text-foreground">{form.createdBy}</TableCell>
-                        <TableCell className="text-foreground">{form.lastUsed}</TableCell>
+                        <TableCell className="text-gray-300">{form.createdBy}</TableCell>
+                        <TableCell className="text-gray-300">{form.lastUsed}</TableCell>
                         <TableCell>
                           <Badge
                             variant={form.status === "Active" ? "default" : "secondary"}
                             className={
                               form.status === "Active"
                                 ? "bg-[#c4dfc4] text-[#0a0a0a]"
-                                : ""
+                                : "bg-gray-700 text-gray-300"
                             }
                           >
                             {form.status}

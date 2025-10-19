@@ -1087,8 +1087,8 @@ Please extract and build the form now.`;
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
                     <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
                   </div>
-                  <Card className="flex-1 p-3 bg-card border-border shadow-sm">
-                    <p className="text-xs text-card-foreground mb-2">
+                  <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
+                    <p className="text-xs text-gray-800 mb-2">
                       {currentPage === 'reporting'
                         ? "📊 Hi! I'm your AI assistant. I can help analyze data and generate insights for your reports."
                         : currentPage === 'distribution'
@@ -1101,7 +1101,7 @@ Please extract and build the form now.`;
                         <Badge
                           key={idx}
                           onClick={() => handleSuggestedPrompt(prompt)}
-                          className="cursor-pointer bg-muted text-muted-foreground hover:bg-muted/80 border-0 text-xs"
+                          className="cursor-pointer bg-gray-100 text-gray-700 hover:bg-gray-200 border-0 text-xs"
                         >
                           {prompt}
                         </Badge>
@@ -1125,11 +1125,11 @@ Please extract and build the form now.`;
                   <Card
                     className={`p-3 shadow-sm ${
                       message.role === "user"
-                        ? "max-w-[85%] bg-card border-0"
-                        : "flex-1 bg-card border-border"
+                        ? "max-w-[85%] bg-white border-0"
+                        : "flex-1 bg-white border-gray-200"
                     }`}
                   >
-                    <p className="text-xs text-card-foreground whitespace-pre-wrap">
+                    <p className="text-xs text-gray-800 whitespace-pre-wrap">
                       {message.role === "assistant" 
                         ? cleanMessageForDisplay(message.content)
                         : message.content
@@ -1137,8 +1137,8 @@ Please extract and build the form now.`;
                     </p>
                   </Card>
                   {message.role === "user" && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <span className="text-xs font-medium text-muted-foreground">U</span>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
+                      <span className="text-xs font-medium text-gray-700">U</span>
                     </div>
                   )}
                 </div>
@@ -1150,8 +1150,8 @@ Please extract and build the form now.`;
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
                     <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
                   </div>
-                  <Card className="flex-1 p-3 bg-card border-border shadow-sm">
-                    <p className="text-xs text-muted-foreground">Thinking...</p>
+                  <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
+                    <p className="text-xs text-gray-500">Thinking...</p>
                   </Card>
                 </div>
               )}
@@ -1185,7 +1185,7 @@ Please extract and build the form now.`;
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isLoading || isParsingFile}
                     size="icon"
-                    className="bg-card/80 border border-border text-foreground hover:bg-card shrink-0"
+                    className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
                     title="Upload Excel file"
                   >
                     {isParsingFile && !uploadedImage ? (
@@ -1199,7 +1199,7 @@ Please extract and build the form now.`;
                     onClick={() => imageInputRef.current?.click()}
                     disabled={isLoading || isParsingFile}
                     size="icon"
-                    className="bg-card/80 border border-border text-foreground hover:bg-card shrink-0"
+                    className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
                     title="Upload image of form"
                   >
                     {isParsingFile && uploadedImage ? (
@@ -1220,7 +1220,7 @@ Please extract and build the form now.`;
                   : "Describe your form or upload Excel..."
                 }
                 disabled={isLoading || isParsingFile}
-                className="flex-1 bg-card/80 border-border text-sm text-card-foreground placeholder:text-muted-foreground"
+                className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
               />
               <Button
                 type="submit"
