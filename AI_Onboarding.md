@@ -4,42 +4,46 @@
 *Most recent deployments listed first*
 
 ### **Deploy #18 - October 19, 2025**
-**Commits:** `7620b50` - Revert light mode implementation - back to dark mode only  
+**Commits:** `7620b50`, `7b62ca4`, `ac83ae2` - Complete revert to original dark mode  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
 **Branch:** `main`
 
 **What Was Deployed:**
 - ✅ **Reverted Light Mode**: Removed full light/dark theme toggle implementation
-- ✅ **Back to Dark Mode**: Restored dark mode as the only theme
+- ✅ **Back to Original Dark Mode**: Restored all original hardcoded dark colors
 - ✅ **Removed Theme Toggle**: Deleted ThemeProvider context and theme toggle button
 - ✅ **Restored Dark Class**: Layout now uses hardcoded `dark` class on HTML element
-- ✅ **Kept Semantic Colors**: Maintained improved CSS variable usage (bg-card, text-foreground, border-border, etc.)
+- ✅ **Reverted All CSS Variables**: Replaced semantic colors (bg-card, text-foreground) with original hardcoded values
 
 **Why Reverted:**
-User feedback indicated light mode was "not working great" and requested to return to regular dark mode only.
+User feedback indicated light mode was "not working great" and requested to return to regular dark mode only. Subsequent request to "revert back some more" led to complete restoration of all original hardcoded dark colors.
 
-**What Was Kept:**
-- Improved semantic color classes across all components
-- Better use of Tailwind CSS variables (text-foreground, bg-card, border-border, text-muted-foreground)
-- Consistent theming approach (even though only dark mode)
+**What Was Reverted:**
+- All theme-aware CSS variables → hardcoded colors (gray-*, white, #hex)
+- `bg-card` → `bg-white` or `bg-[#1a1a1a]`
+- `text-foreground` → `text-white` or `text-gray-*`
+- `border-border` → `border-gray-200` or `border-gray-700`
+- `text-muted-foreground` → `text-gray-400` or `text-gray-500`
 
 **Files Deleted:**
 - `contexts/theme-context.tsx`
 - `components/theme-toggle.tsx`
 
-**Files Modified:**
-- `app/layout.tsx` (removed ThemeProvider, restored dark class)
-- `app/globals.css` (restored dark as default color-scheme)
-- `components/app-header.tsx` (removed theme toggle button)
-- `app/dashboard/page.tsx` (kept semantic color improvements)
-- `app/forms/page.tsx` (kept semantic color improvements)
-- `components/ai-chat-panel.tsx` (kept semantic color improvements)
+**Files Modified (3 Commits):**
+1. **Commit `7620b50`**: Initial revert - removed ThemeProvider, restored dark class
+2. **Commit `7b62ca4`**: Updated AI_Onboarding.md
+3. **Commit `ac83ae2`**: Complete revert - restored ALL original hardcoded dark colors
+   - `components/app-header.tsx` (gradient bg, gray search input, gray modal)
+   - `app/dashboard/page.tsx` (white title, gray-200 borders)
+   - `app/forms/page.tsx` (white title/button, gray table colors)
+   - `components/ai-chat-panel.tsx` (white cards, gray text, white/gray inputs)
 
 **Current State:**
-- ✅ Application back to dark mode only
+- ✅ Application back to 100% original dark mode
 - ✅ No light mode toggle in UI
-- ✅ All pages using consistent dark theme
-- ✅ Improved color variable usage maintained
+- ✅ All hardcoded dark colors restored
+- ✅ No CSS variable theming - pure hardcoded values
+- ✅ Exact same appearance as before light mode experiment
 
 ---
 
