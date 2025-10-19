@@ -262,8 +262,9 @@ Please extract and build the form now.`;
     // Clean up extra whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
     
-    // If the message is now too short or empty after cleaning, provide a better default
-    if (cleaned.length < 10) {
+    // Only return fallback if message is completely empty
+    // Allow short conversational responses through
+    if (cleaned.length === 0 || cleaned === '') {
       return '✓ Done';
     }
     
