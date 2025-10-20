@@ -3,6 +3,10 @@
  * Analyzes video snapshots and attempts to answer form questions
  */
 
+// Configure function timeout for AI operations
+export const runtime = 'edge';
+export const maxDuration = 25;
+
 export async function POST(req: Request) {
   try {
     const { image, questions } = await req.json();

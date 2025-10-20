@@ -11,6 +11,10 @@ import { getAvailableWidgets, getWidgetDefinition } from '@/lib/widgets/registry
 import type { FormSchema, FormField } from '@/lib/types/form-schema';
 import { nanoid } from 'nanoid';
 
+// Configure function timeout for AI operations
+export const runtime = 'edge';
+export const maxDuration = 25;
+
 // Form state stored in memory (will move to database in Phase 3)
 let currentForm: FormSchema | null = null;
 

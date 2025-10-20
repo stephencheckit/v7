@@ -5,6 +5,10 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Configure function timeout - Edge Runtime gets 25s on free tier, 30s on Pro
+export const runtime = 'edge';
+export const maxDuration = 25; // seconds
+
 export async function POST(req: NextRequest) {
   try {
     console.log('[Analyze Menu] Starting analysis...');
@@ -90,7 +94,7 @@ Extract ALL items from ALL 7 days. Expect 70-120+ total items.`;
     console.log('[Analyze Menu] Calling Claude Vision API...');
     const response = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
-      max_tokens: 16000, // High limit for large menus
+      max_tokens: 8192, // Optimized for speed while handling large menus
       messages: [
         {
           role: 'user',

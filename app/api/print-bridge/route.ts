@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Configure function timeout for print job polling
+export const maxDuration = 60; // Needs longer timeout for print job waiting
+
 // In-memory job queue (in production, use Redis or database)
 const printQueue: Map<string, {
   id: string;
