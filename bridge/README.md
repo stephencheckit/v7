@@ -27,11 +27,29 @@ npm start
 
 ### Setup
 
-1. **Connect your Zebra printer** via USB
+#### 🔌 USB Connection
+1. **Plug in your Zebra printer** via USB cable
 2. **Turn on the printer**
 3. **Run the bridge** using one of the commands above
 4. **Go to V7 Settings** → Printer Setup
 5. **Click "Test Print"** to verify connection
+
+#### 📶 WiFi Connection (Recommended)
+1. **Connect printer to WiFi**:
+   - Press and hold the Feed button for 2 seconds
+   - Print the network configuration label
+   - Use Zebra Setup Utilities app OR printer control panel to connect to WiFi
+   - Note the printer's IP address from the printed label
+
+2. **Add printer to your computer**:
+   - **macOS**: System Settings → Printers & Scanners → Click "+" → Select your ZD421
+   - **Windows**: Settings → Devices → Printers & Scanners → Add a printer
+
+3. **Run the bridge** using one of the commands above
+4. **Go to V7 Settings** → Printer Setup
+5. **Click "Test Print"** to verify connection
+
+> 💡 **WiFi Benefits**: Printer can be anywhere in your facility, bridge can run on any device on the network
 
 ### Status Indicators
 
@@ -43,16 +61,18 @@ npm start
 ### Requirements
 
 - **Node.js** 14 or higher ([Download](https://nodejs.org))
-- **Zebra ZD421** printer connected via USB
+- **Zebra ZD421** printer with USB, WiFi, or Bluetooth
 - **macOS, Windows, or Linux**
 
 ### Troubleshooting
 
 **"No Zebra printer found"**
 - Ensure printer is powered on
-- Check USB cable connection
-- On Mac: System Settings → Printers & Scanners (should show Zebra)
-- On Windows: Devices & Printers (should show Zebra)
+- **USB**: Check USB cable connection
+- **WiFi**: Ensure printer and computer are on the same network
+- **macOS**: System Settings → Printers & Scanners (should show Zebra)
+- **Windows**: Devices & Printers (should show Zebra)
+- Try running: `lpstat -p | grep -i zebra` (should show your printer)
 
 **"Connection failed"**
 - Check your internet connection

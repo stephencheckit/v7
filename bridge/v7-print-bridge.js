@@ -72,7 +72,10 @@ class V7PrintBridge {
       const { stdout } = await execAsync('lpstat -p | grep -i zebra');
       
       if (!stdout) {
-        console.warn('⚠️  No Zebra printer found. Please ensure your printer is connected.');
+        console.warn('\n⚠️  No Zebra printer found.\n');
+        console.warn('Setup Instructions:');
+        console.warn('  USB: Plug in your printer via USB cable');
+        console.warn('  WiFi: Connect printer to WiFi, then add in System Settings > Printers\n');
         return null;
       }
 
@@ -80,7 +83,11 @@ class V7PrintBridge {
       const match = stdout.match(/printer\s+(\S+)/);
       if (match) {
         this.printerName = match[1];
+        
+        // Detect connection type
+        const connectionType = await this.detectConnectionType(this.printerName);
         console.log(`✅ Found printer: ${this.printerName}`);
+        console.log(`   Connection: ${connectionType}`);
         return this.printerName;
       }
       
@@ -88,6 +95,24 @@ class V7PrintBridge {
     } catch (error) {
       console.error('❌ Error detecting printer:', error.message);
       return null;
+    }
+  }
+
+  async detectConnectionType(printerName) {
+    try {
+      const { stdout } = await execAsync(`lpstat -v | grep ${printerName}`);
+      
+      if (stdout.includes('usb://')) {
+        return '🔌 USB';
+      } else if (stdout.includes('ipp://') || stdout.includes('socket://') || stdout.includes('lpd://')) {
+        return '📶 WiFi/Network';
+      } else if (stdout.includes('bluetooth://')) {
+        return '🔵 Bluetooth';
+      }
+      
+      return 'Unknown';
+    } catch (error) {
+      return 'Unknown';
     }
   }
 
