@@ -29,8 +29,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
     }
 
-    const mediaType = `image/${matches[1]}`;
+    const imageFormat = matches[1].toLowerCase();
     const base64Data = matches[2];
+    
+    // Validate and type the media type
+    const validMediaTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
+    const mediaType = `image/${imageFormat}` as typeof validMediaTypes[number];
+    
+    if (!validMediaTypes.includes(mediaType)) {
+      return NextResponse.json({ 
+        error: `Unsupported image format: ${imageFormat}. Please use jpeg, png, gif, or webp.` 
+      }, { status: 400 });
+    }
     
     console.log('[Analyze Menu] Image type:', mediaType);
     console.log('[Analyze Menu] Base64 length:', base64Data.length);
