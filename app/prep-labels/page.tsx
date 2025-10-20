@@ -91,45 +91,14 @@ export default function PrepLabelsPage() {
       const expirationDate = new Date(now);
       expirationDate.setDate(expirationDate.getDate() + item.shelfLifeDays);
 
-      // Generate ZPL for food label
-      const zpl = `
-^XA
-~TA000
-~JSN
-^LT0
-^MNW
-^MTD
-^PON
-^PMN
-^LH0,0
-^JMA
-^PR6,6
-~SD15
-^JUS
-^LRN
-^CI27
-
-^FO50,40^A0N,50,50^FD${item.name.toUpperCase()}^FS
-^FO50,100^GB700,3,3^FS
-
-^FO50,130^A0N,30,30^FDIngredients:^FS
-^FO50,170^A0N,25,25^FD${item.ingredients.join(', ')}^FS
-
-^FO50,230^A0N,35,35^FDPrepared: ${now.toLocaleDateString()}^FS
-^FO50,280^A0N,45,45^FDUSE BY: ${expirationDate.toLocaleDateString()}^FS
-
-^FO50,350^A0N,25,25^FDPrep by: ${menuData?.uploadedBy || 'Chef'}^FS
-
-${item.allergens.length > 0 ? `^FO50,390^A0N,25,25^FDAllergens: ${item.allergens.join(', ')}^FS` : ''}
-
-^FO50,440^BY2^BCN,80,Y,N,N^FD${item.id}^FS
-
-^PQ1,0,1,Y
-^XZ
-      `.trim();
-
-      // Send to printer
-      await zebraPrinter.sendZPL(zpl);
+      // Print using optimized 2.25" x 1.25" label template
+      await zebraPrinter.printFoodPrepLabel({
+        name: item.name,
+        prepDate: now.toLocaleDateString(),
+        expirationDate: expirationDate.toLocaleDateString(),
+        ingredients: item.ingredients,
+        allergens: item.allergens,
+      });
 
       // Update print count
       setMenuData(prev => {

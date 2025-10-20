@@ -22,6 +22,14 @@ export interface TemperatureLabelData {
   location?: string;
 }
 
+export interface FoodPrepLabelData {
+  name: string;
+  prepDate: string;
+  expirationDate: string;
+  ingredients?: string[];
+  allergens?: string[];
+}
+
 export class ZebraPrintClient {
   private static instance: ZebraPrintClient;
   private selectedDevice: any = null;
@@ -86,65 +94,30 @@ export class ZebraPrintClient {
   }
 
   /**
-   * Send raw ZPL to default printer
+   * Send raw ZPL to printer via server-side API
+   * This bypasses Browser Print and uses the system's print command directly
    */
   async sendZPL(zpl: string): Promise<void> {
     try {
-      const printers = await this.getAvailablePrinters();
-      
-      if (printers.length === 0) {
-        throw new Error(
-          'No printers found. Please ensure your printer is connected and Browser Print is running.'
-        );
-      }
+      console.log('Sending ZPL via API route...');
+      console.log('ZPL preview:', zpl.substring(0, 100) + '...');
 
-      const printer = printers[0];
-      console.log('Sending ZPL to:', printer.name);
-      console.log('Printer object:', printer);
-
-      // Step 1: Set the device by sending the full printer object
-      const setDeviceResponse = await fetch('http://localhost:9100/default', {
+      const response = await fetch('/api/print-label', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(printer),
+        body: JSON.stringify({ zpl }),
       });
 
-      const setDeviceResult = await setDeviceResponse.text();
-      console.log('Set device response:', setDeviceResponse.status, setDeviceResult);
+      const data = await response.json();
 
-      if (!setDeviceResponse.ok) {
-        console.warn('Set device failed:', setDeviceResult);
+      if (!response.ok) {
+        throw new Error(data.error || 'Print failed');
       }
 
-      // Give it a moment to register
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      console.log('Now sending ZPL to write endpoint...');
-
-      // Step 2: Write ZPL to the device
-      const writeResponse = await fetch('http://localhost:9100/write', {
-        method: 'POST',
-        mode: 'no-cors', // Handle CORS restrictions
-        body: zpl,
-      });
-
-      console.log('Write response status:', writeResponse.status);
-      console.log('Write response type:', writeResponse.type);
-
-      // With no-cors mode, we can't read the response, but status 0 means it was sent
-      if (writeResponse.type === 'opaque') {
-        console.log('✅ Label sent to printer (opaque response - request was sent)');
-      } else {
-        const writeResult = await writeResponse.text();
-        console.log('Write response:', writeResult);
-        
-        if (!writeResponse.ok) {
-          throw new Error(`Print failed (${writeResponse.status}): ${writeResult}`);
-        }
-        console.log('✅ Label sent to printer successfully');
-      }
+      console.log('✅ Label sent to printer successfully');
+      console.log('Print result:', data.message);
     } catch (error) {
       console.error('Print error:', error);
       throw error;
@@ -153,40 +126,20 @@ export class ZebraPrintClient {
 
   /**
    * Print inspection label (Pass/Fail)
+   * Optimized for 2.25" x 1.25" label (457 x 254 dots at 203dpi)
    */
   async printInspectionLabel(data: InspectionLabelData): Promise<void> {
     const zpl = `
 ^XA
-~TA000
-~JSN
-^LT0
-^MNW
-^MTD
-^PON
-^PMN
-^LH0,0
-^JMA
-^PR6,6
-~SD15
-^JUS
-^LRN
-^CI27
-^PA0,1,1,0
-
-^FO50,60^A0N,40,40^FD${data.formName}^FS
-^FO50,80^GB700,2,2^FS
-
-^FO50,130^A0N,35,35^FDDate: ${data.date} ${data.time}^FS
-^FO50,180^A0N,35,35^FDInspector: ${data.submittedBy}^FS
-
-^FO50,260^A0N,60,60^FD${data.status === 'PASS' ? 'STATUS: PASS' : 'STATUS: FAIL'}^FS
-
-^FO50,320^BQN,2,4^FDQA,${data.reportUrl}^FS
-^FO300,340^A0N,25,25^FDScan for full report^FS
-
-${data.location ? `^FO50,550^A0N,25,25^FDLocation: ${data.location}^FS` : ''}
-
-^PQ1,0,1,Y
+^PW457
+^LL254
+^FO10,10^A0N,25,25^FD${data.formName}^FS
+^FO10,35^GB437,1,1^FS
+^FO10,45^A0N,20,20^FD${data.date} ${data.time}^FS
+^FO10,70^A0N,20,20^FD${data.submittedBy}^FS
+^FO10,100^A0N,35,35^FD${data.status === 'PASS' ? 'PASS' : 'FAIL'}^FS
+^FO320,80^BQN,2,3^FDQA,${data.reportUrl}^FS
+${data.location ? `^FO10,145^A0N,18,18^FD${data.location}^FS` : ''}
 ^XZ
     `.trim();
 
@@ -195,38 +148,55 @@ ${data.location ? `^FO50,550^A0N,25,25^FDLocation: ${data.location}^FS` : ''}
 
   /**
    * Print temperature log label
+   * Optimized for 2.25" x 1.25" label (457 x 254 dots at 203dpi)
    */
   async printTemperatureLabel(data: TemperatureLabelData): Promise<void> {
     const zpl = `
 ^XA
-~TA000
-~JSN
-^LT0
-^MNW
-^MTD
-^PON
-^PMN
-^LH0,0
-^JMA
-^PR6,6
-~SD15
-^JUS
-^LRN
-^CI27
+^PW457
+^LL254
+^FO10,10^A0N,22,22^FDTEMP LOG^FS
+^FO10,32^GB437,1,1^FS
+^FO10,40^A0N,20,20^FD${data.equipment}^FS
+^FO10,90^A0N,60,60^FD${data.temperature}°${data.unit}^FS
+^FO10,160^A0N,18,18^FD${data.time}^FS
+^FO10,185^A0N,18,18^FDBy: ${data.inspector}^FS
+${data.location ? `^FO10,210^A0N,16,16^FD${data.location}^FS` : ''}
+^XZ
+    `.trim();
 
-^FO50,50^A0N,40,40^FDTEMPERATURE LOG^FS
-^FO50,70^GB700,2,2^FS
+    await this.sendZPL(zpl);
+  }
 
-^FO50,120^A0N,35,35^FD${data.equipment}^FS
+  /**
+   * Print food prep label
+   * Optimized for 2.25" x 1.25" label (457 x 254 dots at 203dpi)
+   */
+  async printFoodPrepLabel(data: FoodPrepLabelData): Promise<void> {
+    // Truncate name if too long
+    const name = data.name.length > 22 ? data.name.substring(0, 22) : data.name;
+    
+    // Format allergens
+    const allergenText = data.allergens && data.allergens.length > 0
+      ? data.allergens.slice(0, 3).join(', ')
+      : 'None';
 
-^FO50,200^A0N,80,80^FD${data.temperature}${data.unit === 'F' ? '°F' : '°C'}^FS
-
-^FO50,300^A0N,30,30^FDTime: ${data.time}^FS
-^FO50,340^A0N,30,30^FDBy: ${data.inspector}^FS
-
-${data.location ? `^FO50,380^A0N,25,25^FD${data.location}^FS` : ''}
-
-^PQ1,0,1,Y
+    const zpl = `
+^XA
+^PW457
+^LL254
+^FO10,10^A0N,28,28^FD${name}^FS
+^FO10,42^GB437,1,1^FS
+^FO10,50^A0N,20,20^FDPrep: ${data.prepDate}^FS
+^FO10,75^A0N,20,20^FDEXP: ${data.expirationDate}^FS
+^FO10,105^GB437,1,1^FS
+${data.ingredients && data.ingredients.length > 0 
+  ? `^FO10,115^A0N,16,16^FD${data.ingredients.slice(0, 3).join(', ').substring(0, 40)}^FS` 
+  : ''}
+^FO10,140^A0N,16,16^FDAllergens: ${allergenText}^FS
+^FO10,165^GB437,1,1^FS
+^FO10,175^A0N,14,14^FDV7 Form Builder^FS
+^FO300,175^A0N,14,14^FD${new Date().toLocaleDateString()}^FS
 ^XZ
     `.trim();
 
@@ -235,14 +205,20 @@ ${data.location ? `^FO50,380^A0N,25,25^FD${data.location}^FS` : ''}
 
   /**
    * Test print - simple hello world label
+   * Optimized for 2.25" x 1.25" label (457 x 254 dots at 203dpi)
    */
   async testPrint(): Promise<void> {
     const zpl = `
 ^XA
-^FO50,50^A0N,50,50^FDTEST PRINT^FS
-^FO50,120^A0N,35,35^FDV7 Form Builder^FS
-^FO50,170^A0N,30,30^FD${new Date().toLocaleString()}^FS
-^FO50,220^A0N,25,25^FDPrinter: Working!^FS
+^PW457
+^LL254
+^FO10,10^A0N,35,35^FDTEST PRINT^FS
+^FO10,55^A0N,25,25^FDV7 Form Builder^FS
+^FO10,90^A0N,20,20^FD${new Date().toLocaleString()}^FS
+^FO10,120^A0N,22,22^FDPrinter: Working!^FS
+^FO10,150^GB437,1,1^FS
+^FO10,160^A0N,18,18^FDLabel: 2.25" x 1.25"^FS
+^FO10,185^A0N,18,18^FD203 DPI ZPL Mode^FS
 ^XZ
     `.trim();
 
