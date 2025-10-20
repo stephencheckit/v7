@@ -94,30 +94,32 @@ export class ZebraPrintClient {
   }
 
   /**
-   * Send raw ZPL to printer via server-side API
-   * This bypasses Browser Print and uses the system's print command directly
+   * Send raw ZPL to printer via V7 Print Bridge
+   * Requires customer to have V7 Print Bridge installed and running
    */
   async sendZPL(zpl: string): Promise<void> {
     try {
-      console.log('Sending ZPL via API route...');
+      console.log('Sending ZPL via V7 Print Bridge...');
       console.log('ZPL preview:', zpl.substring(0, 100) + '...');
 
-      const response = await fetch('/api/print-label', {
+      const response = await fetch('/api/print-bridge', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ zpl }),
+        body: JSON.stringify({ 
+          action: 'submit',
+          zpl 
+        }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!data.success) {
         throw new Error(data.error || 'Print failed');
       }
 
       console.log('✅ Label sent to printer successfully');
-      console.log('Print result:', data.message);
     } catch (error) {
       console.error('Print error:', error);
       throw error;

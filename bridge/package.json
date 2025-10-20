@@ -1,0 +1,26 @@
+{
+  "name": "v7-print-bridge",
+  "version": "1.0.0",
+  "description": "V7 Print Bridge - Connect your local Zebra printer to V7 cloud",
+  "main": "v7-print-bridge.js",
+  "bin": {
+    "v7-print-bridge": "./v7-print-bridge.js"
+  },
+  "scripts": {
+    "start": "node v7-print-bridge.js"
+  },
+  "keywords": [
+    "zebra",
+    "printer",
+    "v7",
+    "label",
+    "zpl"
+  ],
+  "author": "V7 Form Builder",
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+
