@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
+  Tag,
   Settings,
 } from "lucide-react";
 import {
@@ -30,6 +31,11 @@ const menuItems = [
     title: "Forms",
     url: "/forms",
     icon: FileText,
+  },
+  {
+    title: "Prep Labels",
+    url: "/prep-labels",
+    icon: Tag,
   },
   {
     title: "Settings",
