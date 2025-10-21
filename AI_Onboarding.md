@@ -3,6 +3,39 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #20 - October 21, 2025**
+**Commits:** `0b99be2` - UI fixes: hide Checkit v7 text on mobile menu, add white border to form create button  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Mobile Menu Fix**: Hidden "Checkit v7" text on mobile devices (shows only on desktop)
+- ✅ **Form Button Enhancement**: Added prominent white border (2px) to "+ Create New" button on /forms page
+
+**Problem Solved:**
+- "Checkit v7" branding text was showing in mobile menu sidebar, taking up valuable space
+- Create New form button on /forms page needed more visual prominence with a clearer border
+
+**Solution:**
+1. **Mobile Sidebar**: Added `hidden md:inline` classes to "Checkit v7" span in `app-sidebar.tsx`
+   - Mobile (< md): Shows only logo icon
+   - Desktop (>= md): Shows logo icon + "Checkit v7" text
+2. **Form Button Border**: Changed from `border-white` to `border-2 border-white` in `app/forms/page.tsx`
+   - More prominent 2px white outline
+   - Better visual hierarchy
+   - Easier to spot on dark background
+
+**Files Changed:** 2 files
+- `components/app-sidebar.tsx` - Mobile menu text hiding
+- `app/forms/page.tsx` - Button border enhancement
+
+**Impact:**
+- Better mobile UX with cleaner sidebar (no text overflow)
+- Improved visual prominence of primary action button
+- Cleaner, more focused mobile navigation
+
+---
+
 ### **Deploy #19 - October 20, 2025**
 **Commits:** `27ec918` - Fix Vercel deployment configuration  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
