@@ -77,7 +77,8 @@ export default function HomePage() {
               <EmailCapture 
                 size="default"
                 placeholder="Your email"
-                buttonText="Join Waitlist"
+                buttonText="Sign up"
+                layout="vertical"
               />
             </div>
           </div>
@@ -118,7 +119,7 @@ export default function HomePage() {
                   <EmailCapture 
                     size="large"
                     placeholder="Enter your work email"
-                    buttonText="Get Early Access"
+                    buttonText="Sign up"
                   />
                 </div>
               </div>
@@ -454,8 +455,9 @@ export default function HomePage() {
                     <EmailCapture 
                       size="default"
                       placeholder="Your email"
-                      buttonText="Join Waitlist"
+                      buttonText="Sign up"
                       variant="outline"
+                      layout="vertical"
                     />
                   </div>
 
@@ -496,7 +498,8 @@ export default function HomePage() {
                     <EmailCapture 
                       size="default"
                       placeholder="Your email"
-                      buttonText="Get Early Access"
+                      buttonText="Sign up"
+                      layout="vertical"
                     />
                   </div>
 
@@ -555,7 +558,7 @@ export default function HomePage() {
                   <EmailCapture 
                     size="large"
                     placeholder="Enter your work email"
-                    buttonText="Get Early Access"
+                    buttonText="Sign up"
                   />
                 </div>
 

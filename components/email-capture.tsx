@@ -9,13 +9,15 @@ interface EmailCaptureProps {
   placeholder?: string;
   buttonText?: string;
   variant?: "default" | "outline";
+  layout?: "auto" | "vertical";
 }
 
 export function EmailCapture({ 
   size = "default", 
   placeholder = "Enter your email",
   buttonText = "Get Early Access",
-  variant = "default"
+  variant = "default",
+  layout = "auto"
 }: EmailCaptureProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -153,7 +155,7 @@ export function EmailCapture({
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="w-full">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className={`flex ${layout === "vertical" ? "flex-col" : "flex-col sm:flex-row"} gap-3`}>
           <input
             type="email"
             value={email}
@@ -169,7 +171,7 @@ export function EmailCapture({
           <Button
             type="submit"
             disabled={status === "loading" || isSubmitted}
-            className={`${buttonClasses} ${isLarge ? 'px-8 py-4 text-lg' : 'px-6 py-3'} font-bold rounded-lg shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap`}
+            className={`${buttonClasses} ${isLarge ? 'px-8 py-4 text-lg' : 'px-6 py-3'} ${layout === "vertical" ? "w-full" : ""} font-bold rounded-lg shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap`}
           >
             {isSubmitted ? "Joined!" : status === "loading" ? "Submitting..." : buttonText}
             {status !== "loading" && !isSubmitted && <ArrowRight className="ml-2 w-5 h-5" />}
