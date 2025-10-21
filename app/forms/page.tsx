@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2 } from "lucide-react";
+import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface SimpleForm {
@@ -231,6 +231,15 @@ export default function FormsPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => handleViewForm(form.id)}
+                                  className="text-white hover:text-white hover:bg-white/10"
+                                >
+                                  <Pencil className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => handleShare(form.id)}
                                   className="text-[#c4dfc4] hover:text-[#c4dfc4] hover:bg-[#c4dfc4]/10"
                                 >
@@ -245,15 +254,6 @@ export default function FormsPage() {
                                 >
                                   <BarChart3 className="h-4 w-4 mr-1" />
                                   Report
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleViewForm(form.id)}
-                                  className="text-gray-300 hover:text-white hover:bg-white/10"
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Edit
                                 </Button>
                               </div>
                             </TableCell>

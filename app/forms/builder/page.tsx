@@ -46,6 +46,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import NextLink from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DndContext,
@@ -655,6 +656,11 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
 }
 
 export default function FormsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editingFormId = searchParams.get('id');
+  const isEditMode = !!editingFormId;
+  
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [activeView, setActiveView] = useState<"builder" | "distribution" | "reporting">("builder");
@@ -699,6 +705,37 @@ export default function FormsPage() {
   const [saving, setSaving] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [loadingForm, setLoadingForm] = useState(false);
+  
+  // Load form data when in edit mode
+  React_useEffect(() => {
+    if (isEditMode && editingFormId) {
+      loadFormForEditing(editingFormId);
+    }
+  }, [isEditMode, editingFormId]);
+
+  async function loadFormForEditing(formId: string) {
+    setLoadingForm(true);
+    try {
+      const response = await fetch(`/api/forms/${formId}`);
+      if (!response.ok) {
+        alert('Failed to load form');
+        return;
+      }
+      const { form } = await response.json();
+      
+      // Populate state with existing form data
+      setFormName(form.title);
+      setFormDescription(form.description || 'Add a description for your form');
+      setFormFields(form.schema.fields || []);
+      setShareUrl(`${window.location.origin}/f/${form.id}`);
+    } catch (error) {
+      console.error('Error loading form:', error);
+      alert('Failed to load form');
+    } finally {
+      setLoadingForm(false);
+    }
+  }
   
   // Update report data when form fields change
   React_useEffect(() => {
@@ -900,9 +937,13 @@ export default function FormsPage() {
         })),
       };
 
+      // Determine endpoint and method based on edit mode
+      const endpoint = isEditMode ? `/api/forms/${editingFormId}` : '/api/forms';
+      const method = isEditMode ? 'PUT' : 'POST';
+
       // Save form to database
-      const response = await fetch('/api/forms', {
-        method: 'POST',
+      const response = await fetch(endpoint, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: formName,
@@ -917,8 +958,18 @@ export default function FormsPage() {
       }
 
       const data = await response.json();
-      setShareUrl(data.shareUrl);
-      setShowShareModal(true);
+      
+      // Show success message
+      const successMessage = isEditMode ? 'Form updated successfully!' : 'Form created!';
+      alert(successMessage);
+      
+      // Set share URL and show modal
+      if (data.shareUrl) {
+        setShareUrl(data.shareUrl);
+      }
+      if (!isEditMode) {
+        setShowShareModal(true);
+      }
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     } finally {
@@ -1011,26 +1062,36 @@ export default function FormsPage() {
                       >
                         Preview
                       </Button>
+                      {isEditMode && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="hover:bg-white/5" 
+                          onClick={() => router.push('/forms')}
+                        >
+                          Cancel
+                        </Button>
+                      )}
                       <Button 
                         size="sm" 
                         className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                         onClick={handleSaveAndShare}
-                        disabled={saving}
+                        disabled={saving || loadingForm}
                       >
                         {saving ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            Saving...
+                            {isEditMode ? 'Updating...' : 'Saving...'}
                           </>
                         ) : (
                           <>
                             <Share2 className="w-4 h-4 mr-2" />
-                            Save & Share
+                            {isEditMode ? 'Update Form' : 'Save & Share'}
                           </>
                         )}
                       </Button>
-                      <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
-                        Draft
+                      <Badge variant="secondary" className={isEditMode ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"}>
+                        {isEditMode ? 'Editing' : 'Draft'}
                       </Badge>
                     </div>
                   </div>
@@ -1038,6 +1099,14 @@ export default function FormsPage() {
                 
                 {/* Editor Content */}
                 <div className="flex-1 overflow-y-auto">
+                  {loadingForm ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#c4dfc4]" />
+                        <p className="text-gray-400">Loading form...</p>
+                      </div>
+                    </div>
+                  ) : (
                   <ScrollArea className="h-full p-8">
               <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
                 {/* Form Name and Description */}
@@ -1170,6 +1239,7 @@ export default function FormsPage() {
                 )}
               </Card>
                   </ScrollArea>
+                  )}
                 </div>
               </div>
                 </>
