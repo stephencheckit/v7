@@ -691,6 +691,11 @@ export default function FormsPage() {
   const [activeWidget, setActiveWidget] = useState<any>(null);
   const [overId, setOverId] = useState<string | null>(null);
   
+  // Save & Share state
+  const [saving, setSaving] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  
   // Update report data when form fields change
   React_useEffect(() => {
     setReportData(prev => ({
@@ -869,6 +874,61 @@ export default function FormsPage() {
     window.open('/preview', '_blank');
   };
 
+  const handleSaveAndShare = async () => {
+    if (formFields.length === 0) {
+      alert('Please add at least one field to your form before sharing.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Build form schema
+      const schema = {
+        fields: formFields.map(field => ({
+          id: field.id,
+          type: field.type,
+          name: field.name || field.id,
+          label: field.label,
+          placeholder: field.placeholder || '',
+          required: field.required,
+          options: field.options || [],
+          description: field.description || '',
+        })),
+      };
+
+      // Save form to database
+      const response = await fetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formName,
+          description: formDescription,
+          schema,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save form');
+      }
+
+      const data = await response.json();
+      setShareUrl(data.shareUrl);
+      setShowShareModal(true);
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const copyShareUrl = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      alert('Share URL copied to clipboard!');
+    }
+  };
+
   return (
     <div className="flex h-screen">
       <AppLayout>
@@ -939,7 +999,32 @@ export default function FormsPage() {
                       </Tabs>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="hover:bg-white/5" onClick={handlePreview}>Preview</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="hover:bg-white/5" 
+                        onClick={handlePreview}
+                      >
+                        Preview
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                        onClick={handleSaveAndShare}
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Save & Share
+                          </>
+                        )}
+                      </Button>
                       <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
                         Draft
                       </Badge>
@@ -1927,6 +2012,49 @@ export default function FormsPage() {
             </Card>
           ) : null}
       </DragOverlay>
+
+      {/* Share Modal */}
+      {showShareModal && shareUrl && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowShareModal(false)}>
+          <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">Form Saved!</h2>
+              <p className="text-gray-400 mb-6">Share this link with anyone to collect responses:</p>
+              
+              <div className="flex gap-2 mb-6">
+                <Input
+                  value={shareUrl}
+                  readOnly
+                  className="bg-white/5 border-white/10 text-white font-mono text-sm"
+                />
+                <Button 
+                  onClick={copyShareUrl}
+                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(shareUrl, '_blank')}
+                  className="flex-1"
+                >
+                  Open Form
+                </Button>
+                <Button
+                  onClick={() => setShowShareModal(false)}
+                  className="flex-1 bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

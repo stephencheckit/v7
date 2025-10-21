@@ -1,0 +1,369 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+
+interface FormField {
+  id: string;
+  type: string;
+  name: string;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  options?: string[];
+}
+
+interface FormSchema {
+  fields: FormField[];
+}
+
+interface FormData {
+  id: string;
+  title: string;
+  description: string;
+  schema: FormSchema;
+}
+
+export default function PublicFormPage() {
+  const params = useParams();
+  const formId = params.id as string;
+
+  const [form, setForm] = useState<FormData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    loadForm();
+  }, [formId]);
+
+  const loadForm = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/forms/${formId}`);
+      
+      if (!response.ok) {
+        throw new Error('Form not found');
+      }
+
+      const data = await response.json();
+      setForm(data.form);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load form');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!form) return;
+
+    // Validate required fields
+    const missingFields = form.schema.fields
+      .filter(field => field.required && !formValues[field.name])
+      .map(field => field.label);
+
+    if (missingFields.length > 0) {
+      setError(`Please fill in required fields: ${missingFields.join(', ')}`);
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      const response = await fetch(`/api/forms/${formId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: formValues }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit form');
+      }
+
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit form');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleFieldChange = (fieldName: string, value: any) => {
+    setFormValues(prev => ({
+      ...prev,
+      [fieldName]: value,
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-[#c4dfc4] animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading form...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !form) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+        <Card className="bg-[#1a1a1a] border-red-500/30 p-8 max-w-md text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Form Not Found</h1>
+          <p className="text-gray-400">{error}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+        <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 max-w-md text-center">
+          <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">Thank You!</h1>
+          <p className="text-gray-400 mb-6">Your response has been submitted successfully.</p>
+          <Button
+            onClick={() => {
+              setSubmitted(false);
+              setFormValues({});
+            }}
+            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+          >
+            Submit Another Response
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] py-12 px-6">
+      <div className="max-w-2xl mx-auto">
+        <Card className="bg-[#1a1a1a] border-white/10 p-8">
+          {/* Form Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">{form?.title}</h1>
+            {form?.description && (
+              <p className="text-gray-400">{form.description}</p>
+            )}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {form?.schema.fields.map((field) => (
+              <div key={field.id}>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {field.label}
+                  {field.required && <span className="text-red-400 ml-1">*</span>}
+                </label>
+
+                {/* Text Input */}
+                {field.type === "text" && (
+                  <Input
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                )}
+
+                {/* Text Area */}
+                {field.type === "textarea" && (
+                  <textarea
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    rows={4}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#c4dfc4]"
+                  />
+                )}
+
+                {/* Email */}
+                {field.type === "email" && (
+                  <Input
+                    type="email"
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                )}
+
+                {/* Number */}
+                {field.type === "number" && (
+                  <Input
+                    type="number"
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                )}
+
+                {/* Phone */}
+                {field.type === "phone" && (
+                  <Input
+                    type="tel"
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                )}
+
+                {/* Date */}
+                {field.type === "date" && (
+                  <Input
+                    type="date"
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    required={field.required}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                )}
+
+                {/* Radio Buttons */}
+                {field.type === "radio" && field.options && (
+                  <div className="space-y-2">
+                    {field.options.map((option, index) => (
+                      <label key={index} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name={field.name}
+                          value={option}
+                          checked={formValues[field.name] === option}
+                          onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                          required={field.required}
+                          className="text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                        />
+                        <span className="text-gray-300">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* Checkboxes */}
+                {field.type === "checkbox" && field.options && (
+                  <div className="space-y-2">
+                    {field.options.map((option, index) => (
+                      <label key={index} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          value={option}
+                          checked={(formValues[field.name] || []).includes(option)}
+                          onChange={(e) => {
+                            const currentValues = formValues[field.name] || [];
+                            const newValues = e.target.checked
+                              ? [...currentValues, option]
+                              : currentValues.filter((v: string) => v !== option);
+                            handleFieldChange(field.name, newValues);
+                          }}
+                          className="text-[#c4dfc4] focus:ring-[#c4dfc4] rounded"
+                        />
+                        <span className="text-gray-300">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* Dropdown */}
+                {field.type === "dropdown" && field.options && (
+                  <select
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    required={field.required}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#c4dfc4]"
+                  >
+                    <option value="">Select an option...</option>
+                    {field.options.map((option, index) => (
+                      <option key={index} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Thumbs Up/Down */}
+                {field.type === "thumbs" && (
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange(field.name, "up")}
+                      className={`flex-1 py-3 rounded-lg border transition-colors ${
+                        formValues[field.name] === "up"
+                          ? "bg-[#c4dfc4]/20 border-[#c4dfc4] text-[#c4dfc4]"
+                          : "bg-white/5 border-white/10 text-gray-400 hover:border-[#c4dfc4]/50"
+                      }`}
+                    >
+                      👍 Yes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange(field.name, "down")}
+                      className={`flex-1 py-3 rounded-lg border transition-colors ${
+                        formValues[field.name] === "down"
+                          ? "bg-red-500/20 border-red-500 text-red-400"
+                          : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/50"
+                      }`}
+                    >
+                      👎 No
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Submit Button */}
+            <div className="pt-4">
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] font-semibold py-6 text-lg"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+
