@@ -3,6 +3,101 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #21 - October 21, 2025**
+**Commits:** `243e215` - Simple backend prototype - database persistence, shareable forms, submissions, and reporting  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Database Setup**: Created 3 tables (simple_forms, simple_submissions, simple_form_stats)
+- ✅ **Backend APIs**: 6 new endpoints for CRUD operations, submissions, and reporting
+- ✅ **Public Form Page**: `/f/[id]` - Anyone with link can fill out forms
+- ✅ **Report Page**: `/forms/[id]/report` - View all submissions and field statistics
+- ✅ **Save & Share**: Added button to form builder with modal and shareable URLs
+- ✅ **Forms List Enhancement**: Load from database, Share and Report buttons
+- ✅ **Short IDs**: 8-character form IDs (e.g., `abc12xyz`) using nanoid
+- ✅ **Auto Stats**: PostgreSQL triggers auto-update submission counts
+
+**Problem Solved:**
+- Forms were stored in memory only (lost on refresh)
+- No way to share forms with others
+- No submission storage or reporting
+- No persistent data across sessions
+
+**Solution:**
+Created a simple backend prototype with minimal complexity:
+
+1. **Database Tables** (Supabase):
+   ```sql
+   simple_forms (id TEXT, title, description, schema JSONB, timestamps)
+   simple_submissions (id UUID, form_id, data JSONB, submitted_at)
+   simple_form_stats (form_id, total_submissions, last_submission_at)
+   ```
+   - All tables PUBLIC (no RLS) for prototype simplicity
+   - Anyone can create/view/submit any form
+   - Auto-updating stats via PostgreSQL triggers
+
+2. **API Routes Created**:
+   - `POST /api/forms` - Create form, returns short ID + share URL
+   - `GET /api/forms` - List all forms with stats
+   - `GET /api/forms/[id]` - Get single form
+   - `PUT /api/forms/[id]` - Update form
+   - `DELETE /api/forms/[id]` - Delete form
+   - `POST /api/forms/[id]/submit` - Submit response
+   - `GET /api/forms/[id]/submissions` - List submissions
+   - `GET /api/forms/[id]/report` - Aggregated report data
+
+3. **Frontend Pages**:
+   - `/f/[id]` - Public form fill page (clean, mobile-responsive)
+   - `/forms/[id]/report` - Report view with stats and visualizations
+   - Updated form builder with "Save & Share" button
+   - Updated forms list to load from database
+
+**Technical Details:**
+- Short IDs: `nanoid(8)` generates URL-safe 8-char IDs
+- Share URLs: `https://checkitv7.com/f/abc12xyz`
+- Field aggregation: Response counts and percentages per field
+- Visual progress bars for choice field responses
+- Real-time submission counts on forms list
+- Copy-to-clipboard for share URLs
+
+**Use Case Flows:**
+1. **Create & Share**: Build form → Click "Save & Share" → Get URL → Share with anyone
+2. **Fill Out Form**: Visit `/f/abc12xyz` → Fill fields → Submit → Success message
+3. **View Report**: Go to `/forms` → Click "Report" → See all submissions and stats
+
+**Files Created:** 9 new files
+- `supabase/migrations/20251021170000_create_simple_schema.sql`
+- `app/api/forms/route.ts`
+- `app/api/forms/[id]/route.ts`
+- `app/api/forms/[id]/submit/route.ts`
+- `app/api/forms/[id]/submissions/route.ts`
+- `app/api/forms/[id]/report/route.ts`
+- `app/f/[id]/page.tsx`
+- `app/forms/[id]/report/page.tsx`
+- `SIMPLE_BACKEND_IMPLEMENTATION.md`
+
+**Files Modified:** 2 files
+- `app/forms/builder/page.tsx` - Added Save & Share functionality
+- `app/forms/page.tsx` - Load from DB, Share/Report buttons
+
+**Current State:**
+- ✅ Forms persist in database
+- ✅ Shareable form URLs working
+- ✅ Public form submission working
+- ✅ Report generation working
+- ✅ All features tested and functional
+- ✅ No authentication (intentionally simple for prototype)
+
+**Next Steps:**
+- Test in production with real forms
+- Monitor submission performance
+- Consider adding authentication layer
+- Add form editing capability
+- Add export functionality (PDF/Excel)
+
+---
+
 ### **Deploy #20 - October 21, 2025**
 **Commits:** `0b99be2` - UI fixes: hide Checkit v7 text on mobile menu, add white border to form create button  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
