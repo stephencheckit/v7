@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
   Type,
   AlignLeft,
@@ -40,6 +41,9 @@ import {
   ThumbsUp,
   Layers,
   ChevronRight,
+  Loader2,
+  X,
+  CheckCircle2,
 } from "lucide-react";
 import NextLink from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
