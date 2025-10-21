@@ -43,7 +43,7 @@ export async function POST(
 
     // Insert submission
     const { data: submission, error: submissionError } = await supabase
-      .from('simple_submissions')
+      .from('simple_form_submissions')
       .insert({
         form_id: formId,
         data: submissionData,

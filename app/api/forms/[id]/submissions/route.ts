@@ -37,7 +37,7 @@ export async function GET(
 
     // Get submissions
     const { data: submissions, error, count } = await supabase
-      .from('simple_submissions')
+      .from('simple_form_submissions')
       .select('*', { count: 'exact' })
       .eq('form_id', formId)
       .order('submitted_at', { ascending: false })

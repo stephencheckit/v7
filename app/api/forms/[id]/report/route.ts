@@ -38,7 +38,7 @@ export async function GET(
 
     // Get all submissions
     const { data: submissions, error: submissionsError } = await supabase
-      .from('simple_submissions')
+      .from('simple_form_submissions')
       .select('*')
       .eq('form_id', formId)
       .order('submitted_at', { ascending: false });
