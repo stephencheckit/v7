@@ -3,6 +3,76 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #24 - October 22, 2025**
+**Commit:** `eebabd1` - Fix Vercel build error with useSearchParams  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Suspense Boundary**: Wrapped `useSearchParams()` in Suspense for Next.js 15 compatibility
+- ✅ **Vercel Build Fix**: Resolved prerender error that was blocking production builds
+- ✅ **Loading State**: Added loading fallback UI while form builder initializes
+
+**Problem Solved:**
+- Vercel builds were failing with: "useSearchParams() should be wrapped in a suspense boundary"
+- Next.js 15 requires all client components using `useSearchParams()` to be wrapped in Suspense
+- Build was exiting with code 1 on Vercel production deploys
+
+**Root Cause:**
+```
+⨯ useSearchParams() should be wrapped in a suspense boundary at page "/forms/builder"
+Export encountered an error on /forms/builder/page: /forms/builder
+```
+
+Next.js 15 enforces stricter SSR requirements. When using `useSearchParams()` in client components, it needs a Suspense boundary to handle the dynamic nature of URL parameters during server-side rendering.
+
+**Solution:**
+1. **Import Suspense** from React
+2. **Rename Component**: `FormsPage` → `FormsPageContent` (internal)
+3. **Wrap in Suspense**: New `FormsPage` default export wraps content in `<Suspense>`
+4. **Loading Fallback**: Shows "Loading form builder..." while initializing
+
+**Code Changes:**
+```tsx
+// Before (❌ Error)
+export default function FormsPage() {
+  const searchParams = useSearchParams(); // ERROR!
+  ...
+}
+
+// After (✅ Fixed)
+function FormsPageContent() {
+  const searchParams = useSearchParams(); // OK inside Suspense
+  ...
+}
+
+export default function FormsPage() {
+  return (
+    <Suspense fallback={<div>Loading form builder...</div>}>
+      <FormsPageContent />
+    </Suspense>
+  );
+}
+```
+
+**Files Changed:** 1 file
+- `app/forms/builder/page.tsx` - Added Suspense boundary wrapper
+
+**Current State:**
+- ✅ Vercel builds successful
+- ✅ No prerender errors
+- ✅ Form builder page loads correctly
+- ✅ Search params work as expected
+- ✅ Loading state shows briefly on initial load
+
+**Impact:**
+- Vercel deploys no longer fail
+- Production builds complete successfully
+- Better UX with loading state
+- Next.js 15 best practices enforced
+
+---
+
 ### **Deploy #23 - October 22, 2025**
 **Commit:** `a52d4da` - Fix Excel upload JSON parsing error  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
