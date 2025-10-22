@@ -7,31 +7,30 @@ const supabase = createClient(
 );
 
 /**
- * GET /api/forms/:id - Get form by ID
- * Returns: { form }
+ * GET /api/forms/[id] - Get a single form by ID
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
-    const { data, error } = await supabase
+    const { data: form, error } = await supabase
       .from('simple_forms')
-      .select('*, simple_form_stats(*)')
+      .select('*')
       .eq('id', id)
       .single();
 
-    if (error || !data) {
+    if (error) {
+      console.error('Supabase error:', error);
       return NextResponse.json(
         { error: 'Form not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ form: data });
-
+    return NextResponse.json({ form });
   } catch (error: any) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -42,28 +41,32 @@ export async function GET(
 }
 
 /**
- * PUT /api/forms/:id - Update form
- * Body: { title?, description?, schema? }
- * Returns: { success, form }
+ * PUT /api/forms/[id] - Update a form
  */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const body = await req.json();
-    const updates: any = {
-      updated_at: new Date().toISOString(),
-    };
+    const { title, description, schema } = body;
 
-    if (body.title !== undefined) updates.title = body.title;
-    if (body.description !== undefined) updates.description = body.description;
-    if (body.schema !== undefined) updates.schema = body.schema;
+    if (!title || !schema) {
+      return NextResponse.json(
+        { error: 'Title and schema are required' },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
       .from('simple_forms')
-      .update(updates)
+      .update({
+        title,
+        description: description || '',
+        schema,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', id)
       .select()
       .single();
@@ -76,11 +79,17 @@ export async function PUT(
       );
     }
 
+    // Get app URL from environment or construct from request
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+    const shareUrl = `${appUrl}/f/${id}`;
+
     return NextResponse.json({
       success: true,
+      id,
+      shareUrl,
       form: data,
     });
-
   } catch (error: any) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -91,16 +100,16 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/forms/:id - Delete form
- * Returns: { success }
+ * DELETE /api/forms/[id] - Delete a form
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
+    // Delete the form (this will cascade delete submissions due to FK constraint)
     const { error } = await supabase
       .from('simple_forms')
       .delete()
@@ -114,8 +123,10 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ success: true });
-
+    return NextResponse.json({
+      success: true,
+      message: 'Form deleted successfully',
+    });
   } catch (error: any) {
     console.error('API error:', error);
     return NextResponse.json(
@@ -124,5 +135,3 @@ export async function DELETE(
     );
   }
 }
-
-

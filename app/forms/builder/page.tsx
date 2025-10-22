@@ -706,6 +706,8 @@ function FormsPageContent() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [loadingForm, setLoadingForm] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedFormId, setLastSavedFormId] = useState<string | null>(null);
   
   // Load form data when in edit mode
   React_useEffect(() => {
@@ -729,6 +731,8 @@ function FormsPageContent() {
       setFormDescription(form.description || 'Add a description for your form');
       setFormFields(form.schema.fields || []);
       setShareUrl(`${window.location.origin}/f/${form.id}`);
+      setLastSavedFormId(form.id);
+      setHasUnsavedChanges(false); // Reset unsaved changes when loading
     } catch (error) {
       console.error('Error loading form:', error);
       alert('Failed to load form');
@@ -744,6 +748,14 @@ function FormsPageContent() {
       availableFields: formFields,
     }));
   }, [formFields]);
+
+  // Track unsaved changes
+  React.useEffect(() => {
+    // Only mark as unsaved if form has been loaded or if creating new
+    if (!loadingForm && (formFields.length > 0 || formName !== 'Untitled Form' || formDescription !== 'Add a description for your form')) {
+      setHasUnsavedChanges(true);
+    }
+  }, [formFields, formName, formDescription, loadingForm]);
 
   // Update CSS variable for header margin
   React.useEffect(() => {
@@ -963,6 +975,10 @@ function FormsPageContent() {
       const successMessage = isEditMode ? 'Form updated successfully!' : 'Form created!';
       alert(successMessage);
       
+      // Reset unsaved changes and save form ID
+      setHasUnsavedChanges(false);
+      setLastSavedFormId(data.id || editingFormId);
+      
       // Set share URL and show modal
       if (data.shareUrl) {
         setShareUrl(data.shareUrl);
@@ -1062,37 +1078,49 @@ function FormsPageContent() {
                       >
                         Preview
                       </Button>
-                      {isEditMode && (
+                      {hasUnsavedChanges && (
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="hover:bg-white/5" 
-                          onClick={() => router.push('/forms')}
+                          onClick={() => {
+                            if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                              router.push('/forms');
+                            }
+                          }}
                         >
                           Cancel
                         </Button>
                       )}
-                      <Button 
-                        size="sm" 
-                        className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                        onClick={handleSaveAndShare}
-                        disabled={saving || loadingForm}
-                      >
-                        {saving ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            {isEditMode ? 'Updating...' : 'Saving...'}
-                          </>
-                        ) : (
-                          <>
-                            <Share2 className="w-4 h-4 mr-2" />
-                            {isEditMode ? 'Update Form' : 'Save & Share'}
-                          </>
-                        )}
-                      </Button>
-                      <Badge variant="secondary" className={isEditMode ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"}>
-                        {isEditMode ? 'Editing' : 'Draft'}
-                      </Badge>
+                      {hasUnsavedChanges || !lastSavedFormId ? (
+                        <Button 
+                          size="sm" 
+                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                          onClick={handleSaveAndShare}
+                          disabled={saving || loadingForm}
+                        >
+                          {saving ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="w-4 h-4 mr-2" />
+                              Save & Share
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                          onClick={() => setShowShareModal(true)}
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
