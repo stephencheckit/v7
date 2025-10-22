@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
+import { AIVisionAssistant } from "@/components/ai-vision-assistant";
 
 interface FormField {
   id: string;
@@ -40,6 +41,7 @@ export default function PublicFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [aiMetadata, setAiMetadata] = useState<Record<string, any>>({});
 
   useEffect(() => {
     loadForm();
@@ -86,7 +88,10 @@ export default function PublicFormPage() {
       const response = await fetch(`/api/forms/${formId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: formValues }),
+        body: JSON.stringify({ 
+          data: formValues,
+          ai_metadata: aiMetadata 
+        }),
       });
 
       if (!response.ok) {
@@ -107,6 +112,52 @@ export default function PublicFormPage() {
       ...prev,
       [fieldName]: value,
     }));
+  };
+
+  const handleAISuggestion = (fieldId: string, value: any, confidence: number, reasoning: string) => {
+    // Store metadata
+    setAiMetadata(prev => {
+      const existingMetadata = prev[fieldId];
+      
+      // Only update if new confidence is higher, or if no existing metadata
+      if (!existingMetadata || confidence > existingMetadata.confidence) {
+        return {
+          ...prev,
+          [fieldId]: {
+            value,
+            confidence,
+            reasoning,
+            timestamp: new Date().toISOString(),
+          }
+        };
+      }
+      
+      return prev;
+    });
+
+    // Auto-fill field if confidence >= 80% and field is empty
+    setFormValues(prev => {
+      // Find the field in the form schema
+      const field = form?.schema.fields.find(f => f.id === fieldId);
+      if (!field) return prev;
+
+      const fieldName = field.name;
+      const existingValue = prev[fieldName];
+      
+      // Only auto-fill if field is empty or if new confidence is significantly higher
+      const existingMetadata = aiMetadata[fieldId];
+      const shouldUpdate = !existingValue || 
+                          (existingMetadata && confidence > existingMetadata.confidence + 0.05);
+
+      if (confidence >= 0.80 && shouldUpdate) {
+        return {
+          ...prev,
+          [fieldName]: value
+        };
+      }
+      
+      return prev;
+    });
   };
 
   if (loading) {
@@ -165,6 +216,15 @@ export default function PublicFormPage() {
             )}
           </div>
 
+          {/* AI Vision Assistant */}
+          {form && (
+            <AIVisionAssistant
+              formSchema={form.schema}
+              currentValues={formValues}
+              onFieldSuggestion={handleAISuggestion}
+            />
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
@@ -176,9 +236,14 @@ export default function PublicFormPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {form?.schema.fields.map((field) => (
               <div key={field.id}>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  {field.label}
-                  {field.required && <span className="text-red-400 ml-1">*</span>}
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+                  <span>
+                    {field.label}
+                    {field.required && <span className="text-red-400 ml-1">*</span>}
+                  </span>
+                  {aiMetadata[field.id] && (
+                    <Check className="w-4 h-4 text-[#c4dfc4]" />
+                  )}
                 </label>
 
                 {/* Text Input */}

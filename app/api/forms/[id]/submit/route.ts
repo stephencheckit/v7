@@ -18,7 +18,7 @@ export async function POST(
   try {
     const { id: formId } = await params;
     const body = await req.json();
-    const { data: submissionData } = body;
+    const { data: submissionData, ai_metadata } = body;
 
     if (!submissionData || typeof submissionData !== 'object') {
       return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(
       .insert({
         form_id: formId,
         data: submissionData,
+        ai_metadata: ai_metadata || null,
       })
       .select()
       .single();
