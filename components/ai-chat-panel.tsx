@@ -417,14 +417,9 @@ Please extract and build the form now.`;
         }
         
         try {
-          // Try to fix common JSON issues before parsing
-          let cleanedJsonStr = jsonStr;
-          
-          // Fix unescaped quotes in strings (basic fix - look for \" that should be \")
-          // This is a simple heuristic - we'll try to fix obvious cases
           try {
-            // First, try to parse as-is
-            const formData = JSON.parse(cleanedJsonStr);
+            // Try to parse the JSON
+            const formData = JSON.parse(jsonStr);
             console.log('Parsed form data:', formData);
           
             // Convert field names to IDs and map to backend format

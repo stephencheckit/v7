@@ -174,7 +174,13 @@ export function generateFormPrompt(parsedData: ParsedExcelData): string {
   
   prompt += `**Questions Found (${parsedData.questions.length} total):**\n`;
   parsedData.questions.forEach((q, i) => {
-    prompt += `${i + 1}. ${q}\n`;
+    // Sanitize question text - replace straight quotes with single quotes
+    // This prevents JSON parsing issues when AI generates the form
+    const sanitizedQuestion = q
+      .replace(/"/g, "'")  // Replace double quotes with single quotes
+      .replace(/"/g, "'")  // Replace curly quotes
+      .replace(/"/g, "'"); // Replace other curly quotes
+    prompt += `${i + 1}. ${sanitizedQuestion}\n`;
   });
   
   prompt += `\nPlease:\n`;
