@@ -472,8 +472,8 @@ Please extract and build the form now.`;
           } catch (firstParseError) {
             // JSON parsing failed - try to log more details
             console.error('Failed to parse form JSON on first attempt:', firstParseError);
-            console.error('JSON string (first 500 chars):', cleanedJsonStr.substring(0, 500));
-            console.error('JSON string (last 500 chars):', cleanedJsonStr.substring(Math.max(0, cleanedJsonStr.length - 500)));
+            console.error('JSON string (first 500 chars):', jsonStr.substring(0, 500));
+            console.error('JSON string (last 500 chars):', jsonStr.substring(Math.max(0, jsonStr.length - 500)));
             
             // Show user-friendly error
             setMessages(prev => [...prev, {
