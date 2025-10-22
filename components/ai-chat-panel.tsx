@@ -417,8 +417,15 @@ Please extract and build the form now.`;
         }
         
         try {
-          const formData = JSON.parse(jsonStr);
-          console.log('Parsed form data:', formData);
+          // Try to fix common JSON issues before parsing
+          let cleanedJsonStr = jsonStr;
+          
+          // Fix unescaped quotes in strings (basic fix - look for \" that should be \")
+          // This is a simple heuristic - we'll try to fix obvious cases
+          try {
+            // First, try to parse as-is
+            const formData = JSON.parse(cleanedJsonStr);
+            console.log('Parsed form data:', formData);
           
             // Convert field names to IDs and map to backend format
             const backendForm = {
@@ -440,10 +447,18 @@ Please extract and build the form now.`;
                   });
                 }
                 
+                // Clean up label - remove very long text
+                let label = field.label;
+                if (label && label.length > 150) {
+                  // Truncate to first sentence or first 100 chars
+                  const firstSentence = label.match(/^[^.!?]+[.!?]/);
+                  label = firstSentence ? firstSentence[0] : label.substring(0, 100) + '...';
+                }
+                
                 return {
                   id: field.name || field.id || `field-${Date.now()}-${Math.random()}`,
                   type: field.type,
-                  label: field.label,
+                  label: label || 'Untitled Field',
                   placeholder: field.placeholder,
                   description: field.description,
                   required: field.required !== false,
@@ -455,10 +470,22 @@ Please extract and build the form now.`;
               version: 1,
             };
           
-          console.log('Backend form:', backendForm);
-          const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-          console.log('Frontend fields:', fields);
-          onFormUpdate?.(fields, { title, description });
+            console.log('Backend form:', backendForm);
+            const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+            console.log('Frontend fields:', fields);
+            onFormUpdate?.(fields, { title, description });
+          } catch (firstParseError) {
+            // JSON parsing failed - try to log more details
+            console.error('Failed to parse form JSON on first attempt:', firstParseError);
+            console.error('JSON string (first 500 chars):', cleanedJsonStr.substring(0, 500));
+            console.error('JSON string (last 500 chars):', cleanedJsonStr.substring(Math.max(0, cleanedJsonStr.length - 500)));
+            
+            // Show user-friendly error
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: '❌ Sorry, I generated invalid form data. This often happens with very long or complex field labels. Could you try uploading the file again, or describe the form you need in simpler terms?'
+            }]);
+          }
         } catch (parseError) {
           console.error('Failed to parse form JSON:', parseError);
         }

@@ -126,6 +126,17 @@ function extractQuestions(data: any[][]): string[] {
         continue;
       }
       
+      // Skip if too long (likely an example or instruction, not a question)
+      // Most real questions are under 150 characters
+      if (cellValue.length > 200) {
+        continue;
+      }
+      
+      // Skip if it looks like an example (contains keywords like "Example:", "e.g.", "For instance")
+      if (/^(example:|e\.g\.|for instance|note:|instruction:)/i.test(cellValue)) {
+        continue;
+      }
+      
       // Skip if it looks like a header/title (all caps, or contains day names)
       const lowerValue = cellValue.toLowerCase();
       const isDayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].some(day => lowerValue === day);

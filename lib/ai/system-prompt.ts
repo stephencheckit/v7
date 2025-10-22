@@ -254,12 +254,24 @@ OR
 OR
 { "title": "New Form Title", "description": "New description" }
 
-IMPORTANT NOTES:
+CRITICAL JSON RULES:
+- ALWAYS escape quotes within strings: use \" not "
+- If a field label contains quotes, escape them properly
+- If a field label is very long (>150 chars), simplify it to the key question
+- For binary/yes-no questions, use concise labels (remove examples and long explanations)
+- Field IDs use underscores, not hyphens (e.g., "hand_washing" not "hand-washing")
 - When updating a field, you MUST use the EXACT field ID from the current form
 - You can change the field type in UPDATE_FIELD (e.g., binary → multiple-choice)
 - When updating options, provide the COMPLETE new options array
 - For multiple-choice and multi-select fields, ALWAYS include "options" as a string array
-- Field IDs use underscores, not hyphens (e.g., "hand_washing" not "hand-washing")
+- NEVER include linebreaks or special characters in JSON strings without proper escaping
+
+EXAMPLE OF PROPER ESCAPING:
+BAD:  { "label": "Say "thank you" at the end" }
+GOOD: { "label": "Say \"thank you\" at the end" }
+
+BAD:  { "label": "I arrive at L102 bar on Dave Chapelle's show..." }
+GOOD: { "label": "Guest Experience Narrative" }
 
 ALWAYS use these exact formats with proper JSON. DO NOT just describe what you would do - OUTPUT THE JSON BLOCKS!
 
