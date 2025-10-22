@@ -47,7 +47,13 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error('Supabase error:', error);
       return NextResponse.json(
-        { error: 'Failed to create form' },
+        { 
+          error: 'Failed to create form',
+          details: error.message,
+          code: error.code,
+          hint: error.hint,
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
+        },
         { status: 500 }
       );
     }
