@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { StructuredData } from "@/components/structured-data";
-import { EmailCapture } from "@/components/email-capture";
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -73,13 +72,17 @@ export default function HomePage() {
               <NavItem label="Pricing" section="pricing" active={activeSection === "pricing"} onClick={() => scrollToSection("pricing")} />
             </ul>
 
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <EmailCapture 
-                size="default"
-                placeholder="Your email"
-                buttonText="Sign up"
-                layout="vertical"
-              />
+            <div className="mt-8 pt-8 border-t border-white/10 space-y-2">
+              <Link href="/signup">
+                <Button className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold">
+                  Sign Up
+                </Button>
+              </Link>
+              <Link href="/signin">
+                <Button variant="ghost" className="w-full text-gray-400 hover:text-white">
+                  Sign In
+                </Button>
+              </Link>
             </div>
           </div>
         </nav>
@@ -115,12 +118,18 @@ export default function HomePage() {
                   Built for multi-site operations. Designed for frontline simplicity.
                 </p>
 
-                <div className="max-w-2xl mx-auto">
-                  <EmailCapture 
-                    size="large"
-                    placeholder="Enter your work email"
-                    buttonText="Sign up"
-                  />
+                <div className="flex gap-4 justify-center">
+                  <Link href="/signup">
+                    <Button size="lg" className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold text-lg px-8 py-6">
+                      Get Started Free
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/signin">
+                    <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 text-lg px-8 py-6">
+                      Sign In
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </section>
@@ -452,13 +461,11 @@ export default function HomePage() {
                         <span>Basic reporting</span>
                       </li>
                     </ul>
-                    <EmailCapture 
-                      size="default"
-                      placeholder="Your email"
-                      buttonText="Sign up"
-                      variant="outline"
-                      layout="vertical"
-                    />
+                    <Link href="/signup">
+                      <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                        Get Started
+                      </Button>
+                    </Link>
                   </div>
 
                   {/* Pro Tier */}
@@ -495,12 +502,11 @@ export default function HomePage() {
                         <span>Priority support</span>
                       </li>
                     </ul>
-                    <EmailCapture 
-                      size="default"
-                      placeholder="Your email"
-                      buttonText="Sign up"
-                      layout="vertical"
-                    />
+                    <Link href="/signup">
+                      <Button className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold">
+                        Get Started
+                      </Button>
+                    </Link>
                   </div>
 
                   {/* Enterprise Tier */}
@@ -554,12 +560,18 @@ export default function HomePage() {
                   Join operations leaders who've eliminated paperwork, improved compliance, and saved millions.
                 </p>
 
-                <div className="max-w-2xl mx-auto mb-12">
-                  <EmailCapture 
-                    size="large"
-                    placeholder="Enter your work email"
-                    buttonText="Sign up"
-                  />
+                <div className="flex gap-4 justify-center mb-12">
+                  <Link href="/signup">
+                    <Button size="lg" className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold text-lg px-8 py-6">
+                      Get Started Free
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/signin">
+                    <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 text-lg px-8 py-6">
+                      Sign In
+                    </Button>
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-400">

@@ -708,6 +708,7 @@ function FormsPageContent() {
   const [loadingForm, setLoadingForm] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedFormId, setLastSavedFormId] = useState<string | null>(null);
+  const shouldAutoSave = React.useRef(false);
   
   // Load form data when in edit mode
   React_useEffect(() => {
@@ -756,6 +757,15 @@ function FormsPageContent() {
       setHasUnsavedChanges(true);
     }
   }, [formFields, formName, formDescription, loadingForm]);
+
+  // Auto-save when AI creates a form
+  React.useEffect(() => {
+    if (shouldAutoSave.current && formFields.length > 0 && formName && !saving && !loadingForm && !isEditMode) {
+      console.log('🤖 Auto-saving AI-generated form...');
+      shouldAutoSave.current = false; // Reset flag
+      handleSaveAndShare();
+    }
+  }, [formFields, formName, formDescription, saving, loadingForm, isEditMode]);
 
   // Update CSS variable for header margin
   React.useEffect(() => {
@@ -2083,6 +2093,11 @@ function FormsPageContent() {
           setFormFields(fields);
           if (formMeta?.title) setFormName(formMeta.title);
           if (formMeta?.description) setFormDescription(formMeta.description);
+          
+          // Mark for auto-save when AI creates a complete form
+          if (fields.length > 0 && formMeta?.title && !isEditMode) {
+            shouldAutoSave.current = true;
+          }
         }}
         onReportUpdate={(sections) => {
           setReportSections(sections);
