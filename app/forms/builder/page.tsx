@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect as React_useEffect } from "react";
+import { useState, useEffect as React_useEffect, Suspense } from "react";
 import * as React from "react";
 import { AppLayout } from "@/components/app-layout";
 import { AIChatPanel } from "@/components/ai-chat-panel";
@@ -655,7 +655,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
   );
 }
 
-export default function FormsPage() {
+function FormsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editingFormId = searchParams.get('id');
@@ -2208,5 +2208,17 @@ function DraggableWidget({ widget, onAddToTop }: { widget: any; onAddToTop: (wid
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function FormsPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen w-screen flex items-center justify-center bg-[#0a0a0a]">
+        <div className="text-gray-400">Loading form builder...</div>
+      </div>
+    }>
+      <FormsPageContent />
+    </Suspense>
   );
 }
