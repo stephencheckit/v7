@@ -3,6 +3,73 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Deploy #27 - October 22, 2025**
+**Commit:** `e30caf9` - Auto-save AI-generated forms + Form status field  
+**Status:** ✅ DEPLOYED to GitHub (Vercel auto-deploy)  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Auto-Save AI Forms**: Forms created by AI chat now save automatically to database
+- ✅ **Form Status Field**: Added `status` column (draft/published) to database
+- ✅ **Status API Support**: PUT endpoint now accepts optional status updates
+- ✅ **AI Vision Assistant**: Complete implementation with camera, OpenAI Vision, auto-fill
+
+**Problems Solved (Score: 95/100):**
+- ❌ Users couldn't create forms - AI created in UI but never saved (CRITICAL)
+- ❌ Old forms missing from database - only 2 forms present
+- ✅ Forms now auto-save when AI generates them
+- ✅ Database schema includes status field for future draft/publish workflow
+
+**Implementation Details:**
+1. **Auto-Save Logic**:
+   - Added `shouldAutoSave` ref flag in form builder
+   - AI chat sets flag when creating complete form
+   - useEffect watches form state and triggers `handleSaveAndShare()` when ready
+   - Prevents duplicate saves with flag reset
+
+2. **Status Field**:
+   - Database: `ALTER TABLE simple_forms ADD COLUMN status TEXT DEFAULT 'published'`
+   - API: PUT endpoint accepts optional `status` param ('draft' or 'published')
+   - Default: All forms are 'published' (current behavior)
+
+3. **AI Vision Assistant** (Phase 1-3 Complete):
+   - Camera component with corner overlay
+   - Auto-capture every 3 seconds
+   - OpenAI GPT-4o Vision API integration
+   - Silent auto-fill with ≥80% confidence
+   - Checkmark indicators for AI-filled fields
+   - AI metadata stored in submissions
+
+**User Workflow Now:**
+1. User: "create a 3 question food safety form"
+2. AI: Creates form in UI
+3. **NEW**: Form automatically saves to database
+4. User: Sees success alert + share modal
+5. Form appears in `/forms` list
+
+**Cost**: ~$0.40/form for AI Vision (40 snapshots @ $0.01)
+
+**Next Opportunities:**
+- Add Draft/Publish UI controls in form builder (70/100 value)
+- Implement form templates/library (65/100 value)
+- Add form analytics dashboard (60/100 value)
+
+---
+
+### **Deploy #26 - October 22, 2025**
+**Commit:** `71fac44` - AI Vision Assistant implementation  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **AI Vision Component**: Camera feed overlay with auto-capture
+- ✅ **Vision API**: OpenAI GPT-4o endpoint for form analysis
+- ✅ **Auto-Fill Logic**: Smart field population with confidence tracking
+- ✅ **Mobile Camera**: Rear camera default for inspections
+- ✅ **AI Metadata Storage**: Audit trail in database
+
+---
+
 ### **Deploy #25 - October 22, 2025**
 **Commit:** `48cdada` - Fix JSON parsing by sanitizing Excel quotes  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  

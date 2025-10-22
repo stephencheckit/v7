@@ -50,7 +50,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { title, description, schema } = body;
+    const { title, description, schema, status } = body;
 
     if (!title || !schema) {
       return NextResponse.json(
@@ -59,14 +59,22 @@ export async function PUT(
       );
     }
 
+    // Build update object
+    const updateData: any = {
+      title,
+      description: description || '',
+      schema,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only update status if provided and valid
+    if (status && (status === 'draft' || status === 'published')) {
+      updateData.status = status;
+    }
+
     const { data, error } = await supabase
       .from('simple_forms')
-      .update({
-        title,
-        description: description || '',
-        schema,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
