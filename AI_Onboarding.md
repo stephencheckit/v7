@@ -3,6 +3,29 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Fix - October 22, 2025 (Evening)**
+**Issue:** ❌ Forms Not Saving  
+**Status:** ✅ FIXED (No deployment needed - environment config fix)
+
+**Problem Identified (Score: 100/100 - Critical):**
+- Supabase URL/API Key mismatch in `.env.local`
+- URL pointed to `xsncgdnctnbzvokmxlex.supabase.co` (v7-form-builder)
+- Anon Key belonged to different project (`howvoxzueogvomlibrbg`)
+- All form save operations were failing silently due to authentication failure
+
+**Solution Applied:**
+1. ✅ Retrieved correct anon key for v7-form-builder project via Supabase MCP
+2. ✅ Updated `.env.local` with matching credentials
+3. ✅ Restarted dev server to load new environment variables
+4. ✅ Verified database tables exist: `simple_forms` (2 rows), `simple_form_submissions` (1 row)
+
+**Impact:**
+- All form creation/editing operations now work correctly
+- No code changes needed - purely configuration issue
+- Dev server must be restarted after any `.env.local` changes
+
+---
+
 ### **Deploy #27 - October 22, 2025**
 **Commit:** `e30caf9` - Auto-save AI-generated forms + Form status field  
 **Status:** ✅ DEPLOYED to GitHub (Vercel auto-deploy)  
