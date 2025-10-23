@@ -162,27 +162,27 @@ export default function FormsPage() {
   return (
     <>
       <div className="w-full h-full overflow-auto">
-        <div className="p-8">
-          <div className="mx-auto max-w-[1600px] space-y-8">
+        <div className="p-4 md:p-8">
+          <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
-                    <FileText className="h-10 w-10 text-[#c4dfc4]" />
+                  <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                    <FileText className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
                     Forms
                   </h1>
-                  <p className="text-muted-foreground mt-2">
+                  <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                     Manage and create inspection checklists and forms
                   </p>
                 </div>
                 <Button
                   onClick={handleCreateNew}
                   size="sm"
-                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shrink-0"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New
+                  <Plus className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">Create New</span>
                 </Button>
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function FormsPage() {
               </div>
             ) : (
               <>
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
                   <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
                     <div className="flex items-center gap-3">
                       <FileText className="h-8 w-8 text-[#0a0a0a]" />
@@ -244,8 +244,9 @@ export default function FormsPage() {
 
             {/* Forms Table */}
             <Card className="shadow-lg border-gray-200">
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4 text-white">All Forms</h2>
+              <div className="p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">All Forms</h2>
+                <div className="overflow-x-auto -mx-4 md:mx-0">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-gray-700 hover:bg-transparent">
@@ -348,7 +349,7 @@ export default function FormsPage() {
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
+                              <div className="flex items-center justify-end gap-1 md:gap-2">
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -356,10 +357,10 @@ export default function FormsPage() {
                                     e.stopPropagation();
                                     handleShare(form.id);
                                   }}
-                                  className="text-[#c4dfc4] hover:text-[#c4dfc4] hover:bg-[#c4dfc4]/10"
+                                  className="text-[#c4dfc4] hover:text-[#c4dfc4] hover:bg-[#c4dfc4]/10 px-2 md:px-3"
                                 >
-                                  <Share2 className="h-4 w-4 mr-1" />
-                                  Share
+                                  <Share2 className="h-4 w-4 md:mr-1" />
+                                  <span className="hidden md:inline">Share</span>
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -368,10 +369,10 @@ export default function FormsPage() {
                                     e.stopPropagation();
                                     handleReport(form.id);
                                   }}
-                                  className="text-[#c8e0f5] hover:text-[#c8e0f5] hover:bg-[#c8e0f5]/10"
+                                  className="text-[#c8e0f5] hover:text-[#c8e0f5] hover:bg-[#c8e0f5]/10 px-2 md:px-3"
                                 >
-                                  <BarChart3 className="h-4 w-4 mr-1" />
-                                  Report
+                                  <BarChart3 className="h-4 w-4 md:mr-1" />
+                                  <span className="hidden md:inline">Report</span>
                                 </Button>
                               </div>
                             </TableCell>
@@ -381,6 +382,7 @@ export default function FormsPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             </Card>
           </>

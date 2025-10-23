@@ -87,23 +87,24 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full h-full overflow-auto">
-        <div className="p-8">
-          <div className="mx-auto max-w-[1600px] space-y-8">
+        <div className="p-4 md:p-8">
+          <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
-                  <LayoutDashboard className="h-10 w-10 text-[#c4dfc4]" />
-                  Welcome back, Charlie
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                  <LayoutDashboard className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+                  <span className="hidden sm:inline">Welcome back, Charlie</span>
+                  <span className="sm:hidden">Dashboard</span>
                 </h1>
-                <p className="text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                   Here's your food safety overview for today
                 </p>
               </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
               {/* Sensor Alerts Card */}
               <Card className={`border-0 shadow-lg ${
                 sensorAlerts > 0
@@ -179,7 +180,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Charts Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
               {/* Compliance Distribution Pie Chart */}
               <Card className="shadow-lg border-gray-200">
                 <CardHeader>

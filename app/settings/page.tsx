@@ -65,20 +65,20 @@ export default function SettingsPage() {
   return (
     
       <div className="w-full h-full overflow-auto">
-        <div className="p-8">
-          <div className="mx-auto max-w-[1600px] space-y-8">
+        <div className="p-4 md:p-8">
+          <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
-                <SettingsIcon className="h-10 w-10 text-[#c4dfc4]" />
+              <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                <SettingsIcon className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
                 Settings
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                 Manage your organization, users, and application preferences
               </p>
             </div>
 
           <Tabs defaultValue="account" className="space-y-6">
-            <TabsList className="bg-[#1a1a1a]">
+            <TabsList className="bg-[#1a1a1a] flex flex-wrap md:flex-nowrap">
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="users">Users & Teams</TabsTrigger>
               <TabsTrigger value="locations">Locations</TabsTrigger>
@@ -147,18 +147,19 @@ export default function SettingsPage() {
             <TabsContent value="users" className="space-y-6">
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-white">Users</CardTitle>
                       <CardDescription>Manage user accounts and permissions</CardDescription>
                     </div>
-                    <Button size="sm" className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5]">
+                    <Button size="sm" className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] shrink-0">
                       <Plus className="h-4 w-4 mr-2" />
                       Add User
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
+                  <div className="overflow-x-auto -mx-4 md:mx-0">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-gray-700 hover:bg-transparent">
@@ -196,12 +197,13 @@ export default function SettingsPage() {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 </CardContent>
               </Card>
 
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-white">Teams</CardTitle>
                       <CardDescription>Organize users into teams and groups</CardDescription>
@@ -213,7 +215,7 @@ export default function SettingsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
                     {teams.map((team) => (
                       <Card key={team.id} className="bg-[#1a1a1a] border-gray-700">
                         <CardHeader>
@@ -247,12 +249,12 @@ export default function SettingsPage() {
             <TabsContent value="locations" className="space-y-6">
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-white">Locations</CardTitle>
                       <CardDescription>Manage your facilities and operational sites</CardDescription>
                     </div>
-                    <Button size="sm" className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5]">
+                    <Button size="sm" className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] shrink-0">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Location
                     </Button>
@@ -350,7 +352,7 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                     {integrations.map((integration) => (
                       <Card key={integration.id} className="bg-[#1a1a1a] border-gray-700">
                         <CardContent className="p-4">

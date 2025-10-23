@@ -164,10 +164,24 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-6">
-        <SidebarTrigger>
-          <Menu className="h-5 w-5" />
-        </SidebarTrigger>
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-4 md:px-6">
+        {/* Mobile: Logo on left */}
+        <Link href="/" className="flex md:hidden items-center gap-2">
+          <Image
+            src="/checkit-checkit.png"
+            alt="V7 Logo"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
+        </Link>
+
+        {/* Desktop: Sidebar trigger on left */}
+        <div className="hidden md:block">
+          <SidebarTrigger>
+            <Menu className="h-5 w-5" />
+          </SidebarTrigger>
+        </div>
 
         <div className="flex flex-1 items-center gap-4">
           <div className="relative w-full max-w-md">
@@ -184,10 +198,10 @@ export function AppHeader() {
           </div>
         </div>
 
-        {/* User Menu */}
+        {/* User Menu - Hidden on mobile */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10">
+            <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10 hidden md:flex">
               <Avatar className="h-8 w-8 bg-[#c4dfc4]">
                 <AvatarFallback className="bg-[#c4dfc4] text-[#0a0a0a] font-semibold text-sm">
                   CC
@@ -224,6 +238,13 @@ export function AppHeader() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Mobile: Hamburger menu on right */}
+        <div className="md:hidden">
+          <SidebarTrigger>
+            <Menu className="h-5 w-5" />
+          </SidebarTrigger>
+        </div>
       </header>
 
       {/* Search Results Modal */}

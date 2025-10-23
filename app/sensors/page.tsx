@@ -163,20 +163,20 @@ export default function SensorsPage() {
 
   return (
     <div className="w-full h-full overflow-auto">
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="mx-auto max-w-[2000px]">
           {/* Always show the sidebar + chart layout */}
           <>
             {/* Compact Header - Single Row */}
-            <div className="mb-6 flex items-center gap-6">
+            <div className="mb-4 md:mb-6 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-6">
               {/* Title */}
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Thermometer className="h-6 w-6 text-[#c4dfc4]" />
+              <h1 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
+                <Thermometer className="h-5 w-5 md:h-6 md:w-6 text-[#c4dfc4]" />
                 Sensors Dashboard
               </h1>
               
               {/* Right Side Controls */}
-              <div className="ml-auto flex items-center gap-4">
+              <div className="w-full md:w-auto md:ml-auto flex flex-wrap items-center gap-2 md:gap-4">
                 {/* Temp Unit Toggle */}
                 <TempUnitToggle value={tempUnit} onChange={handleUnitChange} />
                 
@@ -206,7 +206,7 @@ export default function SensorsPage() {
                       if (sensor) setSelectedSensor(sensor);
                     }}
                   >
-                    <SelectTrigger className="w-[280px] bg-[#1a1a1a] border-gray-700">
+                    <SelectTrigger className="w-full md:w-[280px] bg-[#1a1a1a] border-gray-700">
                       <SelectValue placeholder="Select a sensor..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -222,9 +222,9 @@ export default function SensorsPage() {
             </div>
 
               {/* Main Layout: Sidebar (Stats) + Content (Sensors) */}
-              <div className="flex gap-6">
+              <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
                 {/* Left Sidebar - Stats & Alerts */}
-                <div className="w-[280px] flex-shrink-0 space-y-3">
+                <div className="w-full lg:w-[280px] flex-shrink-0 space-y-3">
                   {/* Stats Cards - 1x4 Column */}
                   <SensorStats sensors={sensors} tempUnit={tempUnit} />
 

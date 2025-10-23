@@ -132,22 +132,22 @@ export default function PrepLabelsPage() {
   return (
     
       <div className="w-full h-full overflow-auto">
-        <div className="p-8">
-          <div className="mx-auto max-w-[1600px] space-y-8">
+        <div className="p-4 md:p-8">
+          <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
-                    <Tag className="h-10 w-10 text-[#c4dfc4]" />
+                  <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                    <Tag className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
                     Labeling
                   </h1>
-                  <p className="text-muted-foreground mt-2">
+                  <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                     Upload menu photo, AI generates labels for all items
                   </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 md:gap-3 shrink-0">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -162,8 +162,8 @@ export default function PrepLabelsPage() {
                     size="sm"
                     className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Menu
+                    <Plus className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Add Menu</span>
                   </Button>
 
                   {menuData && (
@@ -177,8 +177,8 @@ export default function PrepLabelsPage() {
                       variant="outline"
                       className="bg-white/5 hover:bg-white/10"
                     >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Clear
+                      <RefreshCw className="h-4 w-4 md:mr-2" />
+                      <span className="hidden md:inline">Clear</span>
                     </Button>
                   )}
                 </div>
@@ -198,12 +198,12 @@ export default function PrepLabelsPage() {
 
         {/* Menu Preview (if uploaded) */}
         {imagePreview && !isAnalyzing && (
-          <Card className="p-6 bg-white/5 border-white/10">
-            <div className="flex items-start gap-6">
+          <Card className="p-4 md:p-6 bg-white/5 border-white/10">
+            <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
               <img
                 src={imagePreview}
                 alt="Menu"
-                className="w-64 h-auto rounded-lg border border-white/10"
+                className="w-full md:w-64 h-auto rounded-lg border border-white/10"
               />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-white mb-2">Menu Photo</h3>
@@ -251,7 +251,7 @@ export default function PrepLabelsPage() {
 
         {/* Items Grid */}
         {menuData && filteredItems.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredItems.map(item => (
               <Card
                 key={item.id}
