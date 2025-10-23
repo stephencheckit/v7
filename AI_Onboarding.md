@@ -5,6 +5,70 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **CRITICAL FIX: Sidebar State Persistence - October 23, 2025**
+**Commit:** `6b56bd3` - Move SidebarProvider to root layout to persist sidebar state across navigation
+
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**Root Cause Identified:**
+- 🐛 **The Problem**: Each page wrapped itself with `<AppLayout>` containing `SidebarProvider`
+- 💥 **Result**: On navigation, the old page unmounted → SidebarProvider unmounted → state lost → new page mounted with default (expanded) state
+- 📍 **Symptom**: Sidebar would always expand when clicking navigation links, even when user wanted it collapsed
+
+**The Solution:**
+✅ **Architectural Fix**: Moved `SidebarProvider` to root `app/layout.tsx`
+- Now the sidebar provider **never unmounts** during navigation
+- State persists across all route changes
+- No flickering, no unwanted expansion
+
+**What Was Changed:**
+
+1. **Root Layout Restructure** (`app/layout.tsx`)
+   - ✅ Created `ConditionalLayout` wrapper component
+   - ✅ Moved `SidebarProvider`, `AppSidebar`, and `AppHeader` to root layout
+   - ✅ Smart routing: Shows sidebar only for app pages, not public pages
+   - ✅ Public routes (home, signin, signup, form fills) render without sidebar
+
+2. **ConditionalLayout Component** (NEW: `components/conditional-layout.tsx`)
+   - ✅ Detects route type using `usePathname()`
+   - ✅ Public routes: Renders children directly
+   - ✅ App routes: Wraps with SidebarProvider + AppSidebar + AppHeader
+   - ✅ Prevents sidebar from showing on landing pages
+
+3. **Removed AppLayout from Individual Pages**
+   - ✅ Cleaned up 10 pages: dashboard, forms, sensors, labeling, settings, templates, vision, form builder, form report
+   - ✅ Pages now render directly into persistent layout
+   - ✅ No more remounting on navigation
+
+4. **Enhanced Sidebar Navigation** (`components/app-sidebar.tsx`)
+   - ✅ Added `navInFlight` state to block pointer events during navigation
+   - ✅ Automatic lock release when route change completes (via `useEffect` on `pathname`)
+   - ✅ `pointer-events-none` prevents any hover/click interference during navigation
+   - ✅ Button-based navigation with `router.push()` for clean transitions
+
+**Files Modified:**
+- `app/layout.tsx` - Added root-level sidebar infrastructure
+- `components/conditional-layout.tsx` - NEW file for smart layout routing
+- `components/app-sidebar.tsx` - Enhanced navigation with lock mechanism
+- `components/ui/sidebar.tsx` - Simplified state management
+- All app pages (10 files) - Removed individual AppLayout wrappers
+
+**Technical Improvements:**
+- 🎯 No more hydration issues
+- 🎯 No flickering or visual glitches
+- 🎯 Sidebar state survives navigation
+- 🎯 Clean separation of public vs. app routes
+- 🎯 Simplified component architecture
+
+**User Experience:**
+- ✅ Collapse sidebar → Click any link → **Sidebar stays collapsed!** 🎉
+- ✅ Smooth, predictable navigation
+- ✅ Consistent UI state across the entire app
+- ✅ No unexpected auto-expansion
+
+---
+
 ### **UI/UX Fixes: Form Builder & Sidebar - October 23, 2025**
 **Commit:** `ddbd8cf` - Fix form builder hover borders and sidebar navigation behavior
 
