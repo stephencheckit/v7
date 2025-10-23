@@ -5,6 +5,38 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Header Layout Update - October 23, 2025**
+**Commit:** `138f71e` - Add form name to header and center Builder/Settings tabs  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Form Name in Header**: Display form name on the left side of header
+- ✅ **Centered Tabs**: Builder/Settings tabs perfectly centered in the middle
+- ✅ **Three-Column Layout**: Left (form name), Center (tabs), Right (buttons)
+
+**Layout Structure:**
+```
+[Form Name] .................. [Builder | Settings] .................. [Cancel] [Share]
+```
+
+**Implementation:**
+- Three flex containers with `flex-1` on left and right for equal spacing
+- Form name truncates with ellipsis if too long (`max-w-xs`)
+- Tabs centered with `justify-center` in middle container
+- Buttons right-aligned with `justify-end` in right container
+
+**Files Changed:** 1 file
+- `app/forms/builder/page.tsx` - Updated header layout (both Builder and Settings headers)
+
+**Impact:**
+- ✅ Better visual hierarchy with form name always visible
+- ✅ Professional, balanced header layout
+- ✅ Tabs perfectly centered regardless of form name length
+- ✅ Consistent layout across Builder and Settings tabs
+
+---
+
 ### **Add Settings Tab - October 23, 2025**
 **Commit:** `483c070` - Add Settings tab with form name and status controls  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
