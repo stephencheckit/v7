@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import {
   LayoutDashboard,
   FileText,
@@ -53,16 +54,38 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { isMobile, setOpenMobile, state } = useSidebar();
+  const router = useRouter();
+  const { isMobile, setOpenMobile, state, setOpen } = useSidebar();
+  const sidebarStateRef = useRef(state);
   
-  const handleLinkClick = (e: React.MouseEvent) => {
-    // Stop propagation to prevent sidebar from toggling
+  // Track sidebar state
+  useEffect(() => {
+    sidebarStateRef.current = state;
+  }, [state]);
+  
+  // Lock sidebar state on navigation for desktop
+  useEffect(() => {
+    if (!isMobile && sidebarStateRef.current === "collapsed") {
+      // Force sidebar to stay collapsed after navigation
+      setOpen(false);
+    }
+  }, [pathname, isMobile, setOpen]);
+  
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Stop all event propagation and default behavior
     e.stopPropagation();
+    e.preventDefault();
     
-    // Only handle mobile - let desktop links work normally
+    const href = e.currentTarget.getAttribute('href');
+    if (!href) return;
+    
+    // Close mobile sidebar
     if (isMobile) {
       setOpenMobile(false);
     }
+    
+    // Navigate
+    router.push(href);
   };
 
   return (
