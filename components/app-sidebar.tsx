@@ -55,8 +55,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      // Slide from right on mobile, left sidebar on desktop
-      side={isMobile ? "right" : "left"}
+      // Always slide from left (matches home page)
+      side="left"
       // Block pointer/hover while navigating so it can't expand
       className={cn(
         "border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000]",
