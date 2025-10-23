@@ -118,23 +118,24 @@ export default function FormsPage() {
           <div className="mx-auto max-w-[1600px] space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <h1 className="text-4xl font-bold tracking-tight text-white">
-                  Forms
-                </h1>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight text-white">
+                    Forms
+                  </h1>
+                  <p className="text-muted-foreground mt-2">
+                    Manage and create inspection checklists and forms
+                  </p>
+                </div>
                 <Button
                   onClick={handleCreateNew}
                   size="sm"
-                  variant="outline"
-                  className="text-white hover:bg-gradient-to-r hover:from-[#c4dfc4] hover:to-[#c8e0f5] hover:text-[#0a0a0a] border-2 border-white hover:border-[#c8e0f5] transition-all"
+                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create New
                 </Button>
               </div>
-              <p className="text-muted-foreground">
-                Manage and create inspection checklists and forms
-              </p>
             </div>
 
             {/* Stats Cards */}
