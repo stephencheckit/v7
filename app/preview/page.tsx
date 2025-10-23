@@ -241,6 +241,7 @@ export default function PreviewPage() {
           required: true,
           options: ["Yes", "No"],
           color: "#c4dfc4",
+          icon: Video,
         },
         {
           id: "field_2",
@@ -250,6 +251,7 @@ export default function PreviewPage() {
           placeholder: "Describe what's visible",
           required: false,
           color: "#c4dfc4",
+          icon: Type,
         },
         {
           id: "field_3",
@@ -259,6 +261,7 @@ export default function PreviewPage() {
           placeholder: "",
           required: false,
           color: "#c8e0f5",
+          icon: ThumbsUp,
         },
         {
           id: "field_4",
@@ -269,6 +272,7 @@ export default function PreviewPage() {
           required: false,
           options: ["Yes", "No", "N/A"],
           color: "#c8e0f5",
+          icon: Circle,
         },
         {
           id: "field_5",
@@ -278,6 +282,7 @@ export default function PreviewPage() {
           placeholder: "Enter a number",
           required: false,
           color: "#ddc8f5",
+          icon: Hash,
         },
       ],
       submitButtonText: "Submit Inspection",
