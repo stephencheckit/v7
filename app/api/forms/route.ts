@@ -15,7 +15,7 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, description, schema } = body;
+    const { title, description, schema, status } = body;
 
     if (!title || !schema) {
       return NextResponse.json(
@@ -32,15 +32,23 @@ export async function POST(req: NextRequest) {
                    `${req.nextUrl.protocol}//${req.nextUrl.host}`;
     const shareUrl = `${appUrl}/f/${formId}`;
 
+    // Build insert data
+    const insertData: any = {
+      id: formId,
+      title,
+      description: description || '',
+      schema,
+    };
+
+    // Only set status if provided and valid
+    if (status && (status === 'draft' || status === 'published')) {
+      insertData.status = status;
+    }
+
     // Insert form into database
     const { data, error } = await supabase
       .from('simple_forms')
-      .insert({
-        id: formId,
-        title,
-        description: description || '',
-        schema,
-      })
+      .insert(insertData)
       .select()
       .single();
 

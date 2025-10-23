@@ -656,7 +656,8 @@ function FormsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"builder" | "settings">("builder");
-  const [formStatus, setFormStatus] = useState<"active" | "inactive">("active");
+  const [activeSettingsSection, setActiveSettingsSection] = useState<"general">("general");
+  const [formStatus, setFormStatus] = useState<"published" | "draft">("published");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
   const submitButtonInputRef = React.useRef<HTMLInputElement>(null);
@@ -709,6 +710,7 @@ function FormsPageContent() {
       setFormName(form.title);
       setFormDescription(form.description || 'Add a description for your form');
       setFormFields(form.schema.fields || []);
+      setFormStatus(form.status || 'published');
       setShareUrl(`${window.location.origin}/f/${form.id}`);
       setLastSavedFormId(form.id);
       setHasUnsavedChanges(false); // Reset unsaved changes when loading
@@ -928,6 +930,7 @@ function FormsPageContent() {
           title: formName,
           description: formDescription,
           schema,
+          status: formStatus,
         }),
       });
 
@@ -1234,8 +1237,18 @@ function FormsPageContent() {
                   {/* Settings View */}
                   {/* Left Panel - Settings Navigation */}
                   <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                    <div className="p-6">
-                      <h2 className="text-lg font-semibold text-gray-100">Form Settings</h2>
+                    <div className="p-3 space-y-1">
+                      <button
+                        onClick={() => setActiveSettingsSection("general")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          activeSettingsSection === "general"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                        }`}
+                      >
+                        <div className="text-sm">General</div>
+                        <div className="text-xs text-gray-500">Name, status, description</div>
+                      </button>
                     </div>
                   </div>
 
@@ -1342,16 +1355,16 @@ function FormsPageContent() {
                               <label className="text-sm font-medium text-gray-300">Form Status</label>
                               <select
                                 value={formStatus}
-                                onChange={(e) => setFormStatus(e.target.value as "active" | "inactive")}
+                                onChange={(e) => setFormStatus(e.target.value as "published" | "draft")}
                                 className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors"
                               >
-                                <option value="active">Active - Can receive responses</option>
-                                <option value="inactive">Inactive - Preview mode only</option>
+                                <option value="published">Published - Can receive responses</option>
+                                <option value="draft">Draft - Preview mode only</option>
                               </select>
                               <p className="text-xs text-gray-400 italic">
-                                {formStatus === "active" 
+                                {formStatus === "published" 
                                   ? "This form is live and can collect responses from users."
-                                  : "This form is disabled and will only work in preview mode."}
+                                  : "This form is a draft and will only work in preview mode."}
                               </p>
                             </div>
                           </div>
