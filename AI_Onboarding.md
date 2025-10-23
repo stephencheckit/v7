@@ -5,6 +5,57 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Add Settings Tab - October 23, 2025**
+**Commit:** `483c070` - Add Settings tab with form name and status controls  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Settings Tab**: Added interactive Settings tab next to Builder tab
+- ✅ **Form Name Editor**: Large, prominent form name field in Settings
+- ✅ **Form Status Control**: Dropdown to toggle Active/Inactive status
+- ✅ **Conditional Rendering**: Hides AI chat, widgets, and form builder when on Settings tab
+- ✅ **Clean Layout**: Left panel shows "Form Settings" header, middle panel shows form controls
+
+**Features:**
+- **Active Status**: Form is live and can collect responses from users
+- **Inactive Status**: Form is disabled and only works in preview mode
+- **Tab Switching**: Seamlessly switch between Builder and Settings views
+- **Consistent Styling**: Maintains dark theme with sage green accents
+
+**Implementation Details:**
+- Added `activeTab` state to track current tab ("builder" | "settings")
+- Added `formStatus` state to track form status ("active" | "inactive")
+- Conditional rendering based on `activeTab`:
+  - Builder tab: Shows widgets panel + form editor + AI chat
+  - Settings tab: Shows settings panel + form controls (no AI chat)
+- CSS variable `--ai-chat-width` dynamically set to `0px` on Settings tab
+- Settings panel duplicates header buttons (Cancel/Share) for consistency
+
+**Files Changed:** 1 file
+- `app/forms/builder/page.tsx` - Added 157 lines, removed 22 lines (net +135 lines)
+
+**User Experience:**
+1. Click "Settings" tab to access form configuration
+2. Edit form name by clicking on it
+3. Toggle form status between Active/Inactive
+4. Click "Builder" tab to return to form building
+5. AI chat automatically hides on Settings, shows on Builder
+
+**Impact:**
+- ✅ Form status control (active/inactive) ready for backend integration
+- ✅ Clean separation of concerns (building vs. configuring)
+- ✅ Better UX with dedicated settings area
+- ✅ Maintains consistent dark theme
+- ✅ Settings persist in state (ready for database save)
+
+**Next Steps:**
+- Save `formStatus` to database when form is saved
+- Enforce status on public form submission (`/f/[id]`)
+- Add more settings options (email notifications, response limits, etc.)
+
+---
+
 ### **Add Centered Builder Tab - October 23, 2025**
 **Commit:** `57d976e` - Add centered Builder tab in form header  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
