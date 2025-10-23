@@ -97,13 +97,15 @@ async function updateExistingAlert(
     (now.getTime() - startedAt.getTime()) / 1000 / 60
   );
 
+  const alertThreshold = sensor.alert_delay_minutes ?? 15; // Default to 15 minutes
+  
   console.log(
-    `⏰ Alert active for ${minutesActive} minutes (threshold: ${sensor.alert_delay_minutes})`
+    `⏰ Alert active for ${minutesActive} minutes (threshold: ${alertThreshold})`
   );
 
   // Check if we should trigger notifications
   if (
-    minutesActive >= sensor.alert_delay_minutes &&
+    minutesActive >= alertThreshold &&
     (!existingAlert.notifications_sent ||
       existingAlert.notifications_sent.length === 0)
   ) {
@@ -162,8 +164,10 @@ async function triggerAlertNotifications(
   celsius: number,
   fahrenheit: number
 ): Promise<void> {
+  const recipients = Array.isArray(sensor.alert_recipients) ? sensor.alert_recipients : [];
+  
   console.log(
-    `📬 Sending notifications to ${sensor.alert_recipients.length} recipients`
+    `📬 Sending notifications to ${recipients.length} recipients`
   );
 
   // Import notification service
@@ -174,7 +178,7 @@ async function triggerAlertNotifications(
     const notificationLog: any[] = [];
 
     // Send email to each recipient
-    for (const recipient of sensor.alert_recipients) {
+    for (const recipient of recipients) {
       if (recipient.notify_methods?.includes("email") && recipient.email) {
         try {
           const result = await sendTemperatureAlert(
