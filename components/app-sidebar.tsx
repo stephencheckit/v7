@@ -65,7 +65,11 @@ export function AppSidebar() {
       collapsible="icon"
       data-lock-hover={navInFlight ? "true" : "false"}
     >
-      <SidebarHeader className="border-b border-white px-3 pt-4 pb-[15px] bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
+      {/* Hide header on mobile since logo is in top header */}
+      <SidebarHeader className={cn(
+        "border-b border-white px-3 pt-4 pb-[15px] bg-gradient-to-r from-[#000000] to-[#0a0a0a]",
+        isMobile && "hidden"
+      )}>
         <button
           onClick={(e) => handleLinkClick(e, "/")}
           className="flex items-center gap-2 font-semibold group-data-[collapsible=icon]:justify-center hover:opacity-80 transition-opacity w-full"
