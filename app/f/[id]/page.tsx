@@ -46,6 +46,10 @@ export default function PublicFormPage() {
   const params = useParams();
   const formId = params.id as string;
 
+  // Check if this is a preview
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const isPreview = searchParams.get('preview') === 'true';
+
   const [form, setForm] = useState<FormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -103,7 +107,8 @@ export default function PublicFormPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           data: formValues,
-          ai_metadata: aiMetadata 
+          ai_metadata: aiMetadata,
+          is_preview: isPreview
         }),
       });
 
@@ -332,6 +337,18 @@ export default function PublicFormPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] py-12 px-6">
       <div className="max-w-2xl mx-auto">
+        {/* Preview Banner */}
+        {isPreview && (
+          <div className="mb-4 p-4 bg-[#c4dfc4]/10 border-2 border-[#c4dfc4]/30 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-[#c4dfc4] text-[#0a0a0a]">Preview Mode</Badge>
+              <p className="text-sm text-gray-300">
+                Submissions in preview mode will not be counted in your analytics.
+              </p>
+            </div>
+          </div>
+        )}
+        
         <Card className="bg-[#1a1a1a] border-white/10 p-8">
           {/* Form Header */}
           <div className="mb-8">

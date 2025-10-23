@@ -37,6 +37,7 @@ import {
   Loader2,
   X,
   CheckCircle2,
+  Eye,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -664,6 +665,18 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
   );
 }
 
+// Helper function to format time since last save
+function formatTimeSince(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  if (seconds < 10) return 'just now';
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
 function FormsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -711,9 +724,10 @@ function FormsPageContent() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [loadingForm, setLoadingForm] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSavedFormId, setLastSavedFormId] = useState<string | null>(null);
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const shouldAutoSave = React.useRef(false);
+  const autoSaveTimeout = React.useRef<NodeJS.Timeout | null>(null);
   
   // Load form data when in edit mode
   React_useEffect(() => {
@@ -760,20 +774,41 @@ function FormsPageContent() {
     }
   }
 
-  // Track unsaved changes
+  // Auto-save functionality - saves after 2 seconds of inactivity
   React.useEffect(() => {
-    // Only mark as unsaved if form has been loaded or if creating new
-    if (!loadingForm && (formFields.length > 0 || formName !== 'Untitled Form' || formDescription !== 'Add a description for your form')) {
-      setHasUnsavedChanges(true);
+    // Don't auto-save while loading
+    if (loadingForm) return;
+    
+    // Don't auto-save if form is empty
+    if (formFields.length === 0 && formName === 'Untitled Form') return;
+    
+    // Clear existing timeout
+    if (autoSaveTimeout.current) {
+      clearTimeout(autoSaveTimeout.current);
     }
-  }, [formFields, formName, formDescription, loadingForm]);
+    
+    // Set new timeout to save after 2 seconds of inactivity
+    autoSaveTimeout.current = setTimeout(() => {
+      if (!saving) {
+        console.log('💾 Auto-saving form...');
+        handleAutoSave();
+      }
+    }, 2000);
+    
+    // Cleanup
+    return () => {
+      if (autoSaveTimeout.current) {
+        clearTimeout(autoSaveTimeout.current);
+      }
+    };
+  }, [formFields, formName, formDescription, formStatus, thankYouMessage, allowAnotherSubmission, showResponseSummary, showCloseButton, allowSocialShare, redirectUrl, redirectDelay, loadingForm]);
 
-  // Auto-save when AI creates a form
+  // Auto-save when AI creates a form (immediate)
   React.useEffect(() => {
     if (shouldAutoSave.current && formFields.length > 0 && formName && !saving && !loadingForm && !isEditMode) {
       console.log('🤖 Auto-saving AI-generated form...');
       shouldAutoSave.current = false; // Reset flag
-      handleSaveAndShare();
+      handleAutoSave();
     }
   }, [formFields, formName, formDescription, saving, loadingForm, isEditMode]);
 
@@ -940,11 +975,9 @@ function FormsPageContent() {
   };
 
 
-  const handleSaveAndShare = async () => {
-    if (formFields.length === 0) {
-      alert('Please add at least one field to your form before sharing.');
-      return;
-    }
+  const handleAutoSave = async () => {
+    // Silent auto-save - no alerts
+    if (formFields.length === 0) return;
 
     setSaving(true);
     try {
@@ -994,30 +1027,38 @@ function FormsPageContent() {
 
       const data = await response.json();
       
-      // Reset unsaved changes and save form ID
-      setHasUnsavedChanges(false);
+      // Save form ID and timestamp
       setLastSavedFormId(data.id || editingFormId);
+      setLastSaveTime(new Date());
       
-      // Set share URL (but don't show modal - less intrusive)
+      // Set share URL
       if (data.shareUrl) {
         setShareUrl(data.shareUrl);
       }
       
       // If this was a new form, redirect to edit mode so the URL includes the form ID
-      // This enables conversation persistence
       if (!isEditMode && data.id) {
         router.push(`/forms/builder?id=${data.id}`);
       }
       
-      // Don't auto-show share modal - form creation should be silent
-      // if (!isEditMode) {
-      //   setShowShareModal(true);
-      // }
+      console.log('✅ Form auto-saved');
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      console.error('Auto-save error:', error);
+      // Silent failure for auto-save
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePreview = () => {
+    if (!lastSavedFormId && !editingFormId) {
+      alert('Please add at least one field and wait for auto-save before previewing.');
+      return;
+    }
+    
+    const formId = lastSavedFormId || editingFormId;
+    const previewUrl = `${window.location.origin}/f/${formId}?preview=true`;
+    window.open(previewUrl, '_blank');
   };
 
   const copyShareUrl = () => {
@@ -1091,50 +1132,30 @@ function FormsPageContent() {
                         </TabsList>
                       </Tabs>
                     </div>
-                    <div className="flex items-center gap-2 justify-end flex-1">
-                      {hasUnsavedChanges && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="hover:bg-white/5" 
-                          onClick={() => {
-                            if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-                              router.push('/forms');
-                            }
-                          }}
-                        >
-                          Cancel
-                        </Button>
+                    <div className="flex items-center gap-3 justify-end flex-1">
+                      {/* Auto-save indicator */}
+                      {saving && (
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>Saving...</span>
+                        </div>
                       )}
-                      {hasUnsavedChanges || !lastSavedFormId ? (
-                        <Button 
-                          size="sm" 
-                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                          onClick={handleSaveAndShare}
-                          disabled={saving || loadingForm}
-                        >
-                          {saving ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Share2 className="w-4 h-4 mr-2" />
-                              Save & Share
-                            </>
-                          )}
-                        </Button>
-                      ) : (
-                        <Button 
-                          size="sm" 
-                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                          onClick={() => setShowShareModal(true)}
-                        >
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Share
-                        </Button>
+                      {!saving && lastSaveTime && (
+                        <div className="text-xs text-gray-500">
+                          Saved {formatTimeSince(lastSaveTime)}
+                        </div>
                       )}
+                      
+                      {/* Preview button */}
+                      <Button 
+                        size="sm" 
+                        className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                        onClick={handlePreview}
+                        disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1274,50 +1295,30 @@ function FormsPageContent() {
                             </TabsList>
                           </Tabs>
                         </div>
-                        <div className="flex items-center gap-2 justify-end flex-1">
-                          {hasUnsavedChanges && (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="hover:bg-white/5" 
-                              onClick={() => {
-                                if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-                                  router.push('/forms');
-                                }
-                              }}
-                            >
-                              Cancel
-                            </Button>
+                        <div className="flex items-center gap-3 justify-end flex-1">
+                          {/* Auto-save indicator */}
+                          {saving && (
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Saving...</span>
+                            </div>
                           )}
-                          {hasUnsavedChanges || !lastSavedFormId ? (
-                            <Button 
-                              size="sm" 
-                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                              onClick={handleSaveAndShare}
-                              disabled={saving || loadingForm}
-                            >
-                              {saving ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                  Saving...
-                                </>
-                              ) : (
-                                <>
-                                  <Share2 className="w-4 h-4 mr-2" />
-                                  Save & Share
-                                </>
-                              )}
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                              onClick={() => setShowShareModal(true)}
-                            >
-                              <Share2 className="w-4 h-4 mr-2" />
-                              Share
-                            </Button>
+                          {!saving && lastSaveTime && (
+                            <div className="text-xs text-gray-500">
+                              Saved {formatTimeSince(lastSaveTime)}
+                            </div>
                           )}
+                          
+                          {/* Preview button */}
+                          <Button 
+                            size="sm" 
+                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                            onClick={handlePreview}
+                            disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Preview
+                          </Button>
                         </div>
                       </div>
                     </div>
