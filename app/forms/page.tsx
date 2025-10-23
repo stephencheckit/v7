@@ -41,6 +41,19 @@ export default function FormsPage() {
   const [sortColumn, setSortColumn] = useState<SortColumn>('created');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  // Load sort preferences from localStorage
+  useEffect(() => {
+    const savedColumn = localStorage.getItem('forms-sort-column');
+    const savedDirection = localStorage.getItem('forms-sort-direction');
+    
+    if (savedColumn) {
+      setSortColumn(savedColumn as SortColumn);
+    }
+    if (savedDirection) {
+      setSortDirection(savedDirection as SortDirection);
+    }
+  }, []);
+
   useEffect(() => {
     loadForms();
   }, []);
@@ -86,14 +99,22 @@ export default function FormsPage() {
   };
 
   const handleSort = (column: SortColumn) => {
+    let newDirection: SortDirection;
+    
     if (sortColumn === column) {
       // Toggle direction if clicking the same column
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
       // Set new column and default to ascending
-      setSortColumn(column);
-      setSortDirection('asc');
+      newDirection = 'asc';
     }
+    
+    setSortColumn(column);
+    setSortDirection(newDirection);
+    
+    // Save to localStorage
+    localStorage.setItem('forms-sort-column', column);
+    localStorage.setItem('forms-sort-direction', newDirection);
   };
 
   const getSortedForms = () => {

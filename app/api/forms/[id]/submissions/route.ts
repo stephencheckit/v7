@@ -18,8 +18,9 @@ export async function GET(
       .from("simple_form_submissions")
       .select("*")
       .eq("form_id", id)
-      .eq("is_preview", false) // Exclude preview submissions
       .order("submitted_at", { ascending: false });
+    
+    console.log(`Fetching submissions for form ${id}:`, submissions?.length || 0, 'found');
 
     if (error) {
       console.error("Error fetching submissions:", error);

@@ -832,15 +832,17 @@ function FormsPageContent() {
   React.useEffect(() => {
     if (activeTab === "report" && (editingFormId || lastSavedFormId)) {
       const formId = editingFormId || lastSavedFormId;
+      console.log('📊 Fetching submissions for form:', formId);
       setLoadingSubmissions(true);
       fetch(`/api/forms/${formId}/submissions`)
         .then(res => res.json())
         .then(data => {
+          console.log('📊 Received submissions:', data.submissions?.length || 0);
           setSubmissions(data.submissions || []);
           setLoadingSubmissions(false);
         })
         .catch(err => {
-          console.error('Error fetching submissions:', err);
+          console.error('❌ Error fetching submissions:', err);
           setLoadingSubmissions(false);
         });
     }
