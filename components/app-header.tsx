@@ -114,7 +114,7 @@ export function AppHeader() {
       const staticPages = [
         { id: 'dashboard', title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard", type: 'page' as const },
         { id: 'forms', title: "Forms", description: "Manage your forms", icon: FileText, link: "/forms", type: 'page' as const },
-        { id: 'prep-labels', title: "Prep Labels", description: "Menu prep labels", icon: Tag, link: "/prep-labels", type: 'page' as const },
+        { id: 'labeling', title: "Labeling", description: "Menu prep labels", icon: Tag, link: "/labeling", type: 'page' as const },
         { id: 'settings', title: "Settings", description: "Account settings", icon: Settings, link: "/settings", type: 'page' as const },
       ];
 

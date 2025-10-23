@@ -33,8 +33,8 @@ const menuItems = [
     icon: FileText,
   },
   {
-    title: "Prep Labels",
-    url: "/prep-labels",
+    title: "Labeling",
+    url: "/labeling",
     icon: Tag,
   },
   {

@@ -141,7 +141,7 @@ export default function PrepLabelsPage() {
                 <div>
                   <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
                     <Tag className="h-10 w-10 text-[#c4dfc4]" />
-                    Prep Labels
+                    Labeling
                   </h1>
                   <p className="text-muted-foreground mt-2">
                     Upload menu photo, AI generates labels for all items
