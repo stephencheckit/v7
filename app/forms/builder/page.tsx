@@ -1022,7 +1022,12 @@ function FormsPageContent() {
                 {/* Form Sub-Header - Only for Middle Panel */}
                 <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                   <div className="flex items-center justify-between gap-4 px-6 py-2">
-                    <div className="flex-1 flex items-center justify-center">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="text-white font-medium truncate max-w-xs">
+                        {formName || "Untitled Form"}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
                       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings")} className="w-auto">
                         <TabsList className="bg-[#1a1a1a]">
                           <TabsTrigger value="builder">Builder</TabsTrigger>
@@ -1030,7 +1035,7 @@ function FormsPageContent() {
                         </TabsList>
                       </Tabs>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 justify-end flex-1">
                       {hasUnsavedChanges && (
                         <Button 
                           variant="outline" 
@@ -1239,7 +1244,12 @@ function FormsPageContent() {
                     {/* Settings Sub-Header */}
                     <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                       <div className="flex items-center justify-between gap-4 px-6 py-2">
-                        <div className="flex-1 flex items-center justify-center">
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="text-white font-medium truncate max-w-xs">
+                            {formName || "Untitled Form"}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center">
                           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings")} className="w-auto">
                             <TabsList className="bg-[#1a1a1a]">
                               <TabsTrigger value="builder">Builder</TabsTrigger>
@@ -1247,7 +1257,7 @@ function FormsPageContent() {
                             </TabsList>
                           </Tabs>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end flex-1">
                           {hasUnsavedChanges && (
                             <Button 
                               variant="outline" 
