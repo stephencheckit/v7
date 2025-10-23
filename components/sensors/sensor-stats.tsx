@@ -42,22 +42,20 @@ export function SensorStats({ sensors, tempUnit }: SensorStatsProps) {
     : 0;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="flex flex-col gap-1.5">
       {/* Total Sensors */}
       <Card className="bg-gradient-to-br from-[#c8e0f5] to-[#c8e0f5]/80 border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-            Total Sensors
-          </CardTitle>
-          <Thermometer className="h-4 w-4 text-[#0a0a0a]" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-[#0a0a0a]">
-            {totalSensors}
+        <CardContent className="p-3 flex items-center gap-3">
+          <div className="bg-[#0a0a0a]/10 rounded-lg p-2">
+            <Thermometer className="h-5 w-5 text-[#0a0a0a]/50" />
           </div>
-          <p className="text-xs text-[#0a0a0a]/70 mt-1">
-            {onlineSensors.length} online
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Total Sensors</div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-[#0a0a0a] leading-none">{totalSensors}</span>
+              <span className="text-[9px] text-[#0a0a0a]/60">{onlineSensors.length} online</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -67,59 +65,57 @@ export function SensorStats({ sensors, tempUnit }: SensorStatsProps) {
           ? "bg-gradient-to-br from-[#ff6b6b] to-[#ff6b6b]/80"
           : "bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80"
       }`}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-            Active Alerts
-          </CardTitle>
-          {activeAlerts > 0 ? (
-            <AlertTriangle className="h-4 w-4 text-[#0a0a0a]" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4 text-[#0a0a0a]" />
-          )}
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-[#0a0a0a]">
-            {activeAlerts}
+        <CardContent className="p-3 flex items-center gap-3">
+          <div className="bg-[#0a0a0a]/10 rounded-lg p-2">
+            {activeAlerts > 0 ? (
+              <AlertTriangle className="h-5 w-5 text-[#0a0a0a]/50" />
+            ) : (
+              <CheckCircle2 className="h-5 w-5 text-[#0a0a0a]/50" />
+            )}
           </div>
-          <p className="text-xs text-[#0a0a0a]/70 mt-1">
-            {activeAlerts === 0 ? "All sensors normal" : `${activeAlerts} need${activeAlerts === 1 ? 's' : ''} attention`}
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Active Alerts</div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-[#0a0a0a] leading-none">{activeAlerts}</span>
+              <span className="text-[9px] text-[#0a0a0a]/60">
+                {activeAlerts === 0 ? "All normal" : "Need attention"}
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Average Temperature */}
       <Card className="bg-gradient-to-br from-[#ddc8f5] to-[#ddc8f5]/80 border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-            Average Temperature
-          </CardTitle>
-          <Activity className="h-4 w-4 text-[#0a0a0a]" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-[#0a0a0a]">
-            {sensorsWithReadings.length > 0 ? `${avgTemp.toFixed(1)}°${tempUnit}` : "—"}
+        <CardContent className="p-3 flex items-center gap-3">
+          <div className="bg-[#0a0a0a]/10 rounded-lg p-2">
+            <Activity className="h-5 w-5 text-[#0a0a0a]/50" />
           </div>
-          <p className="text-xs text-[#0a0a0a]/70 mt-1">
-            Across all sensors
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Avg Temperature</div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-[#0a0a0a] leading-none">
+                {sensorsWithReadings.length > 0 ? `${avgTemp.toFixed(1)}°${tempUnit}` : "—"}
+              </span>
+              <span className="text-[9px] text-[#0a0a0a]/60">All sensors</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Uptime */}
       <Card className="bg-gradient-to-br from-[#f5edc8] to-[#f5edc8]/80 border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-            Uptime
-          </CardTitle>
-          <Activity className="h-4 w-4 text-[#0a0a0a]" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-[#0a0a0a]">
-            {uptimePercent.toFixed(0)}%
+        <CardContent className="p-3 flex items-center gap-3">
+          <div className="bg-[#0a0a0a]/10 rounded-lg p-2">
+            <Activity className="h-5 w-5 text-[#0a0a0a]/50" />
           </div>
-          <p className="text-xs text-[#0a0a0a]/70 mt-1">
-            Last 10 minutes
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Uptime</div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-[#0a0a0a] leading-none">{uptimePercent.toFixed(0)}%</span>
+              <span className="text-[9px] text-[#0a0a0a]/60">Last 10 min</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

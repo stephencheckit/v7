@@ -7,7 +7,16 @@ import { SensorStats } from "@/components/sensors/sensor-stats";
 import { AlertBanner } from "@/components/sensors/alert-banner";
 import { TempUnitToggle } from "@/components/sensors/temp-unit-toggle";
 import { SensorDetail } from "@/components/sensors/sensor-detail";
+import { SimpleChartView } from "@/components/sensors/simple-chart-view";
 import { Thermometer } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface Sensor {
   id: string;
@@ -75,6 +84,13 @@ export default function SensorsPage() {
   useEffect(() => {
     loadSensors();
   }, []);
+
+  // Auto-select first sensor when sensors load
+  useEffect(() => {
+    if (sensors.length > 0 && !selectedSensor) {
+      setSelectedSensor(sensors[0]);
+    }
+  }, [sensors, selectedSensor]);
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -146,92 +162,110 @@ export default function SensorsPage() {
   }
 
   return (
-    
-      <div className="w-full h-full overflow-auto">
-        <div className="p-8">
-          <div className="mx-auto max-w-[1600px] space-y-6">
-            {/* Sensor Detail View - Full Page */}
-            {selectedSensor ? (
-              <SensorDetail
-                sensor={selectedSensor}
-                tempUnit={tempUnit}
-                timeRange={timeRange}
-                onClose={() => setSelectedSensor(null)}
-              />
-            ) : (
-              <>
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
-                      <Thermometer className="h-10 w-10 text-[#c4dfc4]" />
-                      Sensors Dashboard
-                    </h1>
-                    <p className="text-muted-foreground mt-2">
-                      Real-time temperature monitoring for food safety compliance
-                    </p>
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex gap-4">
-                    <TempUnitToggle value={tempUnit} onChange={handleUnitChange} />
-                    
-                    {/* Time Range Selector */}
-                    <div className="flex gap-2 bg-[#1a1a1a] rounded-lg p-1">
-                      {["24h", "7d", "30d"].map((range) => (
-                        <button
-                          key={range}
-                          onClick={() => setTimeRange(range as any)}
-                          className={`px-4 py-2 rounded-md text-sm transition-colors ${
-                            timeRange === range
-                              ? "bg-[#c4dfc4] text-black"
-                              : "text-gray-400 hover:text-white"
-                          }`}
-                        >
-                          {range}
-                        </button>
+    <div className="w-full h-full overflow-auto">
+      <div className="p-8">
+        <div className="mx-auto max-w-[2000px]">
+          {/* Always show the sidebar + chart layout */}
+          <>
+            {/* Compact Header - Single Row */}
+            <div className="mb-6 flex items-center gap-6">
+              {/* Title */}
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Thermometer className="h-6 w-6 text-[#c4dfc4]" />
+                Sensors Dashboard
+              </h1>
+              
+              {/* Right Side Controls */}
+              <div className="ml-auto flex items-center gap-4">
+                {/* Temp Unit Toggle */}
+                <TempUnitToggle value={tempUnit} onChange={handleUnitChange} />
+                
+                {/* Time Range Selector */}
+                <div className="flex gap-2 bg-[#1a1a1a] rounded-lg p-1">
+                  {["24h", "7d", "30d"].map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setTimeRange(range as any)}
+                      className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                        timeRange === range
+                          ? "bg-[#c4dfc4] text-black"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Sensor Selector Dropdown */}
+                {sensors.length > 0 && (
+                  <Select
+                    value={selectedSensor?.id || ""}
+                    onValueChange={(value) => {
+                      const sensor = sensors.find(s => s.id === value);
+                      if (sensor) setSelectedSensor(sensor);
+                    }}
+                  >
+                    <SelectTrigger className="w-[280px] bg-[#1a1a1a] border-gray-700">
+                      <SelectValue placeholder="Select a sensor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sensors.map((sensor) => (
+                        <SelectItem key={sensor.id} value={sensor.id}>
+                          {sensor.name}
+                        </SelectItem>
                       ))}
-                    </div>
-                  </div>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+
+              {/* Main Layout: Sidebar (Stats) + Content (Sensors) */}
+              <div className="flex gap-6">
+                {/* Left Sidebar - Stats & Alerts */}
+                <div className="w-[280px] flex-shrink-0 space-y-3">
+                  {/* Stats Cards - 1x4 Column */}
+                  <SensorStats sensors={sensors} tempUnit={tempUnit} />
+
+                  {/* Active Alerts */}
+                  {activeAlertsCount > 0 && (
+                    <AlertBanner sensors={sensors} tempUnit={tempUnit} />
+                  )}
                 </div>
 
-                {/* Stats Cards */}
-                <SensorStats sensors={sensors} tempUnit={tempUnit} />
-
-                {/* Active Alerts Banner */}
-                {activeAlertsCount > 0 && (
-                  <AlertBanner sensors={sensors} tempUnit={tempUnit} />
-                )}
-
-                {/* Sensor Grid */}
-                {sensors.length === 0 ? (
-                  <div className="text-center py-12 bg-[#1a1a1a] rounded-lg border border-gray-800">
-                    <Thermometer className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-                    <h3 className="text-xl font-semibold text-gray-300 mb-2">
-                      No Sensors Yet
-                    </h3>
-                    <p className="text-gray-400">
-                      Connect your first sensor to get started
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {sensors.map((sensor) => (
-                      <SensorCard
-                        key={sensor.id}
-                        sensor={sensor}
-                        tempUnit={tempUnit}
-                        onClick={() => setSelectedSensor(sensor)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+                {/* Right Content - Large Chart Area */}
+                <div className="flex-1 min-w-0 space-y-6">
+                  {sensors.length === 0 ? (
+                    <div className="text-center py-20 bg-[#1a1a1a] rounded-lg border border-gray-800 h-full flex items-center justify-center">
+                      <div>
+                        <Thermometer className="h-20 w-20 mx-auto mb-4 text-gray-600" />
+                        <h3 className="text-2xl font-semibold text-gray-300 mb-2">
+                          No Sensors Yet
+                        </h3>
+                        <p className="text-gray-400">
+                          Connect your first sensor to get started
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Large Chart Area */}
+                      {selectedSensor && (
+                        <SimpleChartView
+                          sensor={selectedSensor}
+                          tempUnit={tempUnit}
+                          timeRange={timeRange}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+          </>
         </div>
       </div>
-    
+    </div>
   );
 }
 
