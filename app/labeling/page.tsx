@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, Tag, Clock, Loader2, Trash2, RefreshCw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -26,12 +26,37 @@ interface MenuData {
   items: FoodItem[];
 }
 
+const loadingStages = [
+  { emoji: '🔍', text: 'Scanning your menu with AI vision...', subtext: 'Reading every pixel like a food critic' },
+  { emoji: '🍽️', text: 'Extracting food items...', subtext: 'Found the spaghetti hiding behind the salad!' },
+  { emoji: '🧪', text: 'Analyzing ingredients...', subtext: 'Chemistry class was useful after all' },
+  { emoji: '🚨', text: 'Detecting allergens...', subtext: 'Making sure no one has a bad day' },
+  { emoji: '⏰', text: 'Calculating shelf life...', subtext: 'Time traveling into the future' },
+  { emoji: '🏷️', text: 'Generating printable labels...', subtext: 'Making it look pretty for the printer' },
+  { emoji: '✨', text: 'Almost there...', subtext: 'Putting the final touches!' },
+];
+
 export default function PrepLabelsPage() {
   const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Cycle through loading stages
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setLoadingStage(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingStage(prev => (prev + 1) % loadingStages.length);
+    }, 2000); // Change stage every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
 
   // Handle file upload
   const handleFileUpload = async (file: File) => {
@@ -185,13 +210,79 @@ export default function PrepLabelsPage() {
               </div>
             </div>
 
-        {/* Analyzing State */}
+        {/* Analyzing State - Fun Loading Screen */}
         {isAnalyzing && (
-          <Card className="p-12 bg-white/5 border-white/10">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Loader2 className="h-12 w-12 animate-spin text-[#c4dfc4]" />
-              <h3 className="text-xl font-semibold text-white">Analyzing Menu...</h3>
-              <p className="text-gray-400">AI is extracting food items and shelf life data</p>
+          <Card className="p-8 md:p-12 bg-gradient-to-br from-[#c4dfc4]/10 via-white/5 to-[#c8e0f5]/10 border-[#c4dfc4]/30 relative overflow-hidden">
+            {/* Animated background elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-10 left-10 text-4xl animate-bounce opacity-20">🍕</div>
+              <div className="absolute top-20 right-20 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.5s' }}>🍔</div>
+              <div className="absolute bottom-20 left-1/4 text-3xl animate-bounce opacity-20" style={{ animationDelay: '1s' }}>🥗</div>
+              <div className="absolute bottom-10 right-1/3 text-4xl animate-pulse opacity-20" style={{ animationDelay: '1.5s' }}>🍰</div>
+              <div className="absolute top-1/2 left-10 text-3xl animate-bounce opacity-20" style={{ animationDelay: '0.8s' }}>🌮</div>
+              <div className="absolute top-1/3 right-10 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.3s' }}>🍜</div>
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center justify-center gap-6 min-h-[400px]">
+              {/* Main emoji - huge and animated */}
+              <div className="text-8xl md:text-9xl animate-bounce mb-4">
+                {loadingStages[loadingStage].emoji}
+              </div>
+
+              {/* Status text */}
+              <div className="text-center space-y-3 max-w-lg">
+                <h3 className="text-2xl md:text-3xl font-bold text-white animate-pulse">
+                  {loadingStages[loadingStage].text}
+                </h3>
+                <p className="text-base md:text-lg text-gray-300 italic">
+                  {loadingStages[loadingStage].subtext}
+                </p>
+              </div>
+
+              {/* Progress dots */}
+              <div className="flex gap-2 mt-4">
+                {loadingStages.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                      index === loadingStage
+                        ? 'bg-[#c4dfc4] w-8 scale-125'
+                        : index < loadingStage
+                        ? 'bg-[#c4dfc4]/50'
+                        : 'bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Fun random facts */}
+              <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10 max-w-md">
+                <p className="text-sm text-gray-400 text-center">
+                  <span className="text-[#c4dfc4] font-semibold">Fun Fact:</span>{' '}
+                  {loadingStage === 0 && "AI can read menus faster than a hungry teenager! 🏃‍♂️"}
+                  {loadingStage === 1 && "The average restaurant menu has 32 items. Let's find yours! 📊"}
+                  {loadingStage === 2 && "Our AI knows over 10,000 ingredients. Even the weird ones! 🤓"}
+                  {loadingStage === 3 && "Fun fact: 8% of people have food allergies. We check for all of them! 🛡️"}
+                  {loadingStage === 4 && "Some foods last days, some last months. We calculate it all! ⏳"}
+                  {loadingStage === 5 && "Your printer is about to become very productive! 🖨️"}
+                  {loadingStage === 6 && "Almost done! Your labels will look amazing! 🎨"}
+                </p>
+              </div>
+
+              {/* Silly animation of food items being processed */}
+              <div className="flex gap-3 mt-4 text-3xl">
+                <span className="animate-bounce" style={{ animationDelay: '0s' }}>🍕</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>➡️</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🤖</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>➡️</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🏷️</span>
+              </div>
+
+              {/* Spinner at bottom */}
+              <div className="mt-6 flex items-center gap-3 text-gray-400">
+                <Loader2 className="h-5 w-5 animate-spin text-[#c4dfc4]" />
+                <span className="text-sm">Processing with AI magic...</span>
+              </div>
             </div>
           </Card>
         )}
