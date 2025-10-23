@@ -688,9 +688,12 @@ function FormsPageContent() {
   
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<"builder" | "settings" | "publish">("builder");
+  const [activeTab, setActiveTab] = useState<"builder" | "settings" | "publish" | "report">("builder");
   const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou">("general");
   const [activePublishSection, setActivePublishSection] = useState<"share">("share");
+  const [selectedResponseId, setSelectedResponseId] = useState<string | "all">("all");
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [formStatus, setFormStatus] = useState<"published" | "draft">("published");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   
@@ -824,6 +827,24 @@ function FormsPageContent() {
       isChatOpen ? '384px' : '48px'
     );
   }, [isChatOpen]);
+
+  // Fetch submissions when Report tab is active
+  React.useEffect(() => {
+    if (activeTab === "report" && (editingFormId || lastSavedFormId)) {
+      const formId = editingFormId || lastSavedFormId;
+      setLoadingSubmissions(true);
+      fetch(`/api/forms/${formId}/submissions`)
+        .then(res => res.json())
+        .then(data => {
+          setSubmissions(data.submissions || []);
+          setLoadingSubmissions(false);
+        })
+        .catch(err => {
+          console.error('Error fetching submissions:', err);
+          setLoadingSubmissions(false);
+        });
+    }
+  }, [activeTab, editingFormId, lastSavedFormId]);
 
   React_useEffect(() => {
     if (isEditingSubmitButton && submitButtonInputRef.current) {
@@ -1144,11 +1165,12 @@ function FormsPageContent() {
                       </div>
                     </div>
                     <div className="flex items-center justify-center">
-                      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish")} className="w-auto">
+                      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
                         <TabsList className="bg-[#1a1a1a]">
                           <TabsTrigger value="builder">Builder</TabsTrigger>
                           <TabsTrigger value="settings">Settings</TabsTrigger>
                           <TabsTrigger value="publish">Publish</TabsTrigger>
+                          <TabsTrigger value="report">Report</TabsTrigger>
                         </TabsList>
                       </Tabs>
                     </div>
@@ -1309,11 +1331,12 @@ function FormsPageContent() {
                           </div>
                         </div>
                         <div className="flex items-center justify-center">
-                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish")} className="w-auto">
+                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
                             <TabsList className="bg-[#1a1a1a]">
                               <TabsTrigger value="builder">Builder</TabsTrigger>
                               <TabsTrigger value="settings">Settings</TabsTrigger>
                               <TabsTrigger value="publish">Publish</TabsTrigger>
+                              <TabsTrigger value="report">Report</TabsTrigger>
                             </TabsList>
                           </Tabs>
                         </div>
@@ -1571,7 +1594,7 @@ function FormsPageContent() {
                     </div>
                   </div>
                 </>
-              ) : (
+              ) : activeTab === "publish" ? (
                 <>
                   {/* Publish View */}
                   {/* Left Panel - Publish Navigation */}
@@ -1602,11 +1625,12 @@ function FormsPageContent() {
                           </div>
                         </div>
                         <div className="flex items-center justify-center">
-                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish")} className="w-auto">
+                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
                             <TabsList className="bg-[#1a1a1a]">
                               <TabsTrigger value="builder">Builder</TabsTrigger>
                               <TabsTrigger value="settings">Settings</TabsTrigger>
                               <TabsTrigger value="publish">Publish</TabsTrigger>
+                              <TabsTrigger value="report">Report</TabsTrigger>
                             </TabsList>
                           </Tabs>
                         </div>
@@ -1686,6 +1710,228 @@ function FormsPageContent() {
                           </div>
                           )}
                         </Card>
+                      </ScrollArea>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Report View */}
+                  {/* Left Panel - Responses List */}
+                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                    <div className="p-3 space-y-1">
+                      {/* All Responses (Summary View) */}
+                      <button
+                        onClick={() => setSelectedResponseId("all")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          selectedResponseId === "all"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                        }`}
+                      >
+                        <div className="text-sm">All Responses</div>
+                        <div className="text-xs text-gray-500">{submissions.length} total submissions</div>
+                      </button>
+
+                      {/* Individual Responses */}
+                      {loadingSubmissions ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
+                        </div>
+                      ) : submissions.length > 0 ? (
+                        <>
+                          <Separator className="my-3 bg-white/10" />
+                          <div className="space-y-1">
+                            {submissions.map((submission: any) => {
+                              const submittedDate = new Date(submission.submitted_at).toLocaleString();
+                              const identifier = submission.response_data?.email || 
+                                                submission.response_data?.name || 
+                                                `Response ${submission.id.slice(0, 8)}`;
+                              
+                              return (
+                                <button
+                                  key={submission.id}
+                                  onClick={() => setSelectedResponseId(submission.id)}
+                                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                                    selectedResponseId === submission.id
+                                      ? "bg-[#c4dfc4]/20 text-white font-medium"
+                                      : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                                  }`}
+                                >
+                                  <div className="text-sm truncate">{identifier}</div>
+                                  <div className="text-xs text-gray-500">{submittedDate}</div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                          No responses yet
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Middle Panel - Report Content */}
+                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+                    {/* Report Sub-Header */}
+                    <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
+                      <div className="flex items-center justify-between gap-4 px-6 py-2">
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="text-white font-medium truncate max-w-xs">
+                            {formName || "Untitled Form"}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center">
+                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                            <TabsList className="bg-[#1a1a1a]">
+                              <TabsTrigger value="builder">Builder</TabsTrigger>
+                              <TabsTrigger value="settings">Settings</TabsTrigger>
+                              <TabsTrigger value="publish">Publish</TabsTrigger>
+                              <TabsTrigger value="report">Report</TabsTrigger>
+                            </TabsList>
+                          </Tabs>
+                        </div>
+                        <div className="flex items-center gap-3 justify-end flex-1">
+                          {/* Auto-save indicator */}
+                          {saving && (
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Saving...</span>
+                            </div>
+                          )}
+                          {!saving && lastSaveTime && (
+                            <div className="text-xs text-gray-500">
+                              Saved {formatTimeSince(lastSaveTime)}
+                            </div>
+                          )}
+                          
+                          <Button 
+                            size="sm" 
+                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                            onClick={handlePreview}
+                            disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Preview
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Report Content */}
+                    <div className="flex-1 overflow-y-auto">
+                      <ScrollArea className="h-full p-8">
+                        {submissions.length === 0 ? (
+                          <Card className="max-w-2xl mx-auto p-12 bg-[#1a1a1a] border-border/50 text-center">
+                            <h3 className="text-xl font-semibold text-white mb-2">No Responses Yet</h3>
+                            <p className="text-gray-400">
+                              Responses will appear here once people start submitting your form.
+                            </p>
+                          </Card>
+                        ) : selectedResponseId === "all" ? (
+                          <Card className="max-w-4xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                            <div className="space-y-6">
+                              {/* Summary Stats */}
+                              <div>
+                                <h2 className="text-2xl font-bold text-white mb-4">All Responses</h2>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                    <div className="text-sm text-gray-400">Total Submissions</div>
+                                    <div className="text-3xl font-bold text-white mt-1">{submissions.length}</div>
+                                  </Card>
+                                  <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                    <div className="text-sm text-gray-400">Last Submission</div>
+                                    <div className="text-lg font-medium text-white mt-1">
+                                      {submissions.length > 0 
+                                        ? new Date(submissions[0].submitted_at).toLocaleDateString()
+                                        : 'N/A'
+                                      }
+                                    </div>
+                                  </Card>
+                                </div>
+                              </div>
+
+                              {/* Export Button */}
+                              <div>
+                                <Button
+                                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                                  onClick={() => {
+                                    // TODO: Implement CSV export
+                                    alert('CSV export coming soon!');
+                                  }}
+                                >
+                                  Export as CSV
+                                </Button>
+                              </div>
+
+                              {/* Responses Table */}
+                              <div>
+                                <h3 className="text-lg font-semibold text-white mb-3">Recent Submissions</h3>
+                                <div className="space-y-2">
+                                  {submissions.map((submission: any) => (
+                                    <Card 
+                                      key={submission.id}
+                                      className="p-4 bg-[#0a0a0a] border-border/50 cursor-pointer hover:bg-[#0a0a0a]/80 transition-colors"
+                                      onClick={() => setSelectedResponseId(submission.id)}
+                                    >
+                                      <div className="flex justify-between items-start">
+                                        <div>
+                                          <div className="text-sm font-medium text-white">
+                                            {submission.response_data?.email || 
+                                             submission.response_data?.name || 
+                                             `Response ${submission.id.slice(0, 8)}`}
+                                          </div>
+                                          <div className="text-xs text-gray-500 mt-1">
+                                            {new Date(submission.submitted_at).toLocaleString()}
+                                          </div>
+                                        </div>
+                                        <Badge variant="outline" className="text-xs">
+                                          View Details
+                                        </Badge>
+                                      </div>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ) : (
+                          (() => {
+                            const submission = submissions.find((s: any) => s.id === selectedResponseId);
+                            if (!submission) return null;
+                            
+                            return (
+                              <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                                <div className="space-y-6">
+                                  <div>
+                                    <h2 className="text-2xl font-bold text-white mb-2">Response Details</h2>
+                                    <p className="text-sm text-gray-400">
+                                      Submitted: {new Date(submission.submitted_at).toLocaleString()}
+                                    </p>
+                                  </div>
+
+                                  <Separator className="bg-white/10" />
+
+                                  {/* Response Data */}
+                                  <div className="space-y-4">
+                                    {Object.entries(submission.response_data || {}).map(([key, value]: [string, any]) => (
+                                      <div key={key} className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300 capitalize">
+                                          {key.replace(/_/g, ' ')}
+                                        </label>
+                                        <div className="p-3 rounded-lg bg-[#0a0a0a] border border-border/50 text-white">
+                                          {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </Card>
+                            );
+                          })()
+                        )}
                       </ScrollArea>
                     </div>
                   </div>
