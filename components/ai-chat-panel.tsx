@@ -1630,18 +1630,24 @@ Please extract and build the form now.`;
         </>
       )}
 
-      {/* Disabled Overlay - shown on Settings/Publish tabs */}
-      {disabled && isOpen && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-10">
-          <div className="text-center px-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 mx-auto mb-4">
-              <Sparkles className="h-8 w-8 text-white/40" />
+      {/* Disabled Overlay - shown on Settings/Publish tabs (both expanded and collapsed) */}
+      {disabled && (
+        <div 
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-10 cursor-pointer"
+          onClick={onToggle}
+          title={isOpen ? "Click to collapse" : "Disabled on this tab"}
+        >
+          {isOpen && (
+            <div className="text-center px-6 pointer-events-none">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 mx-auto mb-4">
+                <Sparkles className="h-8 w-8 text-white/40" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">AI Assistant Disabled</h3>
+              <p className="text-sm text-white/60 max-w-xs">
+                AI Assistant is only available on the Builder tab
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">AI Assistant Disabled</h3>
-            <p className="text-sm text-white/60 max-w-xs">
-              AI Assistant is only available on the Builder tab
-            </p>
-          </div>
+          )}
         </div>
       )}
     </div>
