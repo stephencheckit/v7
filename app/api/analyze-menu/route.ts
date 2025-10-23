@@ -5,9 +5,9 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Configure function timeout - Edge Runtime gets 25s on free tier, 30s on Pro
-export const runtime = 'edge';
-export const maxDuration = 25; // seconds
+// Configure function timeout - Node Runtime allows longer timeouts
+export const runtime = 'nodejs';
+export const maxDuration = 60; // seconds
 
 export async function POST(req: NextRequest) {
   try {
@@ -93,7 +93,7 @@ Extract ALL items from ALL 7 days. Expect 70-120+ total items.`;
     // Call Claude Vision API
     console.log('[Analyze Menu] Calling Claude Vision API...');
     const response = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-20250219',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 8192, // Optimized for speed while handling large menus
       messages: [
         {
