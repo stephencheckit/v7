@@ -219,10 +219,10 @@ export default function PublicFormPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#c4dfc4] animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading form...</p>
+          <Loader2 className="w-10 h-10 md:w-12 md:h-12 text-[#c4dfc4] animate-spin mx-auto mb-4" />
+          <p className="text-sm md:text-base text-gray-400">Loading form...</p>
         </div>
       </div>
     );
@@ -230,8 +230,8 @@ export default function PublicFormPage() {
 
   if (error && !form) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
-        <Card className="bg-[#1a1a1a] border-red-500/30 p-8 max-w-md text-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 md:p-6">
+        <Card className="bg-[#1a1a1a] border-red-500/30 p-6 md:p-8 max-w-md w-full text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-white mb-2">Form Not Found</h1>
           <p className="text-gray-400">{error}</p>
@@ -252,20 +252,20 @@ export default function PublicFormPage() {
     };
 
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
-        <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 max-w-2xl">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 md:p-6">
+        <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-6 md:p-8 max-w-2xl w-full">
           <div className="text-center space-y-6">
             {/* Success Icon */}
             <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto" />
             
             {/* Custom Message */}
-            <p className="text-xl font-medium text-white whitespace-pre-wrap">
+            <p className="text-lg md:text-xl font-medium text-white whitespace-pre-wrap">
               {thankYouSettings.message}
             </p>
 
             {/* Response Summary */}
             {thankYouSettings.showResponseSummary && Object.keys(formValues).length > 0 && (
-              <div className="mt-6 p-4 rounded-lg bg-[#0a0a0a] border border-border/30 text-left">
+              <div className="mt-4 md:mt-6 p-3 md:p-4 rounded-lg bg-[#0a0a0a] border border-border/30 text-left">
                 <h3 className="text-sm font-medium text-gray-400 mb-3">Your Response:</h3>
                 <div className="space-y-2">
                   {Object.entries(formValues).map(([key, value]) => (
@@ -335,26 +335,26 @@ export default function PublicFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] py-12 px-6">
+    <div className="min-h-screen bg-[#0a0a0a] py-8 md:py-12 px-4 md:px-6">
       <div className="max-w-2xl mx-auto">
         {/* Preview Banner */}
         {isPreview && (
-          <div className="mb-4 p-4 bg-[#c4dfc4]/10 border-2 border-[#c4dfc4]/30 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-[#c4dfc4] text-[#0a0a0a]">Preview Mode</Badge>
-              <p className="text-sm text-gray-300">
+          <div className="mb-4 p-3 md:p-4 bg-[#c4dfc4]/10 border-2 border-[#c4dfc4]/30 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <Badge className="bg-[#c4dfc4] text-[#0a0a0a] shrink-0">Preview Mode</Badge>
+              <p className="text-xs sm:text-sm text-gray-300">
                 Submissions in preview mode will not be counted in your analytics.
               </p>
             </div>
           </div>
         )}
         
-        <Card className="bg-[#1a1a1a] border-white/10 p-8">
+        <Card className="bg-[#1a1a1a] border-white/10 p-4 md:p-8">
           {/* Form Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">{form?.title}</h1>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{form?.title}</h1>
             {form?.description && (
-              <p className="text-gray-400">{form.description}</p>
+              <p className="text-sm md:text-base text-gray-400">{form.description}</p>
             )}
           </div>
 
@@ -555,7 +555,7 @@ export default function PublicFormPage() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] font-semibold py-6 text-lg"
+                className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] font-semibold py-4 md:py-6 text-base md:text-lg"
               >
                 {submitting ? (
                   <>
@@ -572,12 +572,12 @@ export default function PublicFormPage() {
 
         {/* AI Analysis Feed - Below Form */}
         {analysisFeed.length > 0 && (
-          <Card className="bg-[#1a1a1a] border-white/10 p-6 mt-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <Card className="bg-[#1a1a1a] border-white/10 p-4 md:p-6 mt-4 md:mt-6">
+            <h3 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4 flex items-center gap-2">
               <span className="text-purple-400">✨</span>
               AI Analysis Feed
             </h3>
-            <ScrollArea className="h-96 pr-4">
+            <ScrollArea className="h-64 md:h-96 pr-2 md:pr-4">
               <div className="space-y-3">
                 {analysisFeed.map((entry, idx) => {
                   const getQuestionLabel = (fieldId: string) => {
