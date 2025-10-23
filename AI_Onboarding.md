@@ -5,6 +5,42 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Fix Form Status & Clickable Settings - October 23, 2025**
+**Commit:** `5273f10` - Fix form status to use published/draft and make settings sections clickable  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Fixed:**
+- ✅ **Form Status Values**: Changed from `active/inactive` to `published/draft` to match API
+- ✅ **API Integration**: Status now saves correctly to database
+- ✅ **Clickable Settings**: Left panel "General" section now clickable with active state
+- ✅ **Load Form Status**: Form status loads from database when editing
+
+**Problem Solved:**
+- JSON parsing error: "Unexpected token '<', "<!DOCTYPE "..." - API was rejecting invalid status values
+- Settings sections were static text instead of interactive navigation
+
+**Changes Made:**
+1. Updated state type: `"active" | "inactive"` → `"published" | "draft"`
+2. Updated dropdown options: "Active/Inactive" → "Published/Draft"
+3. Added clickable button in left settings panel with hover/active states
+4. Added `status` to form save payload (POST and PUT endpoints)
+5. API now accepts `status` field on form creation and update
+6. Form status loads from database when editing existing form
+
+**Files Changed:** 2 files
+- `app/forms/builder/page.tsx` - Updated status types, added clickable section, save/load status
+- `app/api/forms/route.ts` - Accept status on POST endpoint
+
+**Impact:**
+- ✅ Forms save successfully without JSON errors
+- ✅ Form status persists to database
+- ✅ Published/draft status controls form submission availability
+- ✅ Better UX with clickable settings navigation
+- ✅ Ready to add more settings sections below "General"
+
+---
+
 ### **Header Layout Update - October 23, 2025**
 **Commit:** `138f71e` - Add form name to header and center Builder/Settings tabs  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
