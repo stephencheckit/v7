@@ -1,7 +1,66 @@
 # AI Onboarding Document - V7 Form Builder
 
+> 📌 **For detailed session handover (latest work), see [`SESSION_HANDOVER.md`](./SESSION_HANDOVER.md)**
+
 ## Deployment Log
 *Most recent deployments listed first*
+
+### **Deploy #28 - October 23, 2025**
+**Commit:** `076e9da` - AI Video Form Filler with Live Analysis Feed  
+**Status:** ✅ DEPLOYED to GitHub (Vercel auto-deploy)  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **AI Video Form Filler**: Complete implementation using OpenAI GPT-4o Vision API
+- ✅ **Live Analysis Feed**: Real-time display of AI snapshot transcriptions with confidence scores
+- ✅ **Test Page**: Created `/test-video-ai` for standalone testing
+- ✅ **Form Selector**: Created `/video-form-fill` for choosing forms to fill with AI
+- ✅ **Public Form Integration**: AI Vision Assistant integrated into `/f/[id]` pages
+- ✅ **Auto-Fill Logic**: AI selects highest-confidence answer from all snapshots (80%+ threshold)
+- ✅ **Snapshot Counter**: Fixed to properly increment (#1, #2, #3...)
+- ✅ **UX Improvements**: Analysis feed moved below form questions, Preview button removed from builder
+
+**Problems Solved (Score: 90/100):**
+- ✅ Camera access works on laptops (front-facing camera)
+- ✅ Video feed displays properly (fixed React hydration timing issues)
+- ✅ Snapshot capture working every 3 seconds
+- ✅ AI analyzes images and extracts form answers
+- ✅ Continuous feed shows all AI observations
+- ✅ Snapshot counter increments correctly
+- ✅ Single best answer selected (highest confidence across all snapshots)
+
+**Technical Implementation:**
+1. **Camera & Video**:
+   - `useVideoRecording` hook manages camera access via `getUserMedia`
+   - useEffect connects MediaStream to video element (fixes hydration issues)
+   - 2-second delay before snapshot interval starts (ensures video is ready)
+   
+2. **AI Analysis**:
+   - Snapshots captured via Canvas API, converted to base64
+   - Sent to `/api/analyze-video-form` with form schema
+   - OpenAI GPT-4o Vision analyzes image and returns field answers with confidence
+   
+3. **Answer Selection**:
+   - Each snapshot analysis stored in `analysisFeed` with timestamp
+   - `savedAnswers` tracks highest-confidence answer per field
+   - Only updates form if new analysis has higher confidence than previous
+   
+4. **UI Components**:
+   - AI Analysis Feed shows: Snapshot #, timestamp, field answers, confidence scores
+   - Video preview with Start/Stop controls
+   - Form auto-fills as AI gains confidence
+
+**Files Changed:**
+- `components/ai-vision-assistant.tsx` - Added snapshot counter, onAnalysisComplete callback
+- `hooks/use-video-recording.ts` - Fixed camera timing issues, added extensive logging
+- `app/test-video-ai/page.tsx` - NEW: Standalone test page with pre-loaded questions
+- `app/video-form-fill/page.tsx` - NEW: Form selector for AI filling
+- `app/demo-form/page.tsx` - NEW: Quick demo page
+- `app/f/[id]/page.tsx` - Integrated AI Vision Assistant with analysis feed
+- `app/forms/builder/page.tsx` - Removed Preview button
+- `app/preview/page.tsx` - Added analysis feed support
+
+---
 
 ### **Fix - October 22, 2025 (Evening)**
 **Issue:** ❌ Forms Not Saving  
