@@ -120,7 +120,8 @@ export default function FormsPage() {
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight text-white">
+                  <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
+                    <FileText className="h-10 w-10 text-[#c4dfc4]" />
                     Forms
                   </h1>
                   <p className="text-muted-foreground mt-2">

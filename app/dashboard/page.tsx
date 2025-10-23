@@ -24,7 +24,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Thermometer, Users } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Thermometer, Users, LayoutDashboard } from "lucide-react";
 
 // Food Safety Data
 const complianceData = [
@@ -69,10 +69,11 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight text-white">
+                <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
+                  <LayoutDashboard className="h-10 w-10 text-[#c4dfc4]" />
                   Dashboard
                 </h1>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-2">
                   Food Safety Command Center - Real-time compliance monitoring
                 </p>
               </div>

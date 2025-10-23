@@ -23,7 +23,8 @@ import {
   Key,
   Mail,
   Smartphone,
-  Globe
+  Globe,
+  Settings as SettingsIcon
 } from "lucide-react";
 import {
   Table,
@@ -68,8 +69,11 @@ export default function SettingsPage() {
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-8">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-white">Settings</h1>
-              <p className="text-muted-foreground mt-1">
+              <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
+                <SettingsIcon className="h-10 w-10 text-[#c4dfc4]" />
+                Settings
+              </h1>
+              <p className="text-muted-foreground mt-2">
                 Manage your organization, users, and application preferences
               </p>
             </div>

@@ -132,53 +132,59 @@ export default function PrepLabelsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-7xl mx-auto space-y-8 p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-white flex items-center gap-3">
-              <Tag className="h-10 w-10 text-[#c4dfc4]" />
-              Prep Labels
-            </h1>
-            <p className="text-gray-400 mt-2">
-              Upload menu photo, AI generates labels for all items
-            </p>
-          </div>
+      <div className="w-full h-full overflow-auto">
+        <div className="p-8">
+          <div className="mx-auto max-w-[1600px] space-y-8">
+            {/* Header */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
+                    <Tag className="h-10 w-10 text-[#c4dfc4]" />
+                    Prep Labels
+                  </h1>
+                  <p className="text-muted-foreground mt-2">
+                    Upload menu photo, AI generates labels for all items
+                  </p>
+                </div>
 
-          <div className="flex gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-            />
-            
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzing}
-              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Menu
-            </Button>
+                <div className="flex gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                  />
+                  
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isAnalyzing}
+                    size="sm"
+                    className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Menu
+                  </Button>
 
-            {menuData && (
-              <Button
-                onClick={() => {
-                  setMenuData(null);
-                  setImagePreview(null);
-                  setSelectedCategory('all');
-                }}
-                variant="outline"
-                className="bg-white/5 hover:bg-white/10"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
+                  {menuData && (
+                    <Button
+                      onClick={() => {
+                        setMenuData(null);
+                        setImagePreview(null);
+                        setSelectedCategory('all');
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="bg-white/5 hover:bg-white/10"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
 
         {/* Analyzing State */}
         {isAnalyzing && (
@@ -328,6 +334,8 @@ export default function PrepLabelsPage() {
             </div>
           </Card>
         ) : null}
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
