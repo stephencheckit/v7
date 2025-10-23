@@ -656,9 +656,18 @@ function FormsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"builder" | "settings">("builder");
-  const [activeSettingsSection, setActiveSettingsSection] = useState<"general">("general");
+  const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou">("general");
   const [formStatus, setFormStatus] = useState<"published" | "draft">("published");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
+  
+  // Thank You Page Settings
+  const [thankYouMessage, setThankYouMessage] = useState("Thank you for your submission!");
+  const [allowAnotherSubmission, setAllowAnotherSubmission] = useState(true);
+  const [showCloseButton, setShowCloseButton] = useState(false);
+  const [allowSocialShare, setAllowSocialShare] = useState(false);
+  const [showResponseSummary, setShowResponseSummary] = useState(true);
+  const [redirectUrl, setRedirectUrl] = useState("");
+  const [redirectDelay, setRedirectDelay] = useState(0);
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
   const submitButtonInputRef = React.useRef<HTMLInputElement>(null);
   
@@ -1249,6 +1258,18 @@ function FormsPageContent() {
                         <div className="text-sm">General</div>
                         <div className="text-xs text-gray-500">Name, status, description</div>
                       </button>
+                      
+                      <button
+                        onClick={() => setActiveSettingsSection("thankyou")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          activeSettingsSection === "thankyou"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                        }`}
+                      >
+                        <div className="text-sm">Thank You Page</div>
+                        <div className="text-xs text-gray-500">Post-submission experience</div>
+                      </button>
                     </div>
                   </div>
 
@@ -1322,6 +1343,7 @@ function FormsPageContent() {
                     <div className="flex-1 overflow-y-auto">
                       <ScrollArea className="h-full p-8">
                         <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                          {activeSettingsSection === "general" && (
                           <div className="space-y-8">
                             {/* Form Name */}
                             <div className="space-y-3">
@@ -1368,6 +1390,181 @@ function FormsPageContent() {
                               </p>
                             </div>
                           </div>
+                          )}
+
+                          {activeSettingsSection === "thankyou" && (
+                          <div className="space-y-8">
+                            {/* Section Header */}
+                            <div>
+                              <h3 className="text-xl font-semibold text-white mb-2">Thank You Page</h3>
+                              <p className="text-sm text-gray-400">Customize what users see after submitting your form</p>
+                            </div>
+
+                            {/* Thank You Message */}
+                            <div className="space-y-3">
+                              <label className="text-sm font-medium text-gray-300">Thank You Message</label>
+                              <textarea
+                                value={thankYouMessage}
+                                onChange={(e) => setThankYouMessage(e.target.value)}
+                                rows={4}
+                                className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors resize-none"
+                                placeholder="Enter your thank you message..."
+                              />
+                              <p className="text-xs text-gray-400 italic">This message will be displayed to users after they submit the form</p>
+                            </div>
+
+                            {/* Post-Submission Options */}
+                            <div className="space-y-4">
+                              <h4 className="text-base font-medium text-white">Post-Submission Options</h4>
+                              
+                              {/* Allow Another Submission */}
+                              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
+                                <input
+                                  type="checkbox"
+                                  id="allowAnother"
+                                  checked={allowAnotherSubmission}
+                                  onChange={(e) => setAllowAnotherSubmission(e.target.checked)}
+                                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                                />
+                                <div className="flex-1">
+                                  <label htmlFor="allowAnother" className="text-sm font-medium text-gray-200 cursor-pointer">
+                                    Allow another submission
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-1">Users can click a button to submit another response</p>
+                                </div>
+                              </div>
+
+                              {/* Show Response Summary */}
+                              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
+                                <input
+                                  type="checkbox"
+                                  id="showSummary"
+                                  checked={showResponseSummary}
+                                  onChange={(e) => setShowResponseSummary(e.target.checked)}
+                                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                                />
+                                <div className="flex-1">
+                                  <label htmlFor="showSummary" className="text-sm font-medium text-gray-200 cursor-pointer">
+                                    Show response summary
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-1">Display a summary of what the user submitted</p>
+                                </div>
+                              </div>
+
+                              {/* Show Close Button */}
+                              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
+                                <input
+                                  type="checkbox"
+                                  id="showClose"
+                                  checked={showCloseButton}
+                                  onChange={(e) => setShowCloseButton(e.target.checked)}
+                                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                                />
+                                <div className="flex-1">
+                                  <label htmlFor="showClose" className="text-sm font-medium text-gray-200 cursor-pointer">
+                                    Show close button
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-1">Display a button to close/exit the form</p>
+                                </div>
+                              </div>
+
+                              {/* Allow Social Sharing */}
+                              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
+                                <input
+                                  type="checkbox"
+                                  id="socialShare"
+                                  checked={allowSocialShare}
+                                  onChange={(e) => setAllowSocialShare(e.target.checked)}
+                                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                                />
+                                <div className="flex-1">
+                                  <label htmlFor="socialShare" className="text-sm font-medium text-gray-200 cursor-pointer">
+                                    Allow social sharing
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-1">Let users share this form on social media</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Auto-Redirect */}
+                            <div className="space-y-4">
+                              <h4 className="text-base font-medium text-white">Auto-Redirect (Optional)</h4>
+                              
+                              <div className="space-y-3">
+                                <label className="text-sm font-medium text-gray-300">Redirect URL</label>
+                                <Input
+                                  value={redirectUrl}
+                                  onChange={(e) => setRedirectUrl(e.target.value)}
+                                  className="bg-[#0a0a0a] border-border/50 text-gray-100"
+                                  placeholder="https://example.com/thank-you"
+                                />
+                                <p className="text-xs text-gray-400 italic">Leave empty to stay on the thank you page</p>
+                              </div>
+
+                              {redirectUrl && (
+                                <div className="space-y-3">
+                                  <label className="text-sm font-medium text-gray-300">Redirect Delay (seconds)</label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="30"
+                                    value={redirectDelay}
+                                    onChange={(e) => setRedirectDelay(parseInt(e.target.value) || 0)}
+                                    className="bg-[#0a0a0a] border-border/50 text-gray-100"
+                                  />
+                                  <p className="text-xs text-gray-400 italic">
+                                    {redirectDelay === 0 
+                                      ? "Redirect immediately after submission" 
+                                      : `Wait ${redirectDelay} second${redirectDelay === 1 ? '' : 's'} before redirecting`}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Preview */}
+                            <div className="space-y-3">
+                              <h4 className="text-base font-medium text-white">Preview</h4>
+                              <div className="p-6 rounded-lg bg-gradient-to-br from-[#c4dfc4]/10 to-[#b5d0b5]/10 border-2 border-[#c4dfc4]/30">
+                                <div className="text-center space-y-4">
+                                  <div className="text-4xl">✓</div>
+                                  <p className="text-lg font-medium text-white whitespace-pre-wrap">{thankYouMessage}</p>
+                                  
+                                  {showResponseSummary && (
+                                    <div className="text-sm text-gray-400 italic">
+                                      [Response summary would appear here]
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex flex-wrap gap-2 justify-center pt-4">
+                                    {allowAnotherSubmission && (
+                                      <div className="px-4 py-2 rounded-lg bg-[#c4dfc4] text-[#0a0a0a] text-sm font-medium">
+                                        Submit Another Response
+                                      </div>
+                                    )}
+                                    {showCloseButton && (
+                                      <div className="px-4 py-2 rounded-lg border-2 border-gray-600 text-gray-300 text-sm font-medium">
+                                        Close
+                                      </div>
+                                    )}
+                                    {allowSocialShare && (
+                                      <div className="px-4 py-2 rounded-lg border-2 border-gray-600 text-gray-300 text-sm font-medium">
+                                        Share
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {redirectUrl && (
+                                    <p className="text-xs text-gray-500 italic pt-2">
+                                      {redirectDelay === 0 
+                                        ? "Redirecting now..." 
+                                        : `Redirecting in ${redirectDelay} second${redirectDelay === 1 ? '' : 's'}...`}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          )}
                         </Card>
                       </ScrollArea>
                     </div>
