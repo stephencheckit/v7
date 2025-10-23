@@ -655,6 +655,8 @@ function FormsPageContent() {
   
   const [isMounted, setIsMounted] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<"builder" | "settings">("builder");
+  const [formStatus, setFormStatus] = useState<"active" | "inactive">("active");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
   const submitButtonInputRef = React.useRef<HTMLInputElement>(null);
@@ -735,13 +737,13 @@ function FormsPageContent() {
     }
   }, [formFields, formName, formDescription, saving, loadingForm, isEditMode]);
 
-  // Update CSS variable for header margin
+  // Update CSS variable for header margin (hide AI chat on settings tab)
   React.useEffect(() => {
     document.documentElement.style.setProperty(
       '--ai-chat-width',
-      isChatOpen ? '384px' : '48px'
+      activeTab === "settings" ? '0px' : (isChatOpen ? '384px' : '48px')
     );
-  }, [isChatOpen]);
+  }, [isChatOpen, activeTab]);
 
   React_useEffect(() => {
     if (isEditingSubmitButton && submitButtonInputRef.current) {
@@ -987,6 +989,8 @@ function FormsPageContent() {
             <div className="flex h-[calc(100vh-4rem)] relative">
             {/* Main Content Area */}
             <div className="flex flex-1 overflow-hidden">
+              {activeTab === "builder" ? (
+                <>
                   {/* Left Panel - Widget Navigation - GRADIENT BLACK */}
                   <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
                     <div className="p-3 space-y-3">
@@ -1019,9 +1023,10 @@ function FormsPageContent() {
                 <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                   <div className="flex items-center justify-between gap-4 px-6 py-2">
                     <div className="flex-1 flex items-center justify-center">
-                      <Tabs value="builder" className="w-auto">
+                      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings")} className="w-auto">
                         <TabsList className="bg-[#1a1a1a]">
                           <TabsTrigger value="builder">Builder</TabsTrigger>
+                          <TabsTrigger value="settings">Settings</TabsTrigger>
                         </TabsList>
                       </Tabs>
                     </div>
@@ -1218,6 +1223,134 @@ function FormsPageContent() {
                   )}
                 </div>
               </div>
+                </>
+              ) : (
+                <>
+                  {/* Settings View */}
+                  {/* Left Panel - Settings Navigation */}
+                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                    <div className="p-6">
+                      <h2 className="text-lg font-semibold text-gray-100">Form Settings</h2>
+                    </div>
+                  </div>
+
+                  {/* Middle Panel - Settings Content */}
+                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+                    {/* Settings Sub-Header */}
+                    <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
+                      <div className="flex items-center justify-between gap-4 px-6 py-2">
+                        <div className="flex-1 flex items-center justify-center">
+                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings")} className="w-auto">
+                            <TabsList className="bg-[#1a1a1a]">
+                              <TabsTrigger value="builder">Builder</TabsTrigger>
+                              <TabsTrigger value="settings">Settings</TabsTrigger>
+                            </TabsList>
+                          </Tabs>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {hasUnsavedChanges && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="hover:bg-white/5" 
+                              onClick={() => {
+                                if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                                  router.push('/forms');
+                                }
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          {hasUnsavedChanges || !lastSavedFormId ? (
+                            <Button 
+                              size="sm" 
+                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                              onClick={handleSaveAndShare}
+                              disabled={saving || loadingForm}
+                            >
+                              {saving ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                  Saving...
+                                </>
+                              ) : (
+                                <>
+                                  <Share2 className="w-4 h-4 mr-2" />
+                                  Save & Share
+                                </>
+                              )}
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                              onClick={() => setShowShareModal(true)}
+                            >
+                              <Share2 className="w-4 h-4 mr-2" />
+                              Share
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Settings Content */}
+                    <div className="flex-1 overflow-y-auto">
+                      <ScrollArea className="h-full p-8">
+                        <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                          <div className="space-y-8">
+                            {/* Form Name */}
+                            <div className="space-y-3">
+                              <label className="text-sm font-medium text-gray-300">Form Name</label>
+                              {isEditingFormName ? (
+                                <Input
+                                  ref={formNameInputRef}
+                                  value={formName}
+                                  onChange={(e) => setFormName(e.target.value)}
+                                  onBlur={() => setIsEditingFormName(false)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      setIsEditingFormName(false);
+                                    }
+                                  }}
+                                  className="text-2xl font-bold border-2 border-[#c4dfc4]/30 focus:border-[#c4dfc4] px-4 py-3 bg-[#0a0a0a] text-gray-100"
+                                  placeholder="Untitled Form"
+                                />
+                              ) : (
+                                <div
+                                  onClick={() => setIsEditingFormName(true)}
+                                  className="text-2xl font-bold cursor-text text-gray-100 hover:text-gray-300 transition-colors border-2 border-transparent hover:border-[#c4dfc4]/30 px-4 py-3 rounded-lg"
+                                >
+                                  {formName || "Untitled Form"}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Form Status */}
+                            <div className="space-y-3">
+                              <label className="text-sm font-medium text-gray-300">Form Status</label>
+                              <select
+                                value={formStatus}
+                                onChange={(e) => setFormStatus(e.target.value as "active" | "inactive")}
+                                className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors"
+                              >
+                                <option value="active">Active - Can receive responses</option>
+                                <option value="inactive">Inactive - Preview mode only</option>
+                              </select>
+                              <p className="text-xs text-gray-400 italic">
+                                {formStatus === "active" 
+                                  ? "This form is live and can collect responses from users."
+                                  : "This form is disabled and will only work in preview mode."}
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+                      </ScrollArea>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -1225,24 +1358,26 @@ function FormsPageContent() {
         )}
       </AppLayout>
 
-      {/* Right Panel - AI Chat - Dynamic with Real API */}
-      <AIChatPanel
-        isOpen={isChatOpen}
-        onToggle={() => setIsChatOpen(!isChatOpen)}
-        formId={editingFormId}
-        currentPage="builder"
-        currentFields={formFields}
-        onFormUpdate={(fields, formMeta) => {
-          setFormFields(fields);
-          if (formMeta?.title) setFormName(formMeta.title);
-          if (formMeta?.description) setFormDescription(formMeta.description);
-          
-          // Mark for auto-save when AI creates a complete form
-          if (fields.length > 0 && formMeta?.title && !isEditMode) {
-            shouldAutoSave.current = true;
-          }
-        }}
-      />
+      {/* Right Panel - AI Chat - Dynamic with Real API - Only show on Builder tab */}
+      {activeTab === "builder" && (
+        <AIChatPanel
+          isOpen={isChatOpen}
+          onToggle={() => setIsChatOpen(!isChatOpen)}
+          formId={editingFormId}
+          currentPage="builder"
+          currentFields={formFields}
+          onFormUpdate={(fields, formMeta) => {
+            setFormFields(fields);
+            if (formMeta?.title) setFormName(formMeta.title);
+            if (formMeta?.description) setFormDescription(formMeta.description);
+            
+            // Mark for auto-save when AI creates a complete form
+            if (fields.length > 0 && formMeta?.title && !isEditMode) {
+              shouldAutoSave.current = true;
+            }
+          }}
+        />
+      )}
 
       <DragOverlay>
           {activeWidget ? (
