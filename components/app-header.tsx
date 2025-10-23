@@ -73,7 +73,7 @@ export function AppHeader() {
       // Filter client-side
       if (allForms && !fetchError) {
         console.log('🔍 Filtering forms...');
-        forms = allForms.filter(form => {
+        forms = allForms.filter((form: any) => {
           const searchLower = query.toLowerCase();
           const titleMatch = form.title?.toLowerCase().includes(searchLower);
           const descMatch = form.description?.toLowerCase().includes(searchLower);
@@ -89,16 +89,16 @@ export function AppHeader() {
       if (error) {
         console.error('❌ Search error details:', {
           error,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
+          message: (error as any).message,
+          details: (error as any).details,
+          hint: (error as any).hint,
+          code: (error as any).code
         });
       }
 
       if (!error && forms) {
         console.log(`✅ Found ${forms.length} forms`);
-        forms.forEach(form => {
+        forms.forEach((form: any) => {
           results.push({
             id: form.id,
             title: form.title || 'Untitled Form',
