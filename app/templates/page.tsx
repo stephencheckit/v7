@@ -1,4 +1,3 @@
-import { AppLayout } from "@/components/app-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ const templates = [
 
 export default function TemplatesPage() {
   return (
-    <AppLayout>
+    
       <div className="w-full h-full overflow-auto">
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-8">
@@ -96,7 +95,7 @@ export default function TemplatesPage() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    
   );
 }
 

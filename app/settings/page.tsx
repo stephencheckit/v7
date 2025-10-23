@@ -1,6 +1,5 @@
 "use client";
 
-import { AppLayout } from "@/components/app-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +63,7 @@ const integrations = [
 
 export default function SettingsPage() {
   return (
-    <AppLayout>
+    
       <div className="w-full h-full overflow-auto">
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-8">
@@ -642,6 +641,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    
   );
 }

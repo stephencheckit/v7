@@ -3,6 +3,7 @@ import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
+import { ConditionalLayout } from "@/components/conditional-layout";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -62,7 +63,9 @@ export default function RootLayout({
         style={{ fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif' }}
       >
         <NotificationProvider>
-          {children}
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
         </NotificationProvider>
         <Toaster position="top-right" richColors />
       </body>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppLayout } from "@/components/app-layout";
 import { createClient } from "@/lib/supabase/client";
 import { SensorCard } from "@/components/sensors/sensor-card";
 import { SensorStats } from "@/components/sensors/sensor-stats";
@@ -116,20 +115,20 @@ export default function SensorsPage() {
 
   if (loading) {
     return (
-      <AppLayout>
+      
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin h-12 w-12 border-4 border-[#c4dfc4] border-t-transparent rounded-full mx-auto mb-4"></div>
             <p className="text-gray-400">Loading sensors...</p>
           </div>
         </div>
-      </AppLayout>
+      
     );
   }
 
   if (error) {
     return (
-      <AppLayout>
+      
         <div className="flex items-center justify-center h-full">
           <div className="text-center text-red-400">
             <p className="text-xl mb-2">Error loading sensors</p>
@@ -142,12 +141,12 @@ export default function SensorsPage() {
             </button>
           </div>
         </div>
-      </AppLayout>
+      
     );
   }
 
   return (
-    <AppLayout>
+    
       <div className="w-full h-full overflow-auto">
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-6">
@@ -232,7 +231,7 @@ export default function SensorsPage() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    
   );
 }
 

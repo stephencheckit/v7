@@ -32,9 +32,6 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-// Global flag to ensure we only read the cookie once ever, even across remounts
-let hasReadCookieGlobal = false
-
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
   open: boolean
@@ -73,35 +70,11 @@ function SidebarProvider({
   const [openMobile, setOpenMobile] = React.useState(false)
 
   // This is the internal state of the sidebar.
-  // Initialize from cookie synchronously but only in a way that matches SSR
-  const [_open, _setOpen] = React.useState(() => {
-    // Always return defaultOpen for SSR/initial render
-    return defaultOpen
-  })
-  
-  // Only read cookie once ever using global flag
-  React.useEffect(() => {
-    if (!hasReadCookieGlobal && typeof document !== 'undefined') {
-      hasReadCookieGlobal = true
-      const cookieMatch = document.cookie.match(new RegExp(`${SIDEBAR_COOKIE_NAME}=([^;]+)`));
-      if (cookieMatch) {
-        const cookieValue = cookieMatch[1] === 'true';
-        _setOpen(cookieValue);
-      }
-    }
-  }, [])
+  // We use openProp and setOpenProp for control from outside the component.
+  const [_open, _setOpen] = React.useState(defaultOpen)
   const open = openProp ?? _open
-  const lastSetTimeRef = React.useRef(0)
-  
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      // Prevent rapid state changes (debounce to 300ms)
-      const now = Date.now()
-      if (now - lastSetTimeRef.current < 300) {
-        return
-      }
-      lastSetTimeRef.current = now
-      
       const openState = typeof value === "function" ? value(open) : value
       if (setOpenProp) {
         setOpenProp(openState)
@@ -568,6 +541,7 @@ function SidebarMenuButton({
         side="right"
         align="center"
         hidden={state !== "collapsed" || isMobile}
+        className="pointer-events-none"
         {...tooltip}
       />
     </Tooltip>

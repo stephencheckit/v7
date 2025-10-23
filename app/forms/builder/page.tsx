@@ -2,7 +2,6 @@
 
 import { useState, useEffect as React_useEffect, Suspense } from "react";
 import * as React from "react";
-import { AppLayout } from "@/components/app-layout";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1142,7 +1141,7 @@ function FormsPageContent() {
 
   return (
     <div className="flex h-screen">
-      <AppLayout>
+      
         {!isMounted ? (
           <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
             <div className="text-muted-foreground">Loading...</div>
@@ -2140,7 +2139,7 @@ function FormsPageContent() {
 
           </DndContext>
         )}
-      </AppLayout>
+      
 
       {/* Right Panel - AI Chat - Dynamic with Real API - Always visible but disabled on Settings/Publish */}
       <AIChatPanel

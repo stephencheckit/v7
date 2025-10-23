@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AppLayout } from "@/components/app-layout";
 import {
   PieChart,
   Pie,
@@ -87,8 +86,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <AppLayout>
-      <div className="w-full h-full overflow-auto">
+    <div className="w-full h-full overflow-auto">
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-8">
             {/* Header */}
@@ -336,6 +334,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </AppLayout>
   );
 }

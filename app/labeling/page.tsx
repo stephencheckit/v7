@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { Camera, Upload, Tag, Clock, Loader2, Trash2, RefreshCw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { AppLayout } from '@/components/app-layout';
 import { zebraPrinter } from '@/lib/printer/zebra-client';
 import { toast } from 'sonner';
 
@@ -131,7 +130,7 @@ export default function PrepLabelsPage() {
   ) || [];
 
   return (
-    <AppLayout>
+    
       <div className="w-full h-full overflow-auto">
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-8">
@@ -337,7 +336,7 @@ export default function PrepLabelsPage() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    
   );
 }
 

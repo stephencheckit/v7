@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AppLayout } from "@/components/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,20 +76,20 @@ export default function ReportPage() {
 
   if (loading) {
     return (
-      <AppLayout>
+      
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <Loader2 className="w-12 h-12 text-[#c4dfc4] animate-spin mx-auto mb-4" />
             <p className="text-gray-400">Loading report...</p>
           </div>
         </div>
-      </AppLayout>
+      
     );
   }
 
   if (error || !report) {
     return (
-      <AppLayout>
+      
         <div className="flex items-center justify-center min-h-screen">
           <Card className="bg-[#1a1a1a] border-red-500/30 p-8 max-w-md text-center">
             <h1 className="text-xl font-bold text-white mb-2">Error</h1>
@@ -100,12 +99,12 @@ export default function ReportPage() {
             </Button>
           </Card>
         </div>
-      </AppLayout>
+      
     );
   }
 
   return (
-    <AppLayout>
+    
       <div className="p-8">
         {/* Header */}
         <div className="mb-8">
@@ -262,7 +261,7 @@ export default function ReportPage() {
           </Card>
         </div>
       </div>
-    </AppLayout>
+    
   );
 }
 

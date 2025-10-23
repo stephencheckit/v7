@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AppLayout } from "@/components/app-layout";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -31,7 +30,7 @@ export default function VisionDashboard() {
   const [activeTab, setActiveTab] = useState<"predictions" | "insights" | "monitoring">("predictions");
 
   return (
-    <AppLayout>
+    
       <div className="w-full h-full overflow-auto bg-[#0a0a0a] text-white">
         <div className="p-4 md:p-8">
           {/* Header */}
@@ -158,7 +157,7 @@ export default function VisionDashboard() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    
   );
 }
 
