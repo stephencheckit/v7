@@ -56,6 +56,9 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile, state } = useSidebar();
   
   const handleLinkClick = (e: React.MouseEvent) => {
+    // Stop propagation to prevent sidebar from toggling
+    e.stopPropagation();
+    
     // Only handle mobile - let desktop links work normally
     if (isMobile) {
       setOpenMobile(false);
