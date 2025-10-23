@@ -765,7 +765,7 @@ function FormsPageContent() {
       
       setShareUrl(`${window.location.origin}/f/${form.id}`);
       setLastSavedFormId(form.id);
-      setHasUnsavedChanges(false); // Reset unsaved changes when loading
+      setLastSaveTime(new Date()); // Set initial save time
     } catch (error) {
       console.error('Error loading form:', error);
       alert('Failed to load form');
