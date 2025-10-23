@@ -7,6 +7,17 @@ import { Card } from '@/components/ui/card';
 import { zebraPrinter } from '@/lib/printer/zebra-client';
 import { toast } from 'sonner';
 
+interface Ingredient {
+  name: string;
+  category: string;
+  storageMethod: string;
+  shelfLifeDays: number;
+  optimalTempMin: number | null;
+  optimalTempMax: number | null;
+  allergenType: string | null;
+  safetyNotes: string;
+}
+
 interface FoodItem {
   id: string;
   name: string;
@@ -18,6 +29,8 @@ interface FoodItem {
   allergens: string[];
   printCount: number;
   lastPrinted: string | null;
+  analyzedIngredients?: Ingredient[];
+  isAnalyzingIngredients?: boolean;
 }
 
 interface MenuData {
@@ -36,12 +49,22 @@ const loadingStages = [
   { emoji: '✨', text: 'Almost there...', subtext: 'Putting the final touches!' },
 ];
 
+const round2Stages = [
+  { emoji: '🔬', text: 'Round 2: Deep diving into ingredients...', subtext: 'Breaking down each component!' },
+  { emoji: '📊', text: 'Analyzing individual shelf life...', subtext: 'Every ingredient tells a story' },
+  { emoji: '🌡️', text: 'Determining storage requirements...', subtext: 'Temperature matters!' },
+  { emoji: '💾', text: 'Saving detailed data...', subtext: 'Building your ingredient library' },
+  { emoji: '🎉', text: 'Complete!', subtext: 'Everything is ready!' },
+];
+
 export default function PrepLabelsPage() {
   const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isRound2, setIsRound2] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cycle through loading stages
@@ -51,12 +74,13 @@ export default function PrepLabelsPage() {
       return;
     }
 
+    const stages = isRound2 ? round2Stages : loadingStages;
     const interval = setInterval(() => {
-      setLoadingStage(prev => (prev + 1) % loadingStages.length);
+      setLoadingStage(prev => (prev + 1) % stages.length);
     }, 2000); // Change stage every 2 seconds
 
     return () => clearInterval(interval);
-  }, [isAnalyzing]);
+  }, [isAnalyzing, isRound2]);
 
   // Handle file upload
   const handleFileUpload = async (file: File) => {
@@ -113,14 +137,19 @@ export default function PrepLabelsPage() {
             if (saveResponse.ok) {
               const saveData = await saveResponse.json();
               console.log('Saved to database:', saveData);
-              toast.success(`✅ Found ${data.items.length} items and saved to database!`);
+              toast.success(`✅ Found ${data.items.length} items! Starting Round 2...`);
+              
+              // Start Round 2: Analyze ingredients for each item
+              await performRound2Analysis(data.items);
             } else {
               toast.success(`✅ Found ${data.items.length} items from menu!`);
               console.warn('Failed to save to database, but analysis succeeded');
+              setIsAnalyzing(false);
             }
           } catch (saveError) {
             console.error('Error saving to database:', saveError);
             toast.success(`✅ Found ${data.items.length} items from menu!`);
+            setIsAnalyzing(false);
           }
         } catch (error) {
           console.error('Analysis error:', error);
@@ -142,6 +171,133 @@ export default function PrepLabelsPage() {
       console.error('Upload error:', error);
       toast.error('Failed to upload image');
       setIsAnalyzing(false);
+    }
+  };
+
+  // Round 2: Analyze all ingredients for all items
+  const performRound2Analysis = async (items: FoodItem[]) => {
+    setIsRound2(true);
+    setLoadingStage(0);
+
+    try {
+      const updatedItems = [...items];
+
+      // Analyze ingredients for each item
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        
+        if (!item.ingredients || item.ingredients.length === 0) {
+          continue;
+        }
+
+        try {
+          const response = await fetch('/api/ingredients/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              foodItemId: item.id,
+              ingredients: item.ingredients,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            updatedItems[i] = {
+              ...updatedItems[i],
+              analyzedIngredients: data.ingredients,
+            };
+          }
+        } catch (error) {
+          console.error(`Error analyzing ingredients for ${item.name}:`, error);
+        }
+      }
+
+      // Update menu data with all analyzed ingredients
+      setMenuData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: updatedItems,
+        };
+      });
+
+      toast.success(`🎉 Complete! Analyzed ingredients for ${items.length} items!`);
+    } catch (error) {
+      console.error('Error in Round 2 analysis:', error);
+      toast.error('Round 2 analysis had some errors, but continuing...');
+    } finally {
+      setIsAnalyzing(false);
+      setIsRound2(false);
+    }
+  };
+
+  // Analyze ingredients for a food item (manual trigger)
+  const handleAnalyzeIngredients = async (item: FoodItem) => {
+    if (!item.ingredients || item.ingredients.length === 0) {
+      toast.error('No ingredients to analyze');
+      return;
+    }
+
+    // Mark this item as analyzing
+    setMenuData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        items: prev.items.map(i =>
+          i.id === item.id ? { ...i, isAnalyzingIngredients: true } : i
+        ),
+      };
+    });
+
+    try {
+      const response = await fetch('/api/ingredients/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          foodItemId: item.id,
+          ingredients: item.ingredients,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze ingredients');
+      }
+
+      const data = await response.json();
+      
+      // Update the item with analyzed ingredients
+      setMenuData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: prev.items.map(i =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  analyzedIngredients: data.ingredients,
+                  isAnalyzingIngredients: false,
+                }
+              : i
+          ),
+        };
+      });
+
+      setExpandedItemId(item.id);
+      toast.success(`✅ Analyzed ${data.ingredients.length} ingredients!`);
+    } catch (error) {
+      console.error('Error analyzing ingredients:', error);
+      toast.error('Failed to analyze ingredients');
+      
+      // Remove analyzing state
+      setMenuData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: prev.items.map(i =>
+            i.id === item.id ? { ...i, isAnalyzingIngredients: false } : i
+          ),
+        };
+      });
     }
   };
 
@@ -249,43 +405,67 @@ export default function PrepLabelsPage() {
 
         {/* Analyzing State - Fun Loading Screen */}
         {isAnalyzing && (
-          <Card className="p-8 md:p-12 bg-gradient-to-br from-[#c4dfc4]/10 via-white/5 to-[#c8e0f5]/10 border-[#c4dfc4]/30 relative overflow-hidden">
+          <Card className={`p-8 md:p-12 relative overflow-hidden ${
+            isRound2 
+              ? 'bg-gradient-to-br from-[#c8e0f5]/10 via-white/5 to-[#c4dfc4]/10 border-[#c8e0f5]/30' 
+              : 'bg-gradient-to-br from-[#c4dfc4]/10 via-white/5 to-[#c8e0f5]/10 border-[#c4dfc4]/30'
+          }`}>
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute top-10 left-10 text-4xl animate-bounce opacity-20">🍕</div>
-              <div className="absolute top-20 right-20 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.5s' }}>🍔</div>
-              <div className="absolute bottom-20 left-1/4 text-3xl animate-bounce opacity-20" style={{ animationDelay: '1s' }}>🥗</div>
-              <div className="absolute bottom-10 right-1/3 text-4xl animate-pulse opacity-20" style={{ animationDelay: '1.5s' }}>🍰</div>
-              <div className="absolute top-1/2 left-10 text-3xl animate-bounce opacity-20" style={{ animationDelay: '0.8s' }}>🌮</div>
-              <div className="absolute top-1/3 right-10 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.3s' }}>🍜</div>
+              {isRound2 ? (
+                <>
+                  <div className="absolute top-10 left-10 text-4xl animate-bounce opacity-20">🥕</div>
+                  <div className="absolute top-20 right-20 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.5s' }}>🥛</div>
+                  <div className="absolute bottom-20 left-1/4 text-3xl animate-bounce opacity-20" style={{ animationDelay: '1s' }}>🧀</div>
+                  <div className="absolute bottom-10 right-1/3 text-4xl animate-pulse opacity-20" style={{ animationDelay: '1.5s' }}>🍅</div>
+                  <div className="absolute top-1/2 left-10 text-3xl animate-bounce opacity-20" style={{ animationDelay: '0.8s' }}>🥬</div>
+                  <div className="absolute top-1/3 right-10 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.3s' }}>🥩</div>
+                </>
+              ) : (
+                <>
+                  <div className="absolute top-10 left-10 text-4xl animate-bounce opacity-20">🍕</div>
+                  <div className="absolute top-20 right-20 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.5s' }}>🍔</div>
+                  <div className="absolute bottom-20 left-1/4 text-3xl animate-bounce opacity-20" style={{ animationDelay: '1s' }}>🥗</div>
+                  <div className="absolute bottom-10 right-1/3 text-4xl animate-pulse opacity-20" style={{ animationDelay: '1.5s' }}>🍰</div>
+                  <div className="absolute top-1/2 left-10 text-3xl animate-bounce opacity-20" style={{ animationDelay: '0.8s' }}>🌮</div>
+                  <div className="absolute top-1/3 right-10 text-5xl animate-pulse opacity-20" style={{ animationDelay: '0.3s' }}>🍜</div>
+                </>
+              )}
             </div>
 
             <div className="relative z-10 flex flex-col items-center justify-center gap-6 min-h-[400px]">
+              {/* Round indicator */}
+              {isRound2 && (
+                <div className="absolute top-4 right-4 px-4 py-2 bg-[#c8e0f5]/20 rounded-lg border border-[#c8e0f5]/30">
+                  <span className="text-sm font-semibold text-[#c8e0f5]">ROUND 2</span>
+                </div>
+              )}
+
               {/* Main emoji - huge and animated */}
               <div className="text-8xl md:text-9xl animate-bounce mb-4">
-                {loadingStages[loadingStage].emoji}
+                {(isRound2 ? round2Stages : loadingStages)[loadingStage].emoji}
               </div>
 
               {/* Status text */}
               <div className="text-center space-y-3 max-w-lg">
                 <h3 className="text-2xl md:text-3xl font-bold text-white animate-pulse">
-                  {loadingStages[loadingStage].text}
+                  {(isRound2 ? round2Stages : loadingStages)[loadingStage].text}
                 </h3>
                 <p className="text-base md:text-lg text-gray-300 italic">
-                  {loadingStages[loadingStage].subtext}
+                  {(isRound2 ? round2Stages : loadingStages)[loadingStage].subtext}
                 </p>
               </div>
 
               {/* Progress dots */}
               <div className="flex gap-2 mt-4">
-                {loadingStages.map((_, index) => (
+                {(isRound2 ? round2Stages : loadingStages).map((_, index) => (
                   <div
                     key={index}
                     className={`h-2 w-2 rounded-full transition-all duration-300 ${
                       index === loadingStage
-                        ? 'bg-[#c4dfc4] w-8 scale-125'
+                        ? `${isRound2 ? 'bg-[#c8e0f5]' : 'bg-[#c4dfc4]'} w-8 scale-125`
                         : index < loadingStage
-                        ? 'bg-[#c4dfc4]/50'
+                        ? `${isRound2 ? 'bg-[#c8e0f5]/50' : 'bg-[#c4dfc4]/50'}`
                         : 'bg-white/20'
                     }`}
                   />
@@ -295,30 +475,57 @@ export default function PrepLabelsPage() {
               {/* Fun random facts */}
               <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10 max-w-md">
                 <p className="text-sm text-gray-400 text-center">
-                  <span className="text-[#c4dfc4] font-semibold">Fun Fact:</span>{' '}
-                  {loadingStage === 0 && "AI can read menus faster than a hungry teenager! 🏃‍♂️"}
-                  {loadingStage === 1 && "The average restaurant menu has 32 items. Let's find yours! 📊"}
-                  {loadingStage === 2 && "Our AI knows over 10,000 ingredients. Even the weird ones! 🤓"}
-                  {loadingStage === 3 && "Fun fact: 8% of people have food allergies. We check for all of them! 🛡️"}
-                  {loadingStage === 4 && "Some foods last days, some last months. We calculate it all! ⏳"}
-                  {loadingStage === 5 && "Your printer is about to become very productive! 🖨️"}
-                  {loadingStage === 6 && "Almost done! Your labels will look amazing! 🎨"}
+                  <span className={`${isRound2 ? 'text-[#c8e0f5]' : 'text-[#c4dfc4]'} font-semibold`}>
+                    {isRound2 ? 'Deep Dive:' : 'Fun Fact:'}
+                  </span>{' '}
+                  {!isRound2 && (
+                    <>
+                      {loadingStage === 0 && "AI can read menus faster than a hungry teenager! 🏃‍♂️"}
+                      {loadingStage === 1 && "The average restaurant menu has 32 items. Let's find yours! 📊"}
+                      {loadingStage === 2 && "Our AI knows over 10,000 ingredients. Even the weird ones! 🤓"}
+                      {loadingStage === 3 && "Fun fact: 8% of people have food allergies. We check for all of them! 🛡️"}
+                      {loadingStage === 4 && "Some foods last days, some last months. We calculate it all! ⏳"}
+                      {loadingStage === 5 && "Your printer is about to become very productive! 🖨️"}
+                      {loadingStage === 6 && "Almost done! Your labels will look amazing! 🎨"}
+                    </>
+                  )}
+                  {isRound2 && (
+                    <>
+                      {loadingStage === 0 && "Analyzing each ingredient's molecular structure... just kidding! 😄"}
+                      {loadingStage === 1 && "Did you know lettuce lasts 5-7 days but dried pasta lasts 2 years? 📅"}
+                      {loadingStage === 2 && "Temperature control is everything! Even 2°C makes a difference 🌡️"}
+                      {loadingStage === 3 && "Building your personal ingredient database for future uploads! 💾"}
+                      {loadingStage === 4 && "You now have a complete food safety system! 🎊"}
+                    </>
+                  )}
                 </p>
               </div>
 
               {/* Silly animation of food items being processed */}
               <div className="flex gap-3 mt-4 text-3xl">
-                <span className="animate-bounce" style={{ animationDelay: '0s' }}>🍕</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>➡️</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🤖</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>➡️</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🏷️</span>
+                {!isRound2 ? (
+                  <>
+                    <span className="animate-bounce" style={{ animationDelay: '0s' }}>🍕</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>➡️</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🤖</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>➡️</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🏷️</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="animate-bounce" style={{ animationDelay: '0s' }}>🧪</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>➡️</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🔬</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>➡️</span>
+                    <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>💾</span>
+                  </>
+                )}
               </div>
 
               {/* Spinner at bottom */}
               <div className="mt-6 flex items-center gap-3 text-gray-400">
-                <Loader2 className="h-5 w-5 animate-spin text-[#c4dfc4]" />
-                <span className="text-sm">Processing with AI magic...</span>
+                <Loader2 className={`h-5 w-5 animate-spin ${isRound2 ? 'text-[#c8e0f5]' : 'text-[#c4dfc4]'}`} />
+                <span className="text-sm">{isRound2 ? 'Deep analyzing ingredients...' : 'Processing with AI magic...'}</span>
               </div>
             </div>
           </Card>
