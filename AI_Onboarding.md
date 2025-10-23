@@ -5,6 +5,71 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Thank You Page Settings - October 23, 2025**
+**Commit:** `dccb3af` - Add Thank You Page settings section with customization options  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Thank You Page Section**: New clickable section in Settings left panel
+- ✅ **Customizable Message**: Editable thank you message (textarea)
+- ✅ **Post-Submission Options**:
+  - Allow another submission (checkbox)
+  - Show response summary (checkbox)
+  - Show close button (checkbox)
+  - Allow social sharing (checkbox)
+- ✅ **Auto-Redirect**: Optional redirect URL with delay (0-30 seconds)
+- ✅ **Live Preview**: Real-time preview of thank you page appearance
+
+**Features:**
+1. **Thank You Message**: 
+   - Multi-line text area
+   - Customizable message shown after form submission
+   - Supports line breaks
+
+2. **Post-Submission Options**:
+   - **Another Submission**: Button to submit form again
+   - **Response Summary**: Shows what user submitted
+   - **Close Button**: Allows users to exit
+   - **Social Share**: Share form on social media
+
+3. **Auto-Redirect**:
+   - Optional redirect URL
+   - Configurable delay (0-30 seconds)
+   - Immediate or delayed redirect
+   - Helpful preview text
+
+4. **Visual Preview**:
+   - Shows checkmark icon
+   - Displays configured message
+   - Shows active buttons
+   - Redirect countdown preview
+
+**Implementation Details:**
+- Added 7 new state variables for thank you page settings
+- Conditional rendering based on `activeSettingsSection`
+- Sage green preview box with gradient background
+- All options have descriptive helper text
+- Preview updates in real-time as settings change
+
+**Files Changed:** 1 file
+- `app/forms/builder/page.tsx` - Added 198 lines (+197 net)
+
+**User Experience:**
+1. Go to Settings tab
+2. Click "Thank You Page" in left panel
+3. Customize message and options
+4. See live preview at bottom
+5. Save form to persist settings
+
+**Next Steps:**
+- Save thank you page settings to database
+- Implement thank you page on `/f/[id]` form submission
+- Add email notification options (future section)
+- Add webhook integration (future section)
+
+---
+
 ### **Fix Form Status & Clickable Settings - October 23, 2025**
 **Commit:** `5273f10` - Fix form status to use published/draft and make settings sections clickable  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
