@@ -98,7 +98,30 @@ export default function PrepLabelsPage() {
             items: data.items,
           });
 
-          toast.success(`✅ Found ${data.items.length} items from menu!`);
+          // Save items to database
+          try {
+            const saveResponse = await fetch('/api/food-items/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                imageUrl: base64,
+                imageSize: file.size,
+                items: data.items,
+              }),
+            });
+
+            if (saveResponse.ok) {
+              const saveData = await saveResponse.json();
+              console.log('Saved to database:', saveData);
+              toast.success(`✅ Found ${data.items.length} items and saved to database!`);
+            } else {
+              toast.success(`✅ Found ${data.items.length} items from menu!`);
+              console.warn('Failed to save to database, but analysis succeeded');
+            }
+          } catch (saveError) {
+            console.error('Error saving to database:', saveError);
+            toast.success(`✅ Found ${data.items.length} items from menu!`);
+          }
         } catch (error) {
           console.error('Analysis error:', error);
           toast.error('Failed to analyze menu');
