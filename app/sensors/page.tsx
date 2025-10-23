@@ -151,50 +151,7 @@ export default function SensorsPage() {
       <div className="w-full h-full overflow-auto">
         <div className="p-8">
           <div className="mx-auto max-w-[1600px] space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
-                  <Thermometer className="h-10 w-10 text-[#c4dfc4]" />
-                  Sensors Dashboard
-                </h1>
-                <p className="text-muted-foreground mt-2">
-                  Real-time temperature monitoring for food safety compliance
-                </p>
-              </div>
-
-              {/* Controls */}
-              <div className="flex gap-4">
-                <TempUnitToggle value={tempUnit} onChange={handleUnitChange} />
-                
-                {/* Time Range Selector */}
-                <div className="flex gap-2 bg-[#1a1a1a] rounded-lg p-1">
-                  {["24h", "7d", "30d"].map((range) => (
-                    <button
-                      key={range}
-                      onClick={() => setTimeRange(range as any)}
-                      className={`px-4 py-2 rounded-md text-sm transition-colors ${
-                        timeRange === range
-                          ? "bg-[#c4dfc4] text-black"
-                          : "text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {range}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Cards */}
-            <SensorStats sensors={sensors} tempUnit={tempUnit} />
-
-            {/* Active Alerts Banner */}
-            {activeAlertsCount > 0 && (
-              <AlertBanner sensors={sensors} tempUnit={tempUnit} />
-            )}
-
-            {/* Sensor Grid or Detail View */}
+            {/* Sensor Detail View - Full Page */}
             {selectedSensor ? (
               <SensorDetail
                 sensor={selectedSensor}
@@ -204,6 +161,50 @@ export default function SensorsPage() {
               />
             ) : (
               <>
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
+                      <Thermometer className="h-10 w-10 text-[#c4dfc4]" />
+                      Sensors Dashboard
+                    </h1>
+                    <p className="text-muted-foreground mt-2">
+                      Real-time temperature monitoring for food safety compliance
+                    </p>
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex gap-4">
+                    <TempUnitToggle value={tempUnit} onChange={handleUnitChange} />
+                    
+                    {/* Time Range Selector */}
+                    <div className="flex gap-2 bg-[#1a1a1a] rounded-lg p-1">
+                      {["24h", "7d", "30d"].map((range) => (
+                        <button
+                          key={range}
+                          onClick={() => setTimeRange(range as any)}
+                          className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                            timeRange === range
+                              ? "bg-[#c4dfc4] text-black"
+                              : "text-gray-400 hover:text-white"
+                          }`}
+                        >
+                          {range}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Cards */}
+                <SensorStats sensors={sensors} tempUnit={tempUnit} />
+
+                {/* Active Alerts Banner */}
+                {activeAlertsCount > 0 && (
+                  <AlertBanner sensors={sensors} tempUnit={tempUnit} />
+                )}
+
+                {/* Sensor Grid */}
                 {sensors.length === 0 ? (
                   <div className="text-center py-12 bg-[#1a1a1a] rounded-lg border border-gray-800">
                     <Thermometer className="h-16 w-16 mx-auto mb-4 text-gray-600" />
