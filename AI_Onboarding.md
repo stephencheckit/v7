@@ -5,6 +5,33 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Add Centered Builder Tab - October 23, 2025**
+**Commit:** `57d976e` - Add centered Builder tab in form header  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Deployed:**
+- ✅ **Centered Builder Tab**: Single "Builder" tab centered in form header
+- ✅ **Visual Indicator**: Shows user which section they're in
+- ✅ **Clean Layout**: Tab positioned between center and right (Cancel/Share buttons)
+
+**Changes Made:**
+- Re-added Tabs component import
+- Added centered flex container with single "Builder" tab
+- Tab uses same dark styling (`bg-[#1a1a1a]`)
+- Non-interactive (always shows "builder" as active)
+
+**Files Changed:** 1 file
+- `app/forms/builder/page.tsx` - Added centered tab UI
+
+**Impact:**
+- ✅ Better visual hierarchy in form header
+- ✅ Clear indication of current section
+- ✅ Maintains clean, focused UI
+- ✅ Consistent with original design language
+
+---
+
 ### **UI Simplification - October 23, 2025**
 **Commit:** `72d2698` - Remove Distribution tab and breadcrumb navigation  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
