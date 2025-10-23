@@ -54,8 +54,8 @@ export function AppHeader() {
       console.log('🔍 Searching for:', query);
       
       // Try fetching all forms first and filter client-side as fallback
-      // @ts-ignore - simple_forms table not in generated types yet
-      const { data: allForms, error: fetchError } = await supabase
+      // Cast to any because simple_forms table not in generated types yet
+      const { data: allForms, error: fetchError } = await (supabase as any)
         .from('simple_forms')
         .select('id, title, description');
 
