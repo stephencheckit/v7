@@ -5,11 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 export interface Sensor {
   id: string;
   name: string;
-  location: string;
+  location: string | null;
   equipment_type: string;
   min_temp_celsius: number;
   max_temp_celsius: number;
-  alert_delay_minutes: number;
+  alert_delay_minutes: number | null;
   alert_recipients: any[];
 }
 
@@ -17,7 +17,7 @@ export interface SensorAlert {
   id: string;
   sensor_id: string;
   started_at: string;
-  status: string;
+  status: string | null;
   notifications_sent: any[];
 }
 
