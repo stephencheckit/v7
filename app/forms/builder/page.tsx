@@ -1390,24 +1390,6 @@ function FormsPageContent() {
                               />
                               <p className="text-xs text-gray-400 italic">This description helps users understand the purpose of your form</p>
                             </div>
-
-                            {/* Form Status */}
-                            <div className="space-y-3">
-                              <label className="text-sm font-medium text-gray-300">Form Status</label>
-                              <select
-                                value={formStatus}
-                                onChange={(e) => setFormStatus(e.target.value as "published" | "draft")}
-                                className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors"
-                              >
-                                <option value="published">Published - Can receive responses</option>
-                                <option value="draft">Draft - Preview mode only</option>
-                              </select>
-                              <p className="text-xs text-gray-400 italic">
-                                {formStatus === "published" 
-                                  ? "This form is live and can collect responses from users."
-                                  : "This form is a draft and will only work in preview mode."}
-                              </p>
-                            </div>
                           </div>
                           )}
 
@@ -1661,16 +1643,28 @@ function FormsPageContent() {
                       <ScrollArea className="h-full p-8">
                         <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
                           {activePublishSection === "share" && (
-                          <div className="text-center space-y-6">
-                            <div className="text-4xl mb-4">🚀</div>
-                            <h2 className="text-2xl font-bold text-white">Publish Your Form</h2>
-                            <p className="text-gray-400">
-                              Your form is ready to share with the world!
-                            </p>
+                          <div className="space-y-8">
+                            {/* Form Status */}
+                            <div className="space-y-3">
+                              <label className="text-sm font-medium text-gray-300">Form Status</label>
+                              <select
+                                value={formStatus}
+                                onChange={(e) => setFormStatus(e.target.value as "published" | "draft")}
+                                className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors"
+                              >
+                                <option value="published">Published - Can receive responses</option>
+                                <option value="draft">Draft - Preview mode only</option>
+                              </select>
+                              <p className="text-xs text-gray-400 italic">
+                                {formStatus === "published" 
+                                  ? "This form is live and can collect responses from users."
+                                  : "This form is a draft and will only work in preview mode."}
+                              </p>
+                            </div>
                             
                             {shareUrl && (
-                              <div className="space-y-4 pt-4">
-                                <div className="text-left">
+                              <div className="space-y-4">
+                                <div>
                                   <label className="text-sm font-medium text-gray-300 block mb-2">Form URL</label>
                                   <div className="flex gap-2">
                                     <Input
@@ -1690,27 +1684,13 @@ function FormsPageContent() {
                                   </div>
                                 </div>
 
-                                <div className="p-4 rounded-lg bg-[#0a0a0a] border border-border/30 text-left">
+                                <div className="p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
                                   <h3 className="text-sm font-medium text-white mb-2">Share Options</h3>
                                   <div className="space-y-2 text-sm text-gray-400">
                                     <p>• Send this link directly to your audience</p>
                                     <p>• Embed on your website</p>
                                     <p>• Share on social media</p>
                                     <p>• Include in email campaigns</p>
-                                  </div>
-                                </div>
-
-                                <div className="p-4 rounded-lg bg-[#c4dfc4]/10 border border-[#c4dfc4]/30 text-left">
-                                  <div className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-5 h-5 text-[#c4dfc4] mt-0.5" />
-                                    <div>
-                                      <h3 className="text-sm font-medium text-white mb-1">Form Status: {formStatus === 'published' ? 'Published' : 'Draft'}</h3>
-                                      <p className="text-xs text-gray-400">
-                                        {formStatus === 'published' 
-                                          ? 'Your form is live and accepting responses'
-                                          : 'Your form is in draft mode. Change to Published in Settings to start collecting responses.'}
-                                      </p>
-                                    </div>
                                   </div>
                                 </div>
                               </div>
