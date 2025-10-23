@@ -12,6 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    console.log(`📊 API: Fetching submissions for form ${id}`);
 
     // Fetch all submissions for this form, ordered by most recent first
     const { data: submissions, error } = await supabase
@@ -20,21 +21,24 @@ export async function GET(
       .eq("form_id", id)
       .order("submitted_at", { ascending: false });
     
-    console.log(`Fetching submissions for form ${id}:`, submissions?.length || 0, 'found');
+    console.log(`📊 API: Query result - Found ${submissions?.length || 0} submissions`);
 
     if (error) {
-      console.error("Error fetching submissions:", error);
+      console.error("❌ Supabase error fetching submissions:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: "Failed to fetch submissions" },
+        { error: "Failed to fetch submissions", details: error.message },
         { status: 500 }
       );
     }
 
+    console.log(`✅ API: Returning ${submissions?.length || 0} submissions`);
     return NextResponse.json({ submissions: submissions || [] });
-  } catch (error) {
-    console.error("Error in GET /api/forms/[id]/submissions:", error);
+  } catch (error: any) {
+    console.error("❌ Error in GET /api/forms/[id]/submissions:", error);
+    console.error("Error stack:", error?.stack);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: error?.message },
       { status: 500 }
     );
   }

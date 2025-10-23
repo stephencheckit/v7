@@ -832,17 +832,25 @@ function FormsPageContent() {
   React.useEffect(() => {
     if (activeTab === "report" && (editingFormId || lastSavedFormId)) {
       const formId = editingFormId || lastSavedFormId;
-      console.log('📊 Fetching submissions for form:', formId);
+      console.log('📊 Frontend: Fetching submissions for form:', formId);
       setLoadingSubmissions(true);
       fetch(`/api/forms/${formId}/submissions`)
-        .then(res => res.json())
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok) {
+            console.error('❌ API Error Response:', data);
+            throw new Error(data.details || data.error || 'Failed to fetch');
+          }
+          return data;
+        })
         .then(data => {
-          console.log('📊 Received submissions:', data.submissions?.length || 0);
+          console.log('📊 Frontend: Received submissions:', data.submissions?.length || 0);
+          console.log('📊 Frontend: Submissions data:', data.submissions);
           setSubmissions(data.submissions || []);
           setLoadingSubmissions(false);
         })
         .catch(err => {
-          console.error('❌ Error fetching submissions:', err);
+          console.error('❌ Frontend: Error fetching submissions:', err);
           setLoadingSubmissions(false);
         });
     }
