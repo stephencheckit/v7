@@ -39,83 +39,77 @@ export function AppHeader() {
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
-  // Perform search when query changes
-  useEffect(() => {
-    const performSearch = async () => {
-      const query = searchQuery.trim();
-      
-      if (query.length === 0) {
-        setSearchResults([]);
-        return;
-      }
+  const performSearch = async (query: string) => {
+    if (query.trim().length === 0) {
+      setSearchResults([]);
+      return;
+    }
 
-      setIsSearching(true);
+    setIsSearching(true);
 
-      try {
-        const results: SearchResult[] = [];
+    try {
+      const results: SearchResult[] = [];
 
-        // Search forms
-        const { data: forms, error } = await supabase
-          .from('simple_forms')
-          .select('id, name, description')
-          .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-          .limit(10);
+      // Search forms
+      const { data: forms, error } = await supabase
+        .from('simple_forms')
+        .select('id, name, description')
+        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+        .limit(10);
 
-        if (!error && forms) {
-          forms.forEach(form => {
-            results.push({
-              id: form.id,
-              title: form.name || 'Untitled Form',
-              description: form.description || 'Form',
-              icon: FileText,
-              link: `/forms/builder?edit=${form.id}`,
-              type: 'form'
-            });
+      if (!error && forms) {
+        forms.forEach(form => {
+          results.push({
+            id: form.id,
+            title: form.name || 'Untitled Form',
+            description: form.description || 'Form',
+            icon: FileText,
+            link: `/forms/builder?edit=${form.id}`,
+            type: 'form'
           });
-        }
-
-        // Add static navigation pages that match
-        const staticPages = [
-          { id: 'dashboard', title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard", type: 'page' as const },
-          { id: 'forms', title: "Forms", description: "Manage your forms", icon: FileText, link: "/forms", type: 'page' as const },
-          { id: 'prep-labels', title: "Prep Labels", description: "Menu prep labels", icon: Tag, link: "/prep-labels", type: 'page' as const },
-          { id: 'settings', title: "Settings", description: "Account settings", icon: Settings, link: "/settings", type: 'page' as const },
-        ];
-
-        staticPages.forEach(page => {
-          if (
-            page.title.toLowerCase().includes(query.toLowerCase()) ||
-            page.description.toLowerCase().includes(query.toLowerCase())
-          ) {
-            results.push(page);
-          }
         });
-
-        setSearchResults(results);
-      } catch (err) {
-        console.error('Search error:', err);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
       }
-    };
 
-    const debounceTimer = setTimeout(performSearch, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+      // Add static navigation pages that match
+      const staticPages = [
+        { id: 'dashboard', title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard", type: 'page' as const },
+        { id: 'forms', title: "Forms", description: "Manage your forms", icon: FileText, link: "/forms", type: 'page' as const },
+        { id: 'prep-labels', title: "Prep Labels", description: "Menu prep labels", icon: Tag, link: "/prep-labels", type: 'page' as const },
+        { id: 'settings', title: "Settings", description: "Account settings", icon: Settings, link: "/settings", type: 'page' as const },
+      ];
+
+      staticPages.forEach(page => {
+        if (
+          page.title.toLowerCase().includes(query.toLowerCase()) ||
+          page.description.toLowerCase().includes(query.toLowerCase())
+        ) {
+          results.push(page);
+        }
+      });
+
+      setSearchResults(results);
+    } catch (err) {
+      console.error('Search error:', err);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    if (value.trim().length > 0) {
-      setIsSearchOpen(true);
-    }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setIsSearchOpen(true);
+      await performSearch(searchQuery);
+    } else if (e.key === 'Escape') {
       setIsSearchOpen(false);
       setSearchQuery("");
+      setSearchResults([]);
     }
   };
 
