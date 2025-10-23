@@ -817,13 +817,13 @@ function FormsPageContent() {
     }
   }, [formFields, formName, formDescription, saving, loadingForm, isEditMode]);
 
-  // Update CSS variable for header margin (hide AI chat on settings/publish tabs)
+  // Update CSS variable for header margin (AI chat always visible but may be disabled)
   React.useEffect(() => {
     document.documentElement.style.setProperty(
       '--ai-chat-width',
-      (activeTab === "settings" || activeTab === "publish") ? '0px' : (isChatOpen ? '384px' : '48px')
+      isChatOpen ? '384px' : '48px'
     );
-  }, [isChatOpen, activeTab]);
+  }, [isChatOpen]);
 
   React_useEffect(() => {
     if (isEditingSubmitButton && submitButtonInputRef.current) {
@@ -1698,26 +1698,25 @@ function FormsPageContent() {
         )}
       </AppLayout>
 
-      {/* Right Panel - AI Chat - Dynamic with Real API - Only show on Builder tab */}
-      {activeTab === "builder" && (
-        <AIChatPanel
-          isOpen={isChatOpen}
-          onToggle={() => setIsChatOpen(!isChatOpen)}
-          formId={editingFormId}
-          currentPage="builder"
-          currentFields={formFields}
-          onFormUpdate={(fields, formMeta) => {
-            setFormFields(fields);
-            if (formMeta?.title) setFormName(formMeta.title);
-            if (formMeta?.description) setFormDescription(formMeta.description);
-            
-            // Mark for auto-save when AI creates a complete form
-            if (fields.length > 0 && formMeta?.title && !isEditMode) {
-              shouldAutoSave.current = true;
-            }
-          }}
-        />
-      )}
+      {/* Right Panel - AI Chat - Dynamic with Real API - Always visible but disabled on Settings/Publish */}
+      <AIChatPanel
+        isOpen={isChatOpen}
+        onToggle={() => setIsChatOpen(!isChatOpen)}
+        formId={editingFormId}
+        currentPage="builder"
+        currentFields={formFields}
+        disabled={activeTab !== "builder"}
+        onFormUpdate={(fields, formMeta) => {
+          setFormFields(fields);
+          if (formMeta?.title) setFormName(formMeta.title);
+          if (formMeta?.description) setFormDescription(formMeta.description);
+          
+          // Mark for auto-save when AI creates a complete form
+          if (fields.length > 0 && formMeta?.title && !isEditMode) {
+            shouldAutoSave.current = true;
+          }
+        }}
+      />
 
       <DragOverlay dropAnimation={null} modifiers={modifiers}>
           {activeWidget ? (

@@ -30,6 +30,7 @@ interface AIChatPanelProps {
   currentPage?: 'builder' | 'distribution'; // What page/tab user is on
   onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
   currentFields?: FrontendFormField[];
+  disabled?: boolean;  // Show as disabled with overlay (for Settings/Publish tabs)
 }
 
 export function AIChatPanel({ 
@@ -38,7 +39,8 @@ export function AIChatPanel({
   formId,
   currentPage = 'builder',
   onFormUpdate, 
-  currentFields = []
+  currentFields = [],
+  disabled = false
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1626,6 +1628,21 @@ Please extract and build the form now.`;
             </form>
           </div>
         </>
+      )}
+
+      {/* Disabled Overlay - shown on Settings/Publish tabs */}
+      {disabled && isOpen && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="text-center px-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 mx-auto mb-4">
+              <Sparkles className="h-8 w-8 text-white/40" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">AI Assistant Disabled</h3>
+            <p className="text-sm text-white/60 max-w-xs">
+              AI Assistant is only available on the Builder tab
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );
