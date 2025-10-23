@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -53,19 +53,13 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { isMobile, setOpenMobile, state } = useSidebar();
   
-  const handleLinkClick = (url: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    // Only close mobile sidebar
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // Only handle mobile - let desktop links work normally
     if (isMobile) {
       setOpenMobile(false);
     }
-    
-    // Use router.push for client-side navigation
-    router.push(url);
   };
 
   return (
@@ -74,7 +68,7 @@ export function AppSidebar() {
         <Link 
           href="/" 
           className="flex items-center gap-2 font-semibold group-data-[collapsible=icon]:justify-center hover:opacity-80 transition-opacity"
-          onClick={handleLinkClick("/")}
+          onClick={handleLinkClick}
         >
           <div className="flex h-8 w-8 items-center justify-center shrink-0">
             <Image 
@@ -105,7 +99,7 @@ export function AppSidebar() {
                     >
                       <Link 
                         href={item.url}
-                        onClick={handleLinkClick(item.url)}
+                        onClick={handleLinkClick}
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
