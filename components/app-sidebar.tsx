@@ -53,7 +53,14 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, state } = useSidebar();
+  
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // Only close mobile sidebar, don't affect desktop collapsed state
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <Sidebar className="border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000]" collapsible="icon">
@@ -61,12 +68,7 @@ export function AppSidebar() {
         <Link 
           href="/" 
           className="flex items-center gap-2 font-semibold group-data-[collapsible=icon]:justify-center hover:opacity-80 transition-opacity"
-          onClick={() => {
-            // Close mobile sidebar when clicking logo
-            if (isMobile) {
-              setOpenMobile(false);
-            }
-          }}
+          onClick={handleLinkClick}
         >
           <div className="flex h-8 w-8 items-center justify-center shrink-0">
             <Image 
@@ -89,31 +91,23 @@ export function AppSidebar() {
               <TooltipProvider delayDuration={0}>
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={pathname === item.url}
-                          className="w-full"
-                        >
-                          <Link 
-                            href={item.url}
-                            onClick={() => {
-                              // Close mobile sidebar when clicking a link
-                              if (isMobile) {
-                                setOpenMobile(false);
-                              }
-                            }}
-                          >
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="group-data-[collapsible=icon]:block hidden">
-                        {item.title}
-                      </TooltipContent>
-                    </Tooltip>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      className="w-full"
+                      tooltip={{
+                        children: item.title,
+                        hidden: state === "expanded"
+                      }}
+                    >
+                      <Link 
+                        href={item.url}
+                        onClick={handleLinkClick}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </TooltipProvider>
