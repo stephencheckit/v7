@@ -24,11 +24,22 @@ interface FormSchema {
   fields: FormField[];
 }
 
+interface ThankYouSettings {
+  message: string;
+  allowAnotherSubmission: boolean;
+  showResponseSummary: boolean;
+  showCloseButton: boolean;
+  allowSocialShare: boolean;
+  redirectUrl: string;
+  redirectDelay: number;
+}
+
 interface FormData {
   id: string;
   title: string;
   description: string;
   schema: FormSchema;
+  thank_you_settings?: ThankYouSettings;
 }
 
 export default function PublicFormPage() {
@@ -43,6 +54,7 @@ export default function PublicFormPage() {
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [aiMetadata, setAiMetadata] = useState<Record<string, any>>({});
   const [analysisFeed, setAnalysisFeed] = useState<any[]>([]);
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     loadForm();
@@ -101,12 +113,34 @@ export default function PublicFormPage() {
       }
 
       setSubmitted(true);
+      
+      // Start redirect countdown if configured
+      const thankYouSettings = form?.thank_you_settings;
+      if (thankYouSettings?.redirectUrl && thankYouSettings.redirectDelay >= 0) {
+        setRedirectCountdown(thankYouSettings.redirectDelay);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to submit form');
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Handle redirect countdown
+  useEffect(() => {
+    if (redirectCountdown === null) return;
+    
+    if (redirectCountdown === 0 && form?.thank_you_settings?.redirectUrl) {
+      window.location.href = form.thank_you_settings.redirectUrl;
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      setRedirectCountdown(prev => (prev !== null && prev > 0 ? prev - 1 : null));
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [redirectCountdown, form?.thank_you_settings?.redirectUrl]);
 
   const handleFieldChange = (fieldName: string, value: any) => {
     setFormValues(prev => ({
@@ -202,21 +236,94 @@ export default function PublicFormPage() {
   }
 
   if (submitted) {
+    const thankYouSettings = form?.thank_you_settings || {
+      message: "Thank you for your submission!",
+      allowAnotherSubmission: true,
+      showResponseSummary: true,
+      showCloseButton: false,
+      allowSocialShare: false,
+      redirectUrl: "",
+      redirectDelay: 0,
+    };
+
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
-        <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 max-w-md text-center">
-          <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">Thank You!</h1>
-          <p className="text-gray-400 mb-6">Your response has been submitted successfully.</p>
-          <Button
-            onClick={() => {
-              setSubmitted(false);
-              setFormValues({});
-            }}
-            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-          >
-            Submit Another Response
-          </Button>
+        <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 max-w-2xl">
+          <div className="text-center space-y-6">
+            {/* Success Icon */}
+            <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto" />
+            
+            {/* Custom Message */}
+            <p className="text-xl font-medium text-white whitespace-pre-wrap">
+              {thankYouSettings.message}
+            </p>
+
+            {/* Response Summary */}
+            {thankYouSettings.showResponseSummary && Object.keys(formValues).length > 0 && (
+              <div className="mt-6 p-4 rounded-lg bg-[#0a0a0a] border border-border/30 text-left">
+                <h3 className="text-sm font-medium text-gray-400 mb-3">Your Response:</h3>
+                <div className="space-y-2">
+                  {Object.entries(formValues).map(([key, value]) => (
+                    <div key={key} className="text-sm">
+                      <span className="text-gray-500">{key}:</span>{' '}
+                      <span className="text-gray-300">
+                        {Array.isArray(value) ? value.join(', ') : String(value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 justify-center pt-4">
+              {thankYouSettings.allowAnotherSubmission && (
+                <Button
+                  onClick={() => {
+                    setSubmitted(false);
+                    setFormValues({});
+                    setRedirectCountdown(null);
+                  }}
+                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                >
+                  Submit Another Response
+                </Button>
+              )}
+              
+              {thankYouSettings.showCloseButton && (
+                <Button
+                  onClick={() => window.close()}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-white/5"
+                >
+                  Close
+                </Button>
+              )}
+              
+              {thankYouSettings.allowSocialShare && (
+                <Button
+                  onClick={() => {
+                    const url = window.location.href.replace(/\/f\/.*$/, `/f/${formId}`);
+                    navigator.clipboard.writeText(url);
+                    alert('Form link copied to clipboard!');
+                  }}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-white/5"
+                >
+                  Share
+                </Button>
+              )}
+            </div>
+
+            {/* Redirect Countdown */}
+            {redirectCountdown !== null && thankYouSettings.redirectUrl && (
+              <p className="text-sm text-gray-500 italic pt-2">
+                {redirectCountdown === 0 
+                  ? "Redirecting now..." 
+                  : `Redirecting in ${redirectCountdown} second${redirectCountdown === 1 ? '' : 's'}...`}
+              </p>
+            )}
+          </div>
         </Card>
       </div>
     );

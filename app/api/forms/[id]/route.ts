@@ -50,7 +50,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { title, description, schema, status } = body;
+    const { title, description, schema, status, thank_you_settings } = body;
 
     if (!title || !schema) {
       return NextResponse.json(
@@ -70,6 +70,11 @@ export async function PUT(
     // Only update status if provided and valid
     if (status && (status === 'draft' || status === 'published')) {
       updateData.status = status;
+    }
+
+    // Update thank you settings if provided
+    if (thank_you_settings) {
+      updateData.thank_you_settings = thank_you_settings;
     }
 
     const { data, error } = await supabase

@@ -15,7 +15,7 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, description, schema, status } = body;
+    const { title, description, schema, status, thank_you_settings } = body;
 
     if (!title || !schema) {
       return NextResponse.json(
@@ -43,6 +43,11 @@ export async function POST(req: NextRequest) {
     // Only set status if provided and valid
     if (status && (status === 'draft' || status === 'published')) {
       insertData.status = status;
+    }
+
+    // Add thank you settings if provided
+    if (thank_you_settings) {
+      insertData.thank_you_settings = thank_you_settings;
     }
 
     // Insert form into database

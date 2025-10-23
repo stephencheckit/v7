@@ -47,6 +47,7 @@ import {
   DragStartEvent,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragOverlay,
@@ -205,12 +206,19 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field.id });
+  } = useSortable({ 
+    id: field.id,
+    transition: {
+      duration: 200,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    },
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
+    opacity: isDragging ? 0.4 : 1,
+    position: 'relative' as const,
   };
 
   React_useEffect(() => {
@@ -232,23 +240,31 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
   }, [isEditingDescription]);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group relative p-4 rounded-lg hover:bg-muted/50 border-2 transition-all bg-card/30 ${
-        isOver ? 'border-t-4 border-t-[#c4dfc4] pt-8' : 'border-transparent hover:border-opacity-50'
-      }`}
-      onMouseEnter={(e) => {
-        if (!isOver) {
-          e.currentTarget.style.borderColor = field.color;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isOver) {
-          e.currentTarget.style.borderColor = 'transparent';
-        }
-      }}
-    >
+    <div className="relative">
+      {/* Drop Indicator - shows where item will be inserted */}
+      {isOver && (
+        <div className="absolute -top-2 left-0 right-0 h-0.5 bg-[#c4dfc4] rounded-full z-20 shadow-lg shadow-[#c4dfc4]/50">
+          <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 bg-[#c4dfc4] rounded-full" />
+        </div>
+      )}
+      
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`group relative p-4 rounded-lg hover:bg-muted/50 border-2 transition-all duration-200 bg-card/30 ${
+          isOver ? 'border-[#c4dfc4] mt-4 scale-[0.98]' : 'border-transparent hover:border-opacity-50'
+        }`}
+        onMouseEnter={(e) => {
+          if (!isOver) {
+            e.currentTarget.style.borderColor = field.color;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isOver) {
+            e.currentTarget.style.borderColor = 'transparent';
+          }
+        }}
+      >
       <div className="flex items-start gap-3">
         <button
           className="cursor-grab active:cursor-grabbing mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -643,6 +659,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
       >
         <Copy className="h-4 w-4 text-muted-foreground" />
       </button>
+      </div>
     </div>
   );
 }
@@ -720,6 +737,18 @@ function FormsPageContent() {
       setFormDescription(form.description || 'Add a description for your form');
       setFormFields(form.schema.fields || []);
       setFormStatus(form.status || 'published');
+      
+      // Load thank you settings
+      if (form.thank_you_settings) {
+        setThankYouMessage(form.thank_you_settings.message || "Thank you for your submission!");
+        setAllowAnotherSubmission(form.thank_you_settings.allowAnotherSubmission ?? true);
+        setShowResponseSummary(form.thank_you_settings.showResponseSummary ?? true);
+        setShowCloseButton(form.thank_you_settings.showCloseButton ?? false);
+        setAllowSocialShare(form.thank_you_settings.allowSocialShare ?? false);
+        setRedirectUrl(form.thank_you_settings.redirectUrl || "");
+        setRedirectDelay(form.thank_you_settings.redirectDelay || 0);
+      }
+      
       setShareUrl(`${window.location.origin}/f/${form.id}`);
       setLastSavedFormId(form.id);
       setHasUnsavedChanges(false); // Reset unsaved changes when loading
@@ -780,7 +809,13 @@ function FormsPageContent() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3, // Reduced distance for better responsiveness
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
       },
     })
   );
@@ -940,6 +975,15 @@ function FormsPageContent() {
           description: formDescription,
           schema,
           status: formStatus,
+          thank_you_settings: {
+            message: thankYouMessage,
+            allowAnotherSubmission,
+            showResponseSummary,
+            showCloseButton,
+            allowSocialShare,
+            redirectUrl,
+            redirectDelay,
+          },
         }),
       });
 
@@ -1107,78 +1151,17 @@ function FormsPageContent() {
                   ) : (
                   <ScrollArea className="h-full p-8">
               <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
-                {/* Form Name and Description */}
-                <div className="mb-8 pb-8 border-b border-border/50 bg-gradient-to-br from-[#1a1a1a] to-[#151515] -mx-8 -mt-8 px-8 pt-8 rounded-t-lg">
-                  {/* Form Name */}
-                  {isEditingFormName ? (
-                    <Input
-                      ref={formNameInputRef}
-                      value={formName}
-                      onChange={(e) => setFormName(e.target.value)}
-                      onBlur={() => setIsEditingFormName(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setIsEditingFormName(false);
-                        }
-                      }}
-                      className="text-4xl font-bold border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-gray-100 mb-3"
-                      placeholder="Untitled Form"
-                    />
-                  ) : (
-                    <h1
-                      onClick={() => setIsEditingFormName(true)}
-                      className="text-4xl font-bold cursor-text text-gray-100 mb-3 hover:text-gray-300 transition-colors"
-                    >
-                      {formName || "Untitled Form"}
-                    </h1>
-                  )}
-                  
-                  {/* Form Description */}
-                  {showFormDescription ? (
-                    isEditingFormDescription ? (
-                      <Input
-                        ref={formDescriptionInputRef}
-                        value={formDescription}
-                        onChange={(e) => setFormDescription(e.target.value)}
-                        onBlur={() => {
-                          setIsEditingFormDescription(false);
-                          if (!formDescription) {
-                            setShowFormDescription(false);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            setIsEditingFormDescription(false);
-                          }
-                        }}
-                        className="text-lg border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-muted-foreground"
-                        placeholder="Add a description..."
-                      />
-                    ) : (
-                      <p
-                        onClick={() => setIsEditingFormDescription(true)}
-                        className="text-lg cursor-text text-muted-foreground hover:text-gray-400 transition-colors"
-                      >
-                        {formDescription || "Add a description..."}
-                      </p>
-                    )
-                  ) : (
-                    <button
-                      onClick={() => setShowFormDescription(true)}
-                      className="text-lg text-muted-foreground hover:text-gray-400 transition-colors"
-                    >
-                      + Add description
-                    </button>
-                  )}
-                </div>
-
                 <SortableContext
                   items={formFields.map((f) => f.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-4">
                     {formFields.length === 0 ? (
-                      <EmptyDropZone isOver={overId === "form-drop-zone"} />
+                      <div className="flex items-center justify-center py-24 text-center">
+                        <p className="text-gray-500 text-lg">
+                          Drag widgets onto the builder to start, or chat with AI to generate your form
+                        </p>
+                      </div>
                     ) : (
                       formFields.map((field, index) => {
                         // Calculate question count for group fields
@@ -1370,6 +1353,19 @@ function FormsPageContent() {
                                   {formName || "Untitled Form"}
                                 </div>
                               )}
+                            </div>
+
+                            {/* Form Description */}
+                            <div className="space-y-3">
+                              <label className="text-sm font-medium text-gray-300">Form Description</label>
+                              <textarea
+                                value={formDescription}
+                                onChange={(e) => setFormDescription(e.target.value)}
+                                rows={3}
+                                className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors resize-none"
+                                placeholder="Add a description for your form..."
+                              />
+                              <p className="text-xs text-gray-400 italic">This description helps users understand the purpose of your form</p>
                             </div>
 
                             {/* Form Status */}
