@@ -38,6 +38,7 @@ import {
   X,
   CheckCircle2,
   Eye,
+  ExternalLink,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1735,7 +1736,23 @@ function FormsPageContent() {
                                   >
                                     Copy
                                   </Button>
+                                  {formStatus === "published" && (
+                                    <Button
+                                      onClick={() => {
+                                        window.open(shareUrl, '_blank');
+                                      }}
+                                      className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] px-3"
+                                      title="Open live form in new tab"
+                                    >
+                                      <ExternalLink className="w-4 h-4" />
+                                    </Button>
+                                  )}
                                 </div>
+                                {formStatus === "published" && (
+                                  <p className="text-xs text-gray-400 mt-2 italic">
+                                    ✓ Live form - Ready to collect responses
+                                  </p>
+                                )}
                               </div>
                             )}
                           </div>
