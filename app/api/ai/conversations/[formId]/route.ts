@@ -81,8 +81,8 @@ export async function POST(
     if (msg.thinking && Array.isArray(msg.thinking)) {
       // Extra cleaning for thinking array
       cleaned.thinking = msg.thinking
-        .filter(t => t != null && String(t).trim().length > 0)
-        .map(t => cleanInvalidUTF8(String(t)).trim());
+        .filter((t: any) => t != null && String(t).trim().length > 0)
+        .map((t: any) => cleanInvalidUTF8(String(t)).trim());
     }
     if (msg.completed === true || msg.completed === false) {
       cleaned.completed = Boolean(msg.completed);
