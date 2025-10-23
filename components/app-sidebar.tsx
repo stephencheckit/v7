@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -54,38 +53,14 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { isMobile, setOpenMobile, state, setOpen } = useSidebar();
-  const sidebarStateRef = useRef(state);
+  const { isMobile, setOpenMobile, state } = useSidebar();
   
-  // Track sidebar state
-  useEffect(() => {
-    sidebarStateRef.current = state;
-  }, [state]);
-  
-  // Lock sidebar state on navigation for desktop
-  useEffect(() => {
-    if (!isMobile && sidebarStateRef.current === "collapsed") {
-      // Force sidebar to stay collapsed after navigation
-      setOpen(false);
-    }
-  }, [pathname, isMobile, setOpen]);
-  
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Stop all event propagation and default behavior
-    e.stopPropagation();
-    e.preventDefault();
-    
-    const href = e.currentTarget.getAttribute('href');
-    if (!href) return;
-    
-    // Close mobile sidebar
+  const handleLinkClick = () => {
+    // Only close mobile sidebar, never do anything for desktop
     if (isMobile) {
       setOpenMobile(false);
     }
-    
-    // Navigate
-    router.push(href);
+    // Let the Link component handle navigation normally for desktop
   };
 
   return (
@@ -126,12 +101,6 @@ export function AppSidebar() {
                       <Link 
                         href={item.url}
                         onClick={handleLinkClick}
-                        onMouseDown={(e) => {
-                          // Prevent any focus/activation that might expand sidebar
-                          if (!isMobile && state === "collapsed") {
-                            e.stopPropagation();
-                          }
-                        }}
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>

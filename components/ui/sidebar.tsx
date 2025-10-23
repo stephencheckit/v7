@@ -72,22 +72,31 @@ function SidebarProvider({
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
   const [_open, _setOpen] = React.useState(defaultOpen)
-  const [hasReadCookie, setHasReadCookie] = React.useState(false)
+  const hasReadCookieRef = React.useRef(false)
   
-  // Read from cookie after mount to avoid hydration mismatch
+  // Read from cookie after mount to avoid hydration mismatch - ONLY ONCE EVER
   React.useEffect(() => {
-    if (!hasReadCookie && typeof document !== 'undefined') {
+    if (!hasReadCookieRef.current && typeof document !== 'undefined') {
       const cookieMatch = document.cookie.match(new RegExp(`${SIDEBAR_COOKIE_NAME}=([^;]+)`));
       if (cookieMatch) {
         const cookieValue = cookieMatch[1] === 'true';
         _setOpen(cookieValue);
       }
-      setHasReadCookie(true);
+      hasReadCookieRef.current = true;
     }
-  }, [hasReadCookie])
+  }, [])
   const open = openProp ?? _open
+  const lastSetTimeRef = React.useRef(0)
+  
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
+      // Prevent rapid state changes (debounce to 100ms)
+      const now = Date.now()
+      if (now - lastSetTimeRef.current < 100) {
+        return
+      }
+      lastSetTimeRef.current = now
+      
       const openState = typeof value === "function" ? value(open) : value
       if (setOpenProp) {
         setOpenProp(openState)
