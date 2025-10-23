@@ -66,44 +66,58 @@ export default function PrepLabelsPage() {
     }
 
     setIsAnalyzing(true);
+    setLoadingStage(0); // Reset loading stage
 
     try {
       // Convert to base64
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
+        try {
+          const base64 = reader.result as string;
+          setImagePreview(base64);
 
-        // Send to AI for analysis
-        const response = await fetch('/api/analyze-menu', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64 }),
-        });
+          // Send to AI for analysis
+          const response = await fetch('/api/analyze-menu', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64 }),
+          });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('API Error:', errorData);
-          throw new Error(errorData.error || 'Failed to analyze menu');
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API Error:', errorData);
+            throw new Error(errorData.error || 'Failed to analyze menu');
+          }
+
+          const data = await response.json();
+          console.log('Analysis result:', data);
+          
+          setMenuData({
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: 'Chef', // TODO: Get from auth
+            items: data.items,
+          });
+
+          toast.success(`✅ Found ${data.items.length} items from menu!`);
+        } catch (error) {
+          console.error('Analysis error:', error);
+          toast.error('Failed to analyze menu');
+          setImagePreview(null); // Clear preview on error
+        } finally {
+          // Turn off loading screen after processing completes
+          setIsAnalyzing(false);
         }
+      };
 
-        const data = await response.json();
-        console.log('Analysis result:', data);
-        
-        setMenuData({
-          uploadedAt: new Date().toISOString(),
-          uploadedBy: 'Chef', // TODO: Get from auth
-          items: data.items,
-        });
-
-        toast.success(`✅ Found ${data.items.length} items from menu!`);
+      reader.onerror = () => {
+        toast.error('Failed to read image file');
+        setIsAnalyzing(false);
       };
 
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to analyze menu');
-    } finally {
+      toast.error('Failed to upload image');
       setIsAnalyzing(false);
     }
   };
