@@ -186,13 +186,14 @@ function SortableOption({
   );
 }
 
-function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, questionCount }: { 
+function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, questionCount, isDraggingNewWidget }: { 
   field: FormField; 
   onRemove: (id: string) => void; 
   onUpdate: (id: string, updates: Partial<FormField>) => void;
   onDuplicate: (id: string) => void;
   isOver?: boolean;
   questionCount?: number;
+  isDraggingNewWidget?: boolean;
 }) {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -252,16 +253,18 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
       <div
         ref={setNodeRef}
         style={style}
-        className={`group relative p-4 rounded-lg hover:bg-muted/50 border-2 transition-all duration-200 bg-card/30 ${
+        className={`group relative p-4 rounded-lg border-2 transition-all duration-200 bg-card/30 ${
+          isDraggingNewWidget ? '' : 'hover:bg-muted/50'
+        } ${
           isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98]' : 'border-transparent hover:border-opacity-50'
         }`}
         onMouseEnter={(e) => {
-          if (!isOver) {
+          if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = field.color;
           }
         }}
         onMouseLeave={(e) => {
-          if (!isOver) {
+          if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = 'transparent';
           }
         }}
@@ -718,6 +721,7 @@ function FormsPageContent() {
 
   const [activeWidget, setActiveWidget] = useState<any>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [isDraggingNewWidget, setIsDraggingNewWidget] = useState(false);
   
   // Save & Share state
   const [saving, setSaving] = useState(false);
@@ -875,6 +879,9 @@ function FormsPageContent() {
         .flatMap((cat) => cat.items)
         .find((w) => w.id === widgetId);
       setActiveWidget(widget);
+      setIsDraggingNewWidget(true);
+    } else {
+      setIsDraggingNewWidget(false);
     }
   };
 
@@ -940,6 +947,7 @@ function FormsPageContent() {
 
     setActiveWidget(null);
     setOverId(null);
+    setIsDraggingNewWidget(false);
   };
 
   const handleRemoveField = (id: string) => {
@@ -1214,6 +1222,7 @@ function FormsPageContent() {
                             onDuplicate={handleDuplicateField}
                             isOver={overId === field.id && activeWidget !== null}
                             questionCount={questionCount}
+                            isDraggingNewWidget={isDraggingNewWidget}
                           />
                         );
                       })
