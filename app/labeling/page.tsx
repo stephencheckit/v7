@@ -403,13 +403,14 @@ export default function PrepLabelsPage() {
               </div>
             </div>
 
-        {/* Analyzing State - Fun Loading Screen */}
+        {/* Analyzing State - Fun Loading Screen as Full-Page Overlay */}
         {isAnalyzing && (
-          <Card className={`p-8 md:p-12 relative overflow-hidden ${
-            isRound2 
-              ? 'bg-gradient-to-br from-[#c8e0f5]/10 via-white/5 to-[#c4dfc4]/10 border-[#c8e0f5]/30' 
-              : 'bg-gradient-to-br from-[#c4dfc4]/10 via-white/5 to-[#c8e0f5]/10 border-[#c4dfc4]/30'
-          }`}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
+            <Card className={`p-8 md:p-12 relative overflow-hidden max-w-2xl w-full mx-4 ${
+              isRound2 
+                ? 'bg-gradient-to-br from-[#c8e0f5]/10 via-white/5 to-[#c4dfc4]/10 border-[#c8e0f5]/30' 
+                : 'bg-gradient-to-br from-[#c4dfc4]/10 via-white/5 to-[#c8e0f5]/10 border-[#c4dfc4]/30'
+            }`}>
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               {isRound2 ? (
