@@ -77,13 +77,7 @@ export async function POST(req: NextRequest) {
           min_temp_celsius: 0,
           max_temp_celsius: 4,
           alert_delay_minutes: 15,
-          alert_recipients: [
-            {
-              name: "Charlie Checkit",
-              email: "charlie@checkit.com",
-              notify_methods: ["email", "in_app"],
-            },
-          ],
+          alert_recipients: [], // No default recipients
         })
         .select()
         .single();
