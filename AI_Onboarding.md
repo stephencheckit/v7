@@ -5,6 +5,104 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Auto-Save + Preview Mode - October 23, 2025**
+**Commit:** `4056721` - Replace Cancel/Save/Share with Preview button and auto-save functionality  
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Implemented:**
+- ✅ **Auto-Save**: Forms automatically save after 2 seconds of inactivity
+- ✅ **Preview Button**: Single button replaces Cancel/Save/Share
+- ✅ **Preview Mode**: Preview submissions don't count towards analytics
+- ✅ **Save Indicator**: Shows "Saving..." or "Saved Xs ago" in header
+- ✅ **Preview Banner**: Visual indicator when viewing form in preview mode
+
+**Key Features:**
+
+1. **Auto-Save (Debounced)**
+   - Triggers after 2 seconds of inactivity
+   - Watches all form changes (fields, name, description, settings)
+   - Silent save - no alerts or modals
+   - Updates timestamp after each save
+   - Works for both new forms and editing existing forms
+
+2. **Preview Button**
+   - Replaces old Cancel/Save/Share buttons
+   - Opens form in new tab with `?preview=true` parameter
+   - Disabled until form is saved
+   - Sage green styling consistent with brand
+   - Shows Eye icon
+
+3. **Save Status Indicator**
+   - "Saving..." with spinner when saving
+   - "Saved Xs ago" after successful save
+   - Time format: just now, 5s ago, 2m ago, 1h ago, 3d ago
+   - Subtle gray text, doesn't distract
+
+4. **Preview Mode**
+   - URL parameter `?preview=true` enables preview
+   - Preview banner at top of form (sage green)
+   - Submissions tagged with `is_preview: true` in database
+   - Preview submissions excluded from analytics/stats view
+   - Perfect for testing forms without polluting data
+
+**Technical Implementation:**
+
+1. **Auto-Save Logic** (`app/forms/builder/page.tsx`):
+   ```typescript
+   - useEffect with 2-second debounce timeout
+   - Clears timeout on cleanup
+   - Calls handleAutoSave() silently
+   - Updates lastSaveTime state
+   ```
+
+2. **Database Migration** (`20251023000001_add_preview_flag.sql`):
+   ```sql
+   - Added is_preview BOOLEAN column to submissions
+   - Created index for filtering non-preview submissions
+   - Updated simple_form_stats view to exclude previews
+   ```
+
+3. **Preview Detection** (`app/f/[id]/page.tsx`):
+   ```typescript
+   - Reads ?preview=true from URL
+   - Passes is_preview to submission API
+   - Shows preview banner when active
+   ```
+
+4. **API Updates**:
+   - `/api/forms/[id]/submit` accepts `is_preview` flag
+   - Stores preview flag in database
+   - Stats view automatically excludes preview submissions
+
+**UI Changes:**
+- Removed: Cancel button, Save & Share button, Share button, Share modal
+- Added: Preview button (sage green), Auto-save indicator (gray text)
+- Simplified: Single action button instead of conditional 3-button system
+- Improved: Always shows save status, never asks user to save
+
+**Files Changed:** 4 files
+- `app/forms/builder/page.tsx` - Auto-save logic, preview button, save indicator
+- `app/f/[id]/page.tsx` - Preview mode detection, banner, is_preview flag
+- `app/api/forms/[id]/submit/route.ts` - Accept and store is_preview
+- `supabase/migrations/20251023000001_add_preview_flag.sql` - Database migration
+
+**Impact:**
+- ✅ Zero manual save actions required
+- ✅ Can preview forms anytime without affecting data
+- ✅ Cleaner, simpler UI with single Preview button
+- ✅ Real-time save feedback
+- ✅ Analytics remain accurate (preview submissions excluded)
+
+**User Experience:**
+1. Start editing form → Auto-saves after 2 seconds
+2. See "Saving..." indicator → Changes to "Saved just now"
+3. Click Preview → Opens in new tab with preview banner
+4. Submit preview → Submission saved but excluded from stats
+5. No manual save needed, ever!
+
+---
+
 ### **Thank You Page Implementation + UX Improvements - October 23, 2025**
 **Commit:** `4b19bd9` - Implement Thank You Page, improve drag-drop, add form description, remove form name/description from builder canvas  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
