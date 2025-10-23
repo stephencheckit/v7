@@ -6,28 +6,31 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  // Initialize state with a function to avoid issues
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sidebar-open');
-      return saved === null ? true : saved === 'true';
-    }
-    return true;
-  });
+  const [mounted, setMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Default for SSR
 
-  // Save to localStorage whenever state changes
+  // Read from localStorage after mount to avoid hydration mismatch
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    setMounted(true);
+    const saved = localStorage.getItem('sidebar-open');
+    if (saved !== null) {
+      setSidebarOpen(saved === 'true');
+    }
+  }, []);
+
+  // Save to localStorage whenever state changes (but only after mount)
+  useEffect(() => {
+    if (mounted) {
       localStorage.setItem('sidebar-open', String(sidebarOpen));
     }
-  }, [sidebarOpen]);
+  }, [sidebarOpen, mounted]);
 
   return (
     <SidebarProvider 
       open={sidebarOpen} 
       onOpenChange={setSidebarOpen}
     >
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full" suppressHydrationWarning>
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           <AppHeader />
