@@ -100,6 +100,12 @@ export function AppSidebar() {
                       <Link 
                         href={item.url}
                         onClick={handleLinkClick}
+                        onMouseDown={(e) => {
+                          // Prevent any focus/activation that might expand sidebar
+                          if (!isMobile && state === "collapsed") {
+                            e.stopPropagation();
+                          }
+                        }}
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
