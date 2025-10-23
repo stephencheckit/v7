@@ -93,7 +93,7 @@ Extract ALL items from ALL 7 days. Expect 70-120+ total items.`;
     // Call Claude Vision API
     console.log('[Analyze Menu] Calling Claude Vision API...');
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-7-sonnet-20250219',
       max_tokens: 8192, // Optimized for speed while handling large menus
       messages: [
         {
