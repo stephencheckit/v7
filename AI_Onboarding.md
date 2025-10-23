@@ -5,6 +5,52 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Functional Search - October 23, 2025**
+**Commit:** `f9f2276` - Implement functional search with database queries for forms and pages
+
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Implemented:**
+- ✅ **Real-time Search**: Search now queries the database for actual forms and pages
+- ✅ **Smart Filtering**: Only shows results with dedicated pages (forms, dashboard, settings, etc.)
+- ✅ **Auto-complete**: Modal opens automatically as you type
+- ✅ **Debounced Queries**: 300ms delay to prevent excessive database calls
+- ✅ **Loading States**: Shows spinner while searching
+- ✅ **Form Search**: Searches form names and descriptions
+- ✅ **Page Search**: Searches static navigation pages (Dashboard, Forms, Prep Labels, Settings)
+
+**Key Features:**
+
+1. **Database Integration**
+   - Queries `simple_forms` table for matching form names/descriptions
+   - Uses case-insensitive search (`ilike`)
+   - Limits to 10 results for performance
+   - Each result links directly to form builder with edit parameter
+
+2. **Search Results**
+   - **Forms**: Links to `/forms/builder?edit={formId}`
+   - **Pages**: Links to static pages like `/dashboard`, `/forms`, `/prep-labels`, `/settings`
+   - Shows icon, title, description, and type (form/page)
+   - Only displays items with dedicated pages (no orphan results)
+
+3. **UX Improvements**
+   - Opens modal automatically when typing
+   - Closes on Escape key
+   - Shows loading spinner during search
+   - Empty state with helpful text
+   - Scrollable results (max 400px height)
+   - Clicking result navigates and closes modal
+
+**Technical Implementation:**
+- Added `useEffect` with debounced search (300ms)
+- Supabase client-side query for forms
+- TypeScript interface for `SearchResult`
+- Auto-opens modal on any input
+- Clears search and closes modal on result click
+
+---
+
 ### **User Personalization (Charlie Checkit) - October 23, 2025**
 **Commits:** 
 - `e441b8a` - Add personalization for Charlie Checkit throughout the app
