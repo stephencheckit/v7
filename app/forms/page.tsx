@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2 } from "lucide-react";
+import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface SimpleForm {
@@ -29,12 +29,17 @@ interface SimpleForm {
   }>;
 }
 
+type SortColumn = 'name' | 'questions' | 'responses' | 'created';
+type SortDirection = 'asc' | 'desc';
+
 export default function FormsPage() {
   const router = useRouter();
   const [forms, setForms] = useState<SimpleForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedFormUrl, setSelectedFormUrl] = useState<string>("");
+  const [sortColumn, setSortColumn] = useState<SortColumn>('created');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     loadForms();
@@ -79,6 +84,51 @@ export default function FormsPage() {
       alert('Share URL copied to clipboard!');
     }
   };
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      // Toggle direction if clicking the same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new column and default to ascending
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortedForms = () => {
+    const sorted = [...forms].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortColumn) {
+        case 'name':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case 'questions':
+          aValue = a.schema?.fields?.length || 0;
+          bValue = b.schema?.fields?.length || 0;
+          break;
+        case 'responses':
+          aValue = a.simple_form_stats?.[0]?.total_submissions || 0;
+          bValue = b.simple_form_stats?.[0]?.total_submissions || 0;
+          break;
+        case 'created':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  };
+
+  const sortedForms = getSortedForms();
 
   const totalResponses = forms.reduce((sum, form) => {
     const stats = form.simple_form_stats?.[0];
@@ -179,22 +229,70 @@ export default function FormsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-gray-700 hover:bg-transparent">
-                      <TableHead className="text-gray-400">Form Name</TableHead>
-                      <TableHead className="text-gray-400">Questions</TableHead>
-                      <TableHead className="text-gray-400">Responses</TableHead>
-                      <TableHead className="text-gray-400">Created</TableHead>
+                      <TableHead className="text-gray-400">
+                        <button
+                          onClick={() => handleSort('name')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Form Name
+                          {sortColumn === 'name' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-30" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-gray-400">
+                        <button
+                          onClick={() => handleSort('questions')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Questions
+                          {sortColumn === 'questions' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-30" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-gray-400">
+                        <button
+                          onClick={() => handleSort('responses')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Responses
+                          {sortColumn === 'responses' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-30" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-gray-400">
+                        <button
+                          onClick={() => handleSort('created')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Created
+                          {sortColumn === 'created' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-30" />
+                          )}
+                        </button>
+                      </TableHead>
                       <TableHead className="text-right text-gray-400">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {forms.length === 0 ? (
+                    {sortedForms.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-12 text-gray-400">
                           No forms yet. Create your first form to get started!
                         </TableCell>
                       </TableRow>
                     ) : (
-                      forms.map((form) => {
+                      sortedForms.map((form) => {
                         const fieldCount = form.schema?.fields?.length || 0;
                         const stats = form.simple_form_stats?.[0];
                         const responseCount = stats?.total_submissions || 0;
