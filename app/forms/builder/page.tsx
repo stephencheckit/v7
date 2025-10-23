@@ -687,7 +687,28 @@ function FormsPageContent() {
   const isEditMode = !!editingFormId;
   
   const [isMounted, setIsMounted] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  
+  // Initialize AI chat state from localStorage
+  const getInitialChatState = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ai-chat-open');
+      // Default to true if not set
+      return saved !== null ? saved === 'true' : true;
+    }
+    return true;
+  };
+  
+  const [isChatOpen, setIsChatOpen] = useState(getInitialChatState);
+  
+  // Function to toggle chat and save to localStorage
+  const toggleChat = () => {
+    const newState = !isChatOpen;
+    setIsChatOpen(newState);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ai-chat-open', String(newState));
+    }
+  };
+  
   const [activeTab, setActiveTab] = useState<"builder" | "settings" | "publish" | "report">("builder");
   const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou">("general");
   const [activePublishSection, setActivePublishSection] = useState<"share">("share");
@@ -1957,7 +1978,7 @@ function FormsPageContent() {
       {/* Right Panel - AI Chat - Dynamic with Real API - Always visible but disabled on Settings/Publish */}
       <AIChatPanel
         isOpen={isChatOpen}
-        onToggle={() => setIsChatOpen(!isChatOpen)}
+        onToggle={toggleChat}
         formId={editingFormId}
         currentPage="builder"
         currentFields={formFields}
