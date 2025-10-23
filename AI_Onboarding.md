@@ -5,6 +5,58 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **User Personalization (Charlie Checkit) - October 23, 2025**
+**Commits:** 
+- `e441b8a` - Add personalization for Charlie Checkit throughout the app
+- `54f8a70` - Fix submissions API to use anon key instead of missing service role key
+
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Implemented:**
+- ✅ **User Avatar & Name in Header**: Displays "Charlie Checkit" with initials "CC" in top-right corner
+- ✅ **User Dropdown Menu**: Quick access to Settings, Dashboard, and Sign out
+- ✅ **Personalized Dashboard Greeting**: "Welcome back, Charlie" instead of generic "Dashboard"
+- ✅ **Pre-filled Settings**: Settings page now shows Charlie Checkit's information
+- ✅ **Fixed Report Tab**: Submissions API now uses correct anon key instead of missing service role key
+- ✅ **Report Question Breakdown**: Enhanced "All Responses" view with visualizations for each field type
+
+**Key Features:**
+
+1. **Header User Menu**
+   - Avatar with initials "CC" in brand color (#c4dfc4)
+   - User name "Charlie Checkit" displayed (hidden on mobile)
+   - Dropdown menu with Settings, Dashboard, and Sign out options
+   - Consistent styling with dark theme
+
+2. **Personalized Dashboard**
+   - Changed header from "Dashboard" to "Welcome back, Charlie"
+   - Updated subtitle to be more personal
+   - Makes the app feel tailored to the user
+
+3. **Settings Pre-filled**
+   - First Name: Charlie
+   - Last Name: Checkit
+   - Email: charlie@checkit.com
+   - Phone: +1 (555) 123-4567
+
+4. **Report Tab Enhancement**
+   - **Multiple Choice/Radio/Dropdown**: Bar charts showing percentage of each option selected
+   - **Checkboxes**: Bar charts for multi-select options
+   - **Number Fields**: Statistics (Average, Min, Max)
+   - **Text Fields**: List of all responses with scrollable view
+   - Each question shows response count
+   - Export CSV button moved to summary stats area
+
+**Technical Details:**
+- Added Avatar component from shadcn/ui
+- Added DropdownMenu component from shadcn/ui
+- Fixed API authentication issue using `NEXT_PUBLIC_SUPABASE_ANON_KEY` instead of missing service role key
+- Dynamic field type detection for visualization rendering
+- Responsive design - user name hidden on mobile devices
+
+---
+
 ### **Auto-Save + Preview Mode - October 23, 2025**
 **Commit:** `4056721` - Replace Cancel/Save/Share with Preview button and auto-save functionality  
 **Status:** ✅ DEPLOYED to GitHub & Vercel  
