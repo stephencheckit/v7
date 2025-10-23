@@ -5,6 +5,8 @@ import { Menu, Search, FileText, Settings, Home, Layout, User, Tag } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import Image from "next/image";
+import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -115,6 +117,7 @@ export function AppHeader() {
         { id: 'dashboard', title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard", type: 'page' as const },
         { id: 'forms', title: "Forms", description: "Manage your forms", icon: FileText, link: "/forms", type: 'page' as const },
         { id: 'labeling', title: "Labeling", description: "Menu prep labels", icon: Tag, link: "/labeling", type: 'page' as const },
+        { id: 'sensors', title: "Sensors", description: "Temperature monitoring", icon: FileText, link: "/sensors", type: 'page' as const },
         { id: 'settings', title: "Settings", description: "Account settings", icon: Settings, link: "/settings", type: 'page' as const },
       ];
 

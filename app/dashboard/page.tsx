@@ -25,6 +25,8 @@ import {
   Bar,
 } from "recharts";
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Thermometer, Users, LayoutDashboard } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 // Food Safety Data
 const complianceData = [
@@ -61,6 +63,29 @@ const inspectionScores = [
 ];
 
 export default function DashboardPage() {
+  const [sensorAlerts, setSensorAlerts] = useState(0);
+
+  useEffect(() => {
+    // Fetch sensor alerts
+    const fetchSensorAlerts = async () => {
+      try {
+        const response = await fetch("/api/sensors");
+        if (response.ok) {
+          const data = await response.json();
+          const alertCount = data.sensors?.reduce(
+            (sum: number, s: any) => sum + s.active_alerts_count,
+            0
+          ) || 0;
+          setSensorAlerts(alertCount);
+        }
+      } catch (error) {
+        console.error("Error fetching sensor alerts:", error);
+      }
+    };
+
+    fetchSensorAlerts();
+  }, []);
+
   return (
     <AppLayout>
       <div className="w-full h-full overflow-auto">
@@ -81,6 +106,32 @@ export default function DashboardPage() {
 
             {/* Stats Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Sensor Alerts Card */}
+              <Card className={`border-0 shadow-lg ${
+                sensorAlerts > 0
+                  ? "bg-gradient-to-br from-[#ff6b6b] to-[#ff6b6b]/80"
+                  : "bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80"
+              }`}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-[#0a0a0a]">
+                    Sensor Alerts
+                  </CardTitle>
+                  <Thermometer className="h-4 w-4 text-[#0a0a0a]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-[#0a0a0a]">{sensorAlerts}</div>
+                  <p className="text-xs text-[#0a0a0a]/70 mt-1">
+                    {sensorAlerts === 0 ? "All sensors normal" : `${sensorAlerts} sensor${sensorAlerts === 1 ? '' : 's'} need attention`}
+                  </p>
+                  <Link 
+                    href="/sensors" 
+                    className="text-xs text-[#0a0a0a] underline hover:no-underline mt-2 inline-block"
+                  >
+                    View Dashboard →
+                  </Link>
+                </CardContent>
+              </Card>
+
               <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-[#0a0a0a]">
@@ -124,21 +175,6 @@ export default function DashboardPage() {
                   <div className="text-3xl font-bold text-[#0a0a0a]">42/45</div>
                   <p className="text-xs text-[#0a0a0a]/70 mt-1">
                     93% completion rate
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-[#ddc8f5] to-[#ddc8f5]/80 border-0 shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-                    Critical Alerts
-                  </CardTitle>
-                  <AlertTriangle className="h-4 w-4 text-[#0a0a0a]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-[#0a0a0a]">0</div>
-                  <p className="text-xs text-[#0a0a0a]/70 mt-1">
-                    All systems nominal
                   </p>
                 </CardContent>
               </Card>

@@ -57,10 +57,15 @@ export default function HomePage() {
           ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-6">
-            {/* Logo area - hide text to avoid cutoff */}
-            <div className="mb-8">
-              {/* Text hidden in sidebar menu */}
-            </div>
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 mb-8">
+              <img 
+                src="/checkit-checkit.png" 
+                alt="Checkit V7 Logo" 
+                className="w-10 h-10 object-contain"
+              />
+              <span className="text-xl font-bold text-white">Checkit V7</span>
+            </Link>
 
             <ul className="space-y-1">
               <NavItem label="Home" section="home" active={activeSection === "home"} onClick={() => scrollToSection("home")} />

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
+import { NotificationProvider } from "@/components/notifications/notification-provider";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -59,7 +61,10 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} antialiased`}
         style={{ fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif' }}
       >
-        {children}
+        <NotificationProvider>
+          {children}
+        </NotificationProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
