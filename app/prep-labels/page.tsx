@@ -320,7 +320,6 @@ export default function PrepLabelsPage() {
         ) : !isAnalyzing && !menuData ? (
           <Card className="p-12 bg-white/5 border-white/10">
             <div className="flex flex-col items-center justify-center gap-4">
-              <Camera className="h-16 w-16 text-gray-600" />
               <h3 className="text-xl font-semibold text-white">No Menu Uploaded</h3>
               <p className="text-gray-400 text-center max-w-md">
                 Upload a photo of today's menu board and AI will extract all items,
