@@ -161,7 +161,7 @@ export default function FormsPage() {
 
   return (
     <>
-      <div className="w-full h-full overflow-auto">
+      <div className="w-full h-full overflow-auto overflow-x-hidden">
         <div className="p-4 md:p-8">
           <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             {/* Header */}
