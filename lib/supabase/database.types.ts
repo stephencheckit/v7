@@ -68,6 +68,30 @@ export type Database = {
           },
         ]
       }
+      ai_conversations: {
+        Row: {
+          created_at: string | null
+          form_id: string
+          id: string
+          messages: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          form_id: string
+          id?: string
+          messages?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          form_id?: string
+          id?: string
+          messages?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           created_at: string | null
@@ -259,7 +283,7 @@ export type Database = {
           submitted_at: string | null
           submitter_email: string | null
           submitter_id: string | null
-          submitter_ip: unknown | null
+          submitter_ip: unknown
           submitter_user_agent: string | null
           time_to_complete: number | null
         }
@@ -276,7 +300,7 @@ export type Database = {
           submitted_at?: string | null
           submitter_email?: string | null
           submitter_id?: string | null
-          submitter_ip?: unknown | null
+          submitter_ip?: unknown
           submitter_user_agent?: string | null
           time_to_complete?: number | null
         }
@@ -293,7 +317,7 @@ export type Database = {
           submitted_at?: string | null
           submitter_email?: string | null
           submitter_id?: string | null
-          submitter_ip?: unknown | null
+          submitter_ip?: unknown
           submitter_user_agent?: string | null
           time_to_complete?: number | null
         }
@@ -412,6 +436,374 @@ export type Database = {
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page_content: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      sensor_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          detected_at: string
+          duration_minutes: number | null
+          id: string
+          notifications_sent: Json | null
+          resolution_action: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          sensor_id: string
+          severity: string
+          started_at: string
+          status: string | null
+          temp_celsius: number
+          temp_fahrenheit: number
+          threshold_max: number | null
+          threshold_min: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string | null
+          detected_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notifications_sent?: Json | null
+          resolution_action?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sensor_id: string
+          severity: string
+          started_at?: string
+          status?: string | null
+          temp_celsius: number
+          temp_fahrenheit: number
+          threshold_max?: number | null
+          threshold_min?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          detected_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notifications_sent?: Json | null
+          resolution_action?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sensor_id?: string
+          severity?: string
+          started_at?: string
+          status?: string | null
+          temp_celsius?: number
+          temp_fahrenheit?: number
+          threshold_max?: number | null
+          threshold_min?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensor_alerts_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sensor_readings: {
+        Row: {
+          id: string
+          is_critical: boolean | null
+          is_in_range: boolean
+          raw_event: Json | null
+          recorded_at: string
+          sensor_id: string
+          temperature_celsius: number
+          temperature_fahrenheit: number
+        }
+        Insert: {
+          id?: string
+          is_critical?: boolean | null
+          is_in_range: boolean
+          raw_event?: Json | null
+          recorded_at?: string
+          sensor_id: string
+          temperature_celsius: number
+          temperature_fahrenheit: number
+        }
+        Update: {
+          id?: string
+          is_critical?: boolean | null
+          is_in_range?: boolean
+          raw_event?: Json | null
+          recorded_at?: string
+          sensor_id?: string
+          temperature_celsius?: number
+          temperature_fahrenheit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensor_readings_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sensor_tasks: {
+        Row: {
+          alert_id: string
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          due_at: string | null
+          id: string
+          priority: string | null
+          sensor_id: string
+          started_at: string | null
+          status: string | null
+          task_type: string
+          title: string
+        }
+        Insert: {
+          alert_id: string
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: string | null
+          sensor_id: string
+          started_at?: string | null
+          status?: string | null
+          task_type: string
+          title: string
+        }
+        Update: {
+          alert_id?: string
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: string | null
+          sensor_id?: string
+          started_at?: string | null
+          status?: string | null
+          task_type?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensor_tasks_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "sensor_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sensor_tasks_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "sensors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sensors: {
+        Row: {
+          alert_delay_minutes: number | null
+          alert_recipients: Json | null
+          battery_level: number | null
+          created_at: string | null
+          dt_device_id: string
+          dt_project_id: string
+          equipment_type: string
+          id: string
+          is_active: boolean | null
+          last_reading_at: string | null
+          location: string | null
+          max_temp_celsius: number
+          metadata: Json | null
+          min_temp_celsius: number
+          name: string
+          signal_strength: number | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_delay_minutes?: number | null
+          alert_recipients?: Json | null
+          battery_level?: number | null
+          created_at?: string | null
+          dt_device_id: string
+          dt_project_id: string
+          equipment_type: string
+          id?: string
+          is_active?: boolean | null
+          last_reading_at?: string | null
+          location?: string | null
+          max_temp_celsius: number
+          metadata?: Json | null
+          min_temp_celsius: number
+          name: string
+          signal_strength?: number | null
+          type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_delay_minutes?: number | null
+          alert_recipients?: Json | null
+          battery_level?: number | null
+          created_at?: string | null
+          dt_device_id?: string
+          dt_project_id?: string
+          equipment_type?: string
+          id?: string
+          is_active?: boolean | null
+          last_reading_at?: string | null
+          location?: string | null
+          max_temp_celsius?: number
+          metadata?: Json | null
+          min_temp_celsius?: number
+          name?: string
+          signal_strength?: number | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      simple_form_submissions: {
+        Row: {
+          ai_metadata: Json | null
+          data: Json
+          form_id: string
+          id: string
+          is_preview: boolean | null
+          submitted_at: string | null
+        }
+        Insert: {
+          ai_metadata?: Json | null
+          data: Json
+          form_id: string
+          id?: string
+          is_preview?: boolean | null
+          submitted_at?: string | null
+        }
+        Update: {
+          ai_metadata?: Json | null
+          data?: Json
+          form_id?: string
+          id?: string
+          is_preview?: boolean | null
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simple_form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "simple_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simple_forms: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          schema: Json
+          status: string | null
+          thank_you_settings: Json | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id: string
+          schema: Json
+          status?: string | null
+          thank_you_settings?: Json | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          schema?: Json
+          status?: string | null
+          thank_you_settings?: Json | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      simple_submissions: {
+        Row: {
+          data: Json
+          form_id: string
+          id: string
+          submitted_at: string | null
+        }
+        Insert: {
+          data: Json
+          form_id: string
+          id?: string
+          submitted_at?: string | null
+        }
+        Update: {
+          data?: Json
+          form_id?: string
+          id?: string
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simple_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "simple_forms"
             referencedColumns: ["id"]
           },
         ]
@@ -673,7 +1065,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      simple_form_stats: {
+        Row: {
+          form_id: string | null
+          last_submission_at: string | null
+          total_submissions: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simple_form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "simple_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
@@ -809,4 +1216,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
