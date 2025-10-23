@@ -1744,9 +1744,9 @@ function FormsPageContent() {
                           <div className="space-y-1">
                             {submissions.map((submission: any) => {
                               const submittedDate = new Date(submission.submitted_at).toLocaleString();
-                              const identifier = submission.response_data?.email || 
-                                                submission.response_data?.name || 
-                                                `Response ${submission.id.slice(0, 8)}`;
+                              const identifier = submission.data?.email || 
+                                                submission.data?.name || 
+                                                `Response ${submission.id.toString().slice(0, 8)}`;
                               
                               return (
                                 <button
@@ -1879,9 +1879,9 @@ function FormsPageContent() {
                                       <div className="flex justify-between items-start">
                                         <div>
                                           <div className="text-sm font-medium text-white">
-                                            {submission.response_data?.email || 
-                                             submission.response_data?.name || 
-                                             `Response ${submission.id.slice(0, 8)}`}
+                                            {submission.data?.email || 
+                                             submission.data?.name || 
+                                             `Response ${submission.id.toString().slice(0, 8)}`}
                                           </div>
                                           <div className="text-xs text-gray-500 mt-1">
                                             {new Date(submission.submitted_at).toLocaleString()}
@@ -1916,7 +1916,7 @@ function FormsPageContent() {
 
                                   {/* Response Data */}
                                   <div className="space-y-4">
-                                    {Object.entries(submission.response_data || {}).map(([key, value]: [string, any]) => (
+                                    {Object.entries(submission.data || {}).map(([key, value]: [string, any]) => (
                                       <div key={key} className="space-y-2">
                                         <label className="text-sm font-medium text-gray-300 capitalize">
                                           {key.replace(/_/g, ' ')}
