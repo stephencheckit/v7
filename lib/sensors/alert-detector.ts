@@ -182,10 +182,12 @@ async function triggerAlertNotifications(
 
     // Send email to each recipient
     for (const recipient of recipients) {
-      if (recipient.notify_methods?.includes("email") && recipient.email) {
+      if (!recipient || typeof recipient !== 'object' || Array.isArray(recipient)) continue;
+      
+      if ((recipient as any).notify_methods?.includes("email") && (recipient as any).email) {
         try {
           const result = await sendTemperatureAlert(
-            recipient.email,
+            (recipient as any).email,
             sensor,
             alert,
             fahrenheit, // Always send in Fahrenheit for US users
@@ -194,18 +196,18 @@ async function triggerAlertNotifications(
 
           notificationLog.push({
             type: "email",
-            recipient: recipient.email,
+            recipient: (recipient as any).email,
             sent_at: new Date().toISOString(),
             status: result.success ? "delivered" : "failed",
             error: result.error,
           });
 
-          console.log(`✅ Email sent to ${recipient.email}`);
+          console.log(`✅ Email sent to ${(recipient as any).email}`);
         } catch (error: any) {
-          console.error(`❌ Failed to send email to ${recipient.email}:`, error);
+          console.error(`❌ Failed to send email to ${(recipient as any).email}:`, error);
           notificationLog.push({
             type: "email",
-            recipient: recipient.email,
+            recipient: (recipient as any).email,
             sent_at: new Date().toISOString(),
             status: "failed",
             error: error.message,
