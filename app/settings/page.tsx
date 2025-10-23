@@ -102,20 +102,20 @@ export default function SettingsPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName" className="text-gray-300">First Name</Label>
-                      <Input id="firstName" placeholder="John" className="bg-[#1a1a1a] border-gray-700" />
+                      <Input id="firstName" defaultValue="Charlie" className="bg-[#1a1a1a] border-gray-700" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName" className="text-gray-300">Last Name</Label>
-                      <Input id="lastName" placeholder="Doe" className="bg-[#1a1a1a] border-gray-700" />
+                      <Input id="lastName" defaultValue="Checkit" className="bg-[#1a1a1a] border-gray-700" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-300">Email</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" className="bg-[#1a1a1a] border-gray-700" />
+                    <Input id="email" type="email" defaultValue="charlie@checkit.com" className="bg-[#1a1a1a] border-gray-700" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-gray-300">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" className="bg-[#1a1a1a] border-gray-700" />
+                    <Input id="phone" type="tel" defaultValue="+1 (555) 123-4567" className="bg-[#1a1a1a] border-gray-700" />
                   </div>
                   <Separator className="bg-gray-700" />
                   <Button className="bg-gradient-to-r from-[#c4dfc4] to-[#c8e0f5] text-[#0a0a0a] hover:from-[#c4dfc4]/90 hover:to-[#c8e0f5]/90">

@@ -71,10 +71,10 @@ export default function DashboardPage() {
               <div>
                 <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
                   <LayoutDashboard className="h-10 w-10 text-[#c4dfc4]" />
-                  Dashboard
+                  Welcome back, Charlie
                 </h1>
                 <p className="text-muted-foreground mt-2">
-                  Food Safety Command Center - Real-time compliance monitoring
+                  Here's your food safety overview for today
                 </p>
               </div>
             </div>

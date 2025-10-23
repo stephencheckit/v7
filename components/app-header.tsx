@@ -1,16 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, Search, FileText, Settings, Home, Layout } from "lucide-react";
+import { Menu, Search, FileText, Settings, Home, Layout, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 
 export function AppHeader() {
@@ -79,6 +88,47 @@ export function AppHeader() {
             />
           </div>
         </div>
+
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10">
+              <Avatar className="h-8 w-8 bg-[#c4dfc4]">
+                <AvatarFallback className="bg-[#c4dfc4] text-[#0a0a0a] font-semibold text-sm">
+                  CC
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-white hidden md:inline-block">
+                Charlie Checkit
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 bg-[#1a1a1a] border-border/50" align="end">
+            <DropdownMenuLabel className="text-gray-400">My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem 
+              onClick={() => router.push('/settings')}
+              className="text-gray-300 focus:bg-white/10 focus:text-white cursor-pointer"
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => router.push('/dashboard')}
+              className="text-gray-300 focus:bg-white/10 focus:text-white cursor-pointer"
+            >
+              <Layout className="mr-2 h-4 w-4" />
+              Dashboard
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem 
+              onClick={() => router.push('/signin')}
+              className="text-red-400 focus:bg-red-500/10 focus:text-red-300 cursor-pointer"
+            >
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* Search Results Modal */}

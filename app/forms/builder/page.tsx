@@ -1863,11 +1863,11 @@ function FormsPageContent() {
                           </Card>
                         ) : selectedResponseId === "all" ? (
                           <Card className="max-w-4xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                               {/* Summary Stats */}
                               <div>
-                                <h2 className="text-2xl font-bold text-white mb-4">All Responses</h2>
-                                <div className="grid grid-cols-2 gap-4">
+                                <h2 className="text-2xl font-bold text-white mb-4">Response Summary</h2>
+                                <div className="grid grid-cols-3 gap-4">
                                   <Card className="p-4 bg-[#0a0a0a] border-border/50">
                                     <div className="text-sm text-gray-400">Total Submissions</div>
                                     <div className="text-3xl font-bold text-white mt-1">{submissions.length}</div>
@@ -1881,27 +1881,172 @@ function FormsPageContent() {
                                       }
                                     </div>
                                   </Card>
+                                  <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                    <Button
+                                      className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                                      onClick={() => {
+                                        // TODO: Implement CSV export
+                                        alert('CSV export coming soon!');
+                                      }}
+                                    >
+                                      Export CSV
+                                    </Button>
+                                  </Card>
                                 </div>
                               </div>
 
-                              {/* Export Button */}
-                              <div>
-                                <Button
-                                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                                  onClick={() => {
-                                    // TODO: Implement CSV export
-                                    alert('CSV export coming soon!');
-                                  }}
-                                >
-                                  Export as CSV
-                                </Button>
+                              {/* Question Breakdown */}
+                              <div className="space-y-6">
+                                <h3 className="text-xl font-semibold text-white">Question Breakdown</h3>
+                                
+                                {formFields.map((field: any) => {
+                                  // Collect all responses for this field
+                                  const fieldResponses = submissions
+                                    .map((s: any) => s.data?.[field.id])
+                                    .filter((val: any) => val !== undefined && val !== null && val !== '');
+
+                                  if (fieldResponses.length === 0) return null;
+
+                                  // For choice-based fields, count occurrences
+                                  if (field.type === 'multiple-choice' || field.type === 'radio' || field.type === 'dropdown') {
+                                    const counts: Record<string, number> = {};
+                                    fieldResponses.forEach((response: any) => {
+                                      const value = String(response);
+                                      counts[value] = (counts[value] || 0) + 1;
+                                    });
+
+                                    const total = fieldResponses.length;
+                                    const sortedOptions = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+                                    return (
+                                      <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                        <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                        <div className="space-y-3">
+                                          {sortedOptions.map(([option, count]) => {
+                                            const percentage = ((count / total) * 100).toFixed(1);
+                                            return (
+                                              <div key={option} className="space-y-1">
+                                                <div className="flex justify-between text-sm">
+                                                  <span className="text-gray-300">{option}</span>
+                                                  <span className="text-gray-400">{count} ({percentage}%)</span>
+                                                </div>
+                                                <div className="w-full bg-gray-800 rounded-full h-2">
+                                                  <div 
+                                                    className="bg-[#c4dfc4] h-2 rounded-full transition-all"
+                                                    style={{ width: `${percentage}%` }}
+                                                  />
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                        <div className="mt-3 text-xs text-gray-500">
+                                          {fieldResponses.length} responses
+                                        </div>
+                                      </Card>
+                                    );
+                                  }
+
+                                  // For checkboxes, show selected options
+                                  if (field.type === 'checkboxes') {
+                                    const allSelections: Record<string, number> = {};
+                                    fieldResponses.forEach((response: any) => {
+                                      if (Array.isArray(response)) {
+                                        response.forEach(item => {
+                                          const value = String(item);
+                                          allSelections[value] = (allSelections[value] || 0) + 1;
+                                        });
+                                      }
+                                    });
+
+                                    const sortedSelections = Object.entries(allSelections).sort((a, b) => b[1] - a[1]);
+
+                                    return (
+                                      <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                        <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                        <div className="space-y-3">
+                                          {sortedSelections.map(([option, count]) => {
+                                            const percentage = ((count / fieldResponses.length) * 100).toFixed(1);
+                                            return (
+                                              <div key={option} className="space-y-1">
+                                                <div className="flex justify-between text-sm">
+                                                  <span className="text-gray-300">{option}</span>
+                                                  <span className="text-gray-400">{count} ({percentage}%)</span>
+                                                </div>
+                                                <div className="w-full bg-gray-800 rounded-full h-2">
+                                                  <div 
+                                                    className="bg-[#c4dfc4] h-2 rounded-full transition-all"
+                                                    style={{ width: `${percentage}%` }}
+                                                  />
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                        <div className="mt-3 text-xs text-gray-500">
+                                          {fieldResponses.length} responses
+                                        </div>
+                                      </Card>
+                                    );
+                                  }
+
+                                  // For number fields, show statistics
+                                  if (field.type === 'number') {
+                                    const numbers = fieldResponses.map(Number).filter(n => !isNaN(n));
+                                    if (numbers.length === 0) return null;
+
+                                    const avg = (numbers.reduce((a, b) => a + b, 0) / numbers.length).toFixed(2);
+                                    const min = Math.min(...numbers);
+                                    const max = Math.max(...numbers);
+
+                                    return (
+                                      <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                        <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                        <div className="grid grid-cols-3 gap-4">
+                                          <div>
+                                            <div className="text-sm text-gray-400">Average</div>
+                                            <div className="text-2xl font-bold text-white mt-1">{avg}</div>
+                                          </div>
+                                          <div>
+                                            <div className="text-sm text-gray-400">Min</div>
+                                            <div className="text-2xl font-bold text-white mt-1">{min}</div>
+                                          </div>
+                                          <div>
+                                            <div className="text-sm text-gray-400">Max</div>
+                                            <div className="text-2xl font-bold text-white mt-1">{max}</div>
+                                          </div>
+                                        </div>
+                                        <div className="mt-3 text-xs text-gray-500">
+                                          {numbers.length} responses
+                                        </div>
+                                      </Card>
+                                    );
+                                  }
+
+                                  // For text fields, show all responses
+                                  return (
+                                    <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                      <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                                        {fieldResponses.map((response: any, idx: number) => (
+                                          <div key={idx} className="p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
+                                            <p className="text-sm text-gray-300">{String(response)}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <div className="mt-3 text-xs text-gray-500">
+                                        {fieldResponses.length} responses
+                                      </div>
+                                    </Card>
+                                  );
+                                })}
                               </div>
 
-                              {/* Responses Table */}
+                              {/* Recent Submissions List */}
                               <div>
-                                <h3 className="text-lg font-semibold text-white mb-3">Recent Submissions</h3>
+                                <h3 className="text-lg font-semibold text-white mb-3">Individual Responses</h3>
                                 <div className="space-y-2">
-                                  {submissions.map((submission: any) => (
+                                  {submissions.slice(0, 10).map((submission: any) => (
                                     <Card 
                                       key={submission.id}
                                       className="p-4 bg-[#0a0a0a] border-border/50 cursor-pointer hover:bg-[#0a0a0a]/80 transition-colors"
@@ -1924,6 +2069,11 @@ function FormsPageContent() {
                                       </div>
                                     </Card>
                                   ))}
+                                  {submissions.length > 10 && (
+                                    <p className="text-center text-sm text-gray-500 pt-2">
+                                      Showing 10 of {submissions.length} responses
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             </div>
