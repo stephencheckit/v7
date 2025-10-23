@@ -104,10 +104,13 @@ async function updateExistingAlert(
   );
 
   // Check if we should trigger notifications
+  const notificationsSent = Array.isArray(existingAlert.notifications_sent) 
+    ? existingAlert.notifications_sent 
+    : [];
+  
   if (
     minutesActive >= alertThreshold &&
-    (!existingAlert.notifications_sent ||
-      existingAlert.notifications_sent.length === 0)
+    notificationsSent.length === 0
   ) {
     console.log(`📧 Triggering notifications for sensor: ${sensor.name}`);
 
