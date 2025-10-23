@@ -69,19 +69,22 @@ function SidebarProvider({
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
-  // Read initial state from cookie if available
-  const getInitialOpenState = () => {
-    if (typeof document === 'undefined') return defaultOpen;
-    const cookieMatch = document.cookie.match(new RegExp(`${SIDEBAR_COOKIE_NAME}=([^;]+)`));
-    if (cookieMatch) {
-      return cookieMatch[1] === 'true';
-    }
-    return defaultOpen;
-  };
-
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(getInitialOpenState)
+  const [_open, _setOpen] = React.useState(defaultOpen)
+  
+  // Read from cookie after mount to avoid hydration mismatch
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const cookieMatch = document.cookie.match(new RegExp(`${SIDEBAR_COOKIE_NAME}=([^;]+)`));
+      if (cookieMatch) {
+        const cookieValue = cookieMatch[1] === 'true';
+        if (cookieValue !== defaultOpen) {
+          _setOpen(cookieValue);
+        }
+      }
+    }
+  }, [])
   const open = openProp ?? _open
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
@@ -223,6 +226,7 @@ function Sidebar({
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
+      suppressHydrationWarning
     >
       {/* This is what handles the sidebar gap on desktop */}
       <div
@@ -528,6 +532,7 @@ function SidebarMenuButton({
       data-size={size}
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      suppressHydrationWarning
       {...props}
     />
   )
