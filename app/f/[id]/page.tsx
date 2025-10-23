@@ -42,6 +42,7 @@ export default function PublicFormPage() {
   const [error, setError] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [aiMetadata, setAiMetadata] = useState<Record<string, any>>({});
+  const [analysisFeed, setAnalysisFeed] = useState<any[]>([]);
 
   useEffect(() => {
     loadForm();
@@ -114,7 +115,24 @@ export default function PublicFormPage() {
     }));
   };
 
+  const handleAnalysisComplete = (snapshot: number, answers: any, confidence: any) => {
+    // Add to analysis feed
+    setAnalysisFeed(prev => [{
+      timestamp: new Date().toLocaleTimeString(),
+      snapshotNumber: snapshot,
+      answers,
+      confidence,
+      answeredCount: Object.keys(answers).length,
+    }, ...prev].slice(0, 20)); // Keep last 20
+  };
+
   const handleAISuggestion = (fieldId: string, value: any, confidence: number, reasoning: string) => {
+    // HOW ANSWERS ARE SELECTED:
+    // Each snapshot (every 3 seconds) analyzes the current video frame independently.
+    // We keep the BEST answer (highest confidence) from all snapshots.
+    // The form field shows the single best answer, NOT a summary of all snapshots.
+    // This ensures the most confident/accurate answer is used.
+    
     // Store metadata
     setAiMetadata(prev => {
       const existingMetadata = prev[fieldId];
@@ -222,6 +240,7 @@ export default function PublicFormPage() {
               formSchema={form.schema}
               currentValues={formValues}
               onFieldSuggestion={handleAISuggestion}
+              onAnalysisComplete={handleAnalysisComplete}
             />
           )}
 
@@ -426,6 +445,69 @@ export default function PublicFormPage() {
             </div>
           </form>
         </Card>
+
+        {/* AI Analysis Feed - Below Form */}
+        {analysisFeed.length > 0 && (
+          <Card className="bg-[#1a1a1a] border-white/10 p-6 mt-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <span className="text-purple-400">✨</span>
+              AI Analysis Feed
+            </h3>
+            <ScrollArea className="h-96 pr-4">
+              <div className="space-y-3">
+                {analysisFeed.map((entry, idx) => {
+                  const getQuestionLabel = (fieldId: string) => {
+                    return form?.schema.fields.find(f => f.id === fieldId)?.label || fieldId;
+                  };
+
+                  return (
+                    <div key={idx} className="p-4 bg-[#0a0a0a] border border-white/10 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-400">
+                          Snapshot #{entry.snapshotNumber}
+                        </span>
+                        <span className="text-xs text-gray-500">{entry.timestamp}</span>
+                      </div>
+                      
+                      {Object.keys(entry.answers).length > 0 ? (
+                        <div className="space-y-2">
+                          {Object.entries(entry.answers).map(([fieldId, answer]: [string, any]) => (
+                            <div key={fieldId} className="text-sm">
+                              <div className="flex items-start justify-between gap-2">
+                                <span className="text-gray-400 flex-1">
+                                  {getQuestionLabel(fieldId)}
+                                </span>
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    entry.confidence?.[fieldId] >= 90 
+                                      ? 'text-green-400 border-green-400/30' 
+                                      : entry.confidence?.[fieldId] >= 80 
+                                      ? 'text-yellow-400 border-yellow-400/30'
+                                      : 'text-gray-400 border-gray-400/30'
+                                  }`}
+                                >
+                                  {entry.confidence?.[fieldId]}% confident
+                                </Badge>
+                              </div>
+                              <div className="text-white font-medium mt-1">
+                                → {String(answer)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">
+                          No confident answers in this snapshot
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </Card>
+        )}
       </div>
     </div>
   );

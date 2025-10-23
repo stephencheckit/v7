@@ -923,19 +923,6 @@ function FormsPageContent() {
     ));
   };
 
-  const handlePreview = () => {
-    // Save form data to localStorage for preview
-    const formData = {
-      name: formName,
-      description: formDescription,
-      fields: formFields,
-      submitButtonText: submitButtonText
-    };
-    localStorage.setItem('formPreviewData', JSON.stringify(formData));
-    
-    // Open preview in new tab
-    window.open('/preview', '_blank');
-  };
 
   const handleSaveAndShare = async () => {
     if (formFields.length === 0) {
@@ -1080,14 +1067,6 @@ function FormsPageContent() {
                       </Tabs>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="hover:bg-white/5" 
-                        onClick={handlePreview}
-                      >
-                        Preview
-                      </Button>
                       {hasUnsavedChanges && (
                         <Button 
                           variant="outline" 
@@ -1429,7 +1408,6 @@ function FormsPageContent() {
                           </Tabs>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" className="hover:bg-white/5" onClick={handlePreview}>Preview</Button>
                           <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
                             Draft
                           </Badge>

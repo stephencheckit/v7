@@ -50,12 +50,27 @@ interface FormData {
 }
 
 export default function PreviewPage() {
-  const [formData, setFormData] = useState<FormData | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(() => {
+    // Initialize from localStorage immediately to avoid flicker
+    if (typeof window !== 'undefined') {
+      const savedForm = localStorage.getItem("formPreviewData");
+      if (savedForm) {
+        try {
+          return JSON.parse(savedForm);
+        } catch (e) {
+          console.error('Failed to parse saved form:', e);
+        }
+      }
+    }
+    return null;
+  });
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [aiAnswers, setAiAnswers] = useState<Record<string, any>>({});
   const [snapshotCount, setSnapshotCount] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisFeed, setAnalysisFeed] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
@@ -71,11 +86,8 @@ export default function PreviewPage() {
   } = useVideoRecording();
 
   useEffect(() => {
-    // Load form data from localStorage
-    const savedForm = localStorage.getItem("formPreviewData");
-    if (savedForm) {
-      setFormData(JSON.parse(savedForm));
-    }
+    // Mark as loaded after initial render
+    setIsLoading(false);
   }, []);
 
   // Cleanup on unmount
@@ -103,6 +115,7 @@ export default function PreviewPage() {
     startRecording();
     setSnapshotCount(0);
     setAnsweredCount(0);
+    setAnalysisFeed([]); // Clear previous analysis feed
     
     // Start capturing snapshots every 4 seconds
     const interval = setInterval(async () => {
@@ -142,7 +155,23 @@ export default function PreviewPage() {
           return;
         }
 
-        const { answers, answeredQuestions } = await response.json();
+        const result = await response.json();
+        console.log('[Video AI] Full response:', result);
+        
+        const { answers = {}, answeredQuestions = 0, confidence = {} } = result;
+
+        // Add to analysis feed
+        const feedEntry = {
+          timestamp: new Date().toLocaleTimeString(),
+          snapshotNumber: snapshotCount + 1,
+          answers,
+          confidence,
+          answeredCount: Object.keys(answers).length
+        };
+        
+        console.log('[Video AI] Adding to feed:', feedEntry);
+        
+        setAnalysisFeed(prev => [feedEntry, ...prev].slice(0, 20)); // Keep last 20 snapshots
 
         // Update AI answers
         setAiAnswers(prev => ({ ...prev, ...answers }));
@@ -151,6 +180,16 @@ export default function PreviewPage() {
         console.log(`[Video AI] Snapshot ${snapshotCount + 1}: ${Object.keys(answers).length} answers`);
       } catch (error) {
         console.error('Error analyzing snapshot:', error);
+        
+        // Add error to feed
+        setAnalysisFeed(prev => [{
+          timestamp: new Date().toLocaleTimeString(),
+          snapshotNumber: snapshotCount + 1,
+          answers: {},
+          confidence: {},
+          answeredCount: 0,
+          error: error instanceof Error ? error.message : String(error)
+        }, ...prev].slice(0, 20));
       } finally {
         setIsAnalyzing(false);
       }
@@ -169,6 +208,10 @@ export default function PreviewPage() {
     setIsAnalyzing(false);
   };
 
+  const getQuestionLabel = (fieldId: string) => {
+    return formData?.fields.find(f => f.id === fieldId)?.label || fieldId;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Merge manual inputs with AI answers
@@ -184,10 +227,97 @@ export default function PreviewPage() {
     }));
   };
 
+  const createDemoForm = () => {
+    const demoForm = {
+      name: "AI Vision Test Form",
+      description: "Test the AI video form filler with this simple inspection checklist",
+      fields: [
+        {
+          id: "field_1",
+          type: "radio",
+          name: "people_present",
+          label: "Are people visible in the frame?",
+          placeholder: "",
+          required: true,
+          options: ["Yes", "No"],
+          color: "#c4dfc4",
+        },
+        {
+          id: "field_2",
+          type: "text",
+          name: "visible_objects",
+          label: "What objects do you see?",
+          placeholder: "Describe what's visible",
+          required: false,
+          color: "#c4dfc4",
+        },
+        {
+          id: "field_3",
+          type: "thumbs",
+          name: "good_lighting",
+          label: "Is there good lighting?",
+          placeholder: "",
+          required: false,
+          color: "#c8e0f5",
+        },
+        {
+          id: "field_4",
+          type: "radio",
+          name: "safety_equipment",
+          label: "Is safety equipment visible?",
+          placeholder: "",
+          required: false,
+          options: ["Yes", "No", "N/A"],
+          color: "#c8e0f5",
+        },
+        {
+          id: "field_5",
+          type: "number",
+          name: "item_count",
+          label: "How many items can you count?",
+          placeholder: "Enter a number",
+          required: false,
+          color: "#ddc8f5",
+        },
+      ],
+      submitButtonText: "Submit Inspection",
+    };
+
+    localStorage.setItem("formPreviewData", JSON.stringify(demoForm));
+    setFormData(demoForm);
+  };
+
+  // Show loading only during initial hydration
+  if (isLoading) {
+    return null; // Prevents flicker, shows nothing during hydration
+  }
+
   if (!formData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#000000] to-[#0a0a0a]">
-        <p className="text-gray-400">Loading form preview...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#000000] to-[#0a0a0a] p-6">
+        <Card className="bg-[#1a1a1a] border-border/50 p-8 max-w-md text-center">
+          <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">No Form Data Found</h2>
+          <p className="text-gray-400 mb-6">
+            Create a demo form to test the AI Video Form Filler feature, or go to the form builder to create your own.
+          </p>
+          <div className="space-y-3">
+            <Button
+              onClick={createDemoForm}
+              className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] font-semibold"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Create Demo Form
+            </Button>
+            <Button
+              onClick={() => window.location.href = '/forms/builder'}
+              variant="outline"
+              className="w-full border-white/20 text-white hover:bg-white/10"
+            >
+              Go to Form Builder
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }
@@ -285,6 +415,83 @@ export default function PreviewPage() {
           {/* Hidden canvas for snapshot capture */}
           <canvas ref={canvasRef} className="hidden" />
         </Card>
+
+        {/* AI Analysis Feed */}
+        {isRecording && (
+          <Card className="mb-6 p-6 bg-[#1a1a1a] border-border/50">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-400" />
+              AI Analysis Feed
+              {isAnalyzing && (
+                <Badge variant="outline" className="text-blue-400 border-blue-400/30 ml-2">
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  Analyzing...
+                </Badge>
+              )}
+            </h3>
+            <ScrollArea className="h-64 pr-4">
+              {analysisFeed.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                  Waiting for first snapshot analysis...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {analysisFeed.map((entry, idx) => (
+                  <div 
+                    key={idx} 
+                    className="p-4 bg-[#0a0a0a] border border-white/10 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-400">
+                        Snapshot #{entry.snapshotNumber}
+                      </span>
+                      <span className="text-xs text-gray-500">{entry.timestamp}</span>
+                    </div>
+                    
+                    {entry.error ? (
+                      <div className="p-3 bg-red-900/20 border border-red-500/30 rounded text-sm text-red-400">
+                        <div className="font-semibold mb-1">Error:</div>
+                        {entry.error}
+                      </div>
+                    ) : Object.keys(entry.answers).length > 0 ? (
+                      <div className="space-y-2">
+                        {Object.entries(entry.answers).map(([fieldId, answer]: [string, any]) => (
+                          <div key={fieldId} className="text-sm">
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="text-gray-400 flex-1">
+                                {getQuestionLabel(fieldId)}
+                              </span>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  entry.confidence?.[fieldId] >= 90 
+                                    ? 'text-green-400 border-green-400/30' 
+                                    : entry.confidence?.[fieldId] >= 80 
+                                    ? 'text-yellow-400 border-yellow-400/30'
+                                    : 'text-gray-400 border-gray-400/30'
+                                }`}
+                              >
+                                {entry.confidence?.[fieldId]}% confident
+                              </Badge>
+                            </div>
+                            <div className="text-white font-medium mt-1">
+                              → {String(answer)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">
+                        No confident answers in this snapshot
+                      </p>
+                    )}
+                  </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </Card>
+        )}
 
         {/* Form Card */}
         <Card className="p-12 bg-[#1a1a1a] border-border/50 shadow-xl">

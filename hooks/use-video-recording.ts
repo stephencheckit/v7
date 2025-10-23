@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export function useVideoRecording() {
   const [isRecording, setIsRecording] = useState(false);
@@ -9,28 +9,48 @@ export function useVideoRecording() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Connect stream to video element when both are available
+  useEffect(() => {
+    if (stream && videoRef.current && !videoRef.current.srcObject) {
+      console.log('[useVideoRecording] useEffect: Connecting stream to video element...');
+      videoRef.current.srcObject = stream;
+      
+      videoRef.current.onloadedmetadata = () => {
+        console.log('[useVideoRecording] Video metadata loaded');
+        console.log('[useVideoRecording] Video dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
+      };
+      
+      videoRef.current.play().then(() => {
+        console.log('[useVideoRecording] Video is playing');
+      }).catch(err => {
+        console.error('[useVideoRecording] Error playing video:', err);
+      });
+    }
+  }, [stream, isCameraOn]);
+
   const startCamera = useCallback(async () => {
     try {
+      console.log('[useVideoRecording] Requesting camera access...');
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'environment'
-        }
+          // Don't specify facingMode for better desktop compatibility
+        },
+        audio: false
       });
       
+      console.log('[useVideoRecording] Got media stream:', mediaStream);
+      console.log('[useVideoRecording] Video tracks:', mediaStream.getVideoTracks());
+      
+      // Set stream and camera state - useEffect will handle connecting to video element
       setStream(mediaStream);
       setIsCameraOn(true);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        // Play video to ensure it's displaying
-        await videoRef.current.play();
-      }
-      
       return true;
     } catch (error) {
-      console.error('Failed to start camera:', error);
+      console.error('[useVideoRecording] Failed to start camera:', error);
       alert('Failed to access camera. Please ensure camera permissions are granted.');
       return false;
     }

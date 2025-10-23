@@ -9,12 +9,14 @@ interface AIVisionAssistantProps {
   formSchema: { fields: any[] };
   currentValues: Record<string, any>;
   onFieldSuggestion: (fieldId: string, value: any, confidence: number, reasoning: string) => void;
+  onAnalysisComplete?: (snapshot: number, answers: any, confidence: any) => void;
 }
 
 export function AIVisionAssistant({ 
   formSchema, 
   currentValues, 
-  onFieldSuggestion 
+  onFieldSuggestion,
+  onAnalysisComplete 
 }: AIVisionAssistantProps) {
   const [isActive, setIsActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -22,6 +24,7 @@ export function AIVisionAssistant({
   const [snapshotCount, setSnapshotCount] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const snapshotCountRef = useRef(0); // Use ref to avoid dependency issues
   
   const {
     isCameraOn,
@@ -59,8 +62,10 @@ export function AIVisionAssistant({
         const snapshot = captureSnapshot();
         if (!snapshot) return;
 
-        setSnapshotCount(prev => prev + 1);
-        await analyzeSnapshot(snapshot);
+        // Increment using ref to avoid dependency issues
+        snapshotCountRef.current += 1;
+        setSnapshotCount(snapshotCountRef.current);
+        await analyzeSnapshot(snapshot, snapshotCountRef.current);
       };
 
       // Capture immediately, then every 3 seconds
@@ -79,7 +84,7 @@ export function AIVisionAssistant({
     };
   }, [isActive, isCameraOn]);
 
-  const analyzeSnapshot = async (imageBase64: string) => {
+  const analyzeSnapshot = async (imageBase64: string, currentSnapshotNumber: number) => {
     setIsAnalyzing(true);
     try {
       const response = await fetch('/api/ai/vision-analyze', {
@@ -100,7 +105,13 @@ export function AIVisionAssistant({
       const { suggestions } = await response.json();
 
       // Process suggestions
+      const answers: any = {};
+      const confidences: any = {};
+      
       Object.entries(suggestions || {}).forEach(([fieldId, suggestion]: any) => {
+        answers[fieldId] = suggestion.value;
+        confidences[fieldId] = Math.round(suggestion.confidence * 100);
+        
         if (suggestion.confidence >= 0.80) {
           onFieldSuggestion(
             fieldId,
@@ -110,6 +121,11 @@ export function AIVisionAssistant({
           );
         }
       });
+
+      // Notify parent of analysis completion
+      if (onAnalysisComplete) {
+        onAnalysisComplete(currentSnapshotNumber, answers, confidences);
+      }
     } catch (error) {
       console.error('Vision analysis error:', error);
     } finally {
@@ -122,6 +138,7 @@ export function AIVisionAssistant({
     if (success) {
       setIsActive(true);
       setSnapshotCount(0);
+      snapshotCountRef.current = 0; // Reset ref too
     }
   };
 
