@@ -166,7 +166,7 @@ export default function HomePage() {
               <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                   Multi-Site Operational Orchestration.<br />
-                  <span className="text-[#c4dfc4]">Made Simple.</span>
+                  <span className="text-[#c4dfc4]">Made <Link href="/dashboard" className="text-[#c4dfc4] no-underline cursor-default hover:text-[#c4dfc4]">Simple</Link>.</span>
                 </h1>
                 
                 <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
