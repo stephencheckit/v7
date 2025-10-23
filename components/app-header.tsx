@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, Search, FileText, Settings, Home, Layout, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, Search, FileText, Settings, Home, Layout, User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -21,43 +21,102 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+interface SearchResult {
+  id: string;
+  title: string;
+  description: string;
+  icon: any;
+  link: string;
+  type: 'form' | 'page';
+}
 
 export function AppHeader() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
+  const supabase = createClient();
 
-  // Define searchable items
-  const searchableItems = [
-    { id: 1, title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard" },
-    { id: 2, title: "My Forms", description: "Manage your forms", icon: FileText, link: "/forms" },
-    { id: 3, title: "Settings", description: "Account settings", icon: Settings, link: "/settings" },
-    { id: 4, title: "Form Builder", description: "Build and edit forms", icon: FileText, link: "/forms" },
-    { id: 5, title: "Distribution Settings", description: "Configure form distribution", icon: FileText, link: "/forms?tab=distribution" },
-  ];
+  // Perform search when query changes
+  useEffect(() => {
+    const performSearch = async () => {
+      const query = searchQuery.trim();
+      
+      if (query.length === 0) {
+        setSearchResults([]);
+        return;
+      }
 
-  // Filter results based on search query
-  const searchResults = searchQuery.trim().length > 0
-    ? searchableItems.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+      setIsSearching(true);
+
+      try {
+        const results: SearchResult[] = [];
+
+        // Search forms
+        const { data: forms, error } = await supabase
+          .from('simple_forms')
+          .select('id, name, description')
+          .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+          .limit(10);
+
+        if (!error && forms) {
+          forms.forEach(form => {
+            results.push({
+              id: form.id,
+              title: form.name || 'Untitled Form',
+              description: form.description || 'Form',
+              icon: FileText,
+              link: `/forms/builder?edit=${form.id}`,
+              type: 'form'
+            });
+          });
+        }
+
+        // Add static navigation pages that match
+        const staticPages = [
+          { id: 'dashboard', title: "Dashboard", description: "View your dashboard", icon: Home, link: "/dashboard", type: 'page' as const },
+          { id: 'forms', title: "Forms", description: "Manage your forms", icon: FileText, link: "/forms", type: 'page' as const },
+          { id: 'prep-labels', title: "Prep Labels", description: "Menu prep labels", icon: Tag, link: "/prep-labels", type: 'page' as const },
+          { id: 'settings', title: "Settings", description: "Account settings", icon: Settings, link: "/settings", type: 'page' as const },
+        ];
+
+        staticPages.forEach(page => {
+          if (
+            page.title.toLowerCase().includes(query.toLowerCase()) ||
+            page.description.toLowerCase().includes(query.toLowerCase())
+          ) {
+            results.push(page);
+          }
+        });
+
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error:', err);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(performSearch, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, supabase]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-  };
-
-  const handleSearchSubmit = () => {
-    if (searchQuery.trim().length > 0) {
+    if (value.trim().length > 0) {
       setIsSearchOpen(true);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit();
+    if (e.key === 'Escape') {
+      setIsSearchOpen(false);
+      setSearchQuery("");
     }
   };
 
@@ -135,11 +194,18 @@ export function AppHeader() {
       <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
         <DialogContent className="sm:max-w-[500px] bg-[#1a1a1a] border-border/50 text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-gray-100">Search Results</DialogTitle>
+            <DialogTitle className="text-gray-100">
+              {searchQuery.trim().length > 0 ? `Search: "${searchQuery}"` : 'Search'}
+            </DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            {searchResults.length > 0 ? (
-              <div className="space-y-2">
+            {isSearching ? (
+              <div className="text-center py-8 text-gray-400">
+                <div className="animate-spin h-8 w-8 border-2 border-[#c4dfc4] border-t-transparent rounded-full mx-auto mb-3"></div>
+                <p>Searching...</p>
+              </div>
+            ) : searchResults.length > 0 ? (
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {searchResults.map((item) => (
                   <button
                     key={item.id}
@@ -152,14 +218,22 @@ export function AppHeader() {
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-100">{item.title}</div>
                       <div className="text-sm text-gray-400">{item.description}</div>
+                      <div className="text-xs text-gray-500 mt-1 capitalize">{item.type}</div>
                     </div>
                   </button>
                 ))}
               </div>
+            ) : searchQuery.trim().length > 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>No results found</p>
+                <p className="text-sm mt-1">Try searching for forms, pages, or features</p>
+              </div>
             ) : (
               <div className="text-center py-8 text-gray-400">
                 <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No results found for &quot;{searchQuery}&quot;</p>
+                <p>Start typing to search</p>
+                <p className="text-sm mt-1">Search for forms, pages, and more</p>
               </div>
             )}
           </div>
