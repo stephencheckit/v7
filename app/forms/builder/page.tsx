@@ -244,8 +244,8 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
     <div className="relative">
       {/* Drop Indicator - shows where item will be inserted */}
       {isOver && (
-        <div className="absolute -top-2 left-0 right-0 h-0.5 bg-[#c4dfc4] rounded-full z-20 shadow-lg shadow-[#c4dfc4]/50">
-          <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 bg-[#c4dfc4] rounded-full" />
+        <div className="absolute -top-1 left-0 right-0 h-1 bg-[#c4dfc4] rounded-full z-20 shadow-lg shadow-[#c4dfc4]/50">
+          <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-3 h-3 bg-[#c4dfc4] rounded-full" />
         </div>
       )}
       
@@ -253,7 +253,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
         ref={setNodeRef}
         style={style}
         className={`group relative p-4 rounded-lg hover:bg-muted/50 border-2 transition-all duration-200 bg-card/30 ${
-          isOver ? 'border-[#c4dfc4] mt-4 scale-[0.98]' : 'border-transparent hover:border-opacity-50'
+          isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98]' : 'border-transparent hover:border-opacity-50'
         }`}
         onMouseEnter={(e) => {
           if (!isOver) {
@@ -854,6 +854,16 @@ function FormsPageContent() {
       },
     })
   );
+
+  // Custom modifiers to adjust cursor offset
+  const modifiers = [
+    (args: any) => {
+      return {
+        ...args.transform,
+        y: args.transform.y - 20, // Adjust vertical offset so cursor aligns with indicator
+      };
+    },
+  ];
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -1596,10 +1606,10 @@ function FormsPageContent() {
         />
       )}
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null} modifiers={modifiers}>
           {activeWidget ? (
             <Card
-              className="p-3 shadow-2xl border-2 rotate-3 opacity-90"
+              className="p-3 shadow-2xl border-2 rotate-3 opacity-90 cursor-grabbing"
               style={{
                 backgroundImage: `linear-gradient(to right, ${activeWidget.color}, ${activeWidget.color}dd)`,
                 width: '280px',
