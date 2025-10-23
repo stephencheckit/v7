@@ -1,25 +1,10 @@
 // Alert detection logic for temperature violations
 
 import { createClient } from "@/lib/supabase/client";
+import { Database } from "@/lib/supabase/database.types";
 
-export interface Sensor {
-  id: string;
-  name: string;
-  location: string | null;
-  equipment_type: string;
-  min_temp_celsius: number;
-  max_temp_celsius: number;
-  alert_delay_minutes: number | null;
-  alert_recipients: any[];
-}
-
-export interface SensorAlert {
-  id: string;
-  sensor_id: string;
-  started_at: string;
-  status: string | null;
-  notifications_sent: any[];
-}
+export type Sensor = Database["public"]["Tables"]["sensors"]["Row"];
+export type SensorAlert = Database["public"]["Tables"]["sensor_alerts"]["Row"];
 
 /**
  * Check if alert condition exists and should trigger notifications
