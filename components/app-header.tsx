@@ -50,14 +50,37 @@ export function AppHeader() {
     try {
       const results: SearchResult[] = [];
 
-      // Search forms
-      const { data: forms, error } = await supabase
+      // Search forms - try multiple approaches
+      console.log('🔍 Searching for:', query);
+      
+      // Try fetching all forms first and filter client-side as fallback
+      const { data: allForms, error: fetchError } = await supabase
         .from('simple_forms')
-        .select('id, name, description')
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-        .limit(10);
+        .select('id, name, description');
+
+      console.log('🔍 All forms fetched:', allForms?.length);
+
+      let forms = allForms;
+      let error = fetchError;
+
+      // Filter client-side
+      if (allForms && !fetchError) {
+        forms = allForms.filter(form => {
+          const searchLower = query.toLowerCase();
+          const nameMatch = form.name?.toLowerCase().includes(searchLower);
+          const descMatch = form.description?.toLowerCase().includes(searchLower);
+          return nameMatch || descMatch;
+        }).slice(0, 10);
+      }
+
+      console.log('🔍 Filtered results:', { forms: forms?.length, error });
+
+      if (error) {
+        console.error('❌ Search error:', error);
+      }
 
       if (!error && forms) {
+        console.log(`✅ Found ${forms.length} forms`);
         forms.forEach(form => {
           results.push({
             id: form.id,
