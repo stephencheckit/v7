@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Camera, Upload, Tag, Clock, Loader2, Trash2, RefreshCw } from 'lucide-react';
+import { Camera, Upload, Tag, Clock, Loader2, Trash2, RefreshCw, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AppLayout } from '@/components/app-layout';
@@ -157,10 +157,10 @@ export default function PrepLabelsPage() {
             <Button
               onClick={() => fileInputRef.current?.click()}
               disabled={isAnalyzing}
-              className="bg-gradient-to-r from-[#c4dfc4] to-[#b5d0b5] text-black hover:from-[#b5d0b5] hover:to-[#a5c0a5]"
+              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Menu Photo
+              <Plus className="h-4 w-4 mr-2" />
+              Add Menu
             </Button>
 
             {menuData && (
@@ -326,13 +326,6 @@ export default function PrepLabelsPage() {
                 Upload a photo of today's menu board and AI will extract all items,
                 ingredients, and calculate shelf life for easy label printing.
               </p>
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                className="mt-4 bg-gradient-to-r from-[#c4dfc4] to-[#b5d0b5] text-black hover:from-[#b5d0b5] hover:to-[#a5c0a5]"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Get Started
-              </Button>
             </div>
           </Card>
         ) : null}
