@@ -262,7 +262,6 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
         onMouseEnter={(e) => {
           if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = field.color;
-            e.currentTarget.style.borderOpacity = '1';
           }
         }}
         onMouseLeave={(e) => {
