@@ -57,9 +57,9 @@ export default function HomePage() {
           ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-6">
+            {/* Logo area - hide text to avoid cutoff */}
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-white">Checkit V7</h1>
-              <p className="text-xs text-[#c4dfc4] mt-1">Multi-Site Operations</p>
+              {/* Text hidden in sidebar menu */}
             </div>
 
             <ul className="space-y-1">
