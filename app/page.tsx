@@ -125,8 +125,8 @@ export default function HomePage() {
               <SheetTitle>Navigation</SheetTitle>
               <SheetDescription>Navigate through the homepage sections</SheetDescription>
             </SheetHeader>
-            <div className="py-6">
-              <nav className="space-y-1">
+            <div className="flex flex-col h-full py-6">
+              <nav className="flex-1 space-y-2">
                 <NavItem label="Home" section="home" active={activeSection === "home"} onClick={() => scrollToSection("home")} />
                 <NavItem label="Problems We Solve" section="problems" active={activeSection === "problems"} onClick={() => scrollToSection("problems")} />
                 <NavItem label="Three Pillars" section="pillars" active={activeSection === "pillars"} onClick={() => scrollToSection("pillars")} />
@@ -136,14 +136,14 @@ export default function HomePage() {
                 <NavItem label="Pricing" section="pricing" active={activeSection === "pricing"} onClick={() => scrollToSection("pricing")} />
               </nav>
 
-              <div className="mt-8 pt-8 border-t border-white/10 space-y-2">
-                <Link href="/signup">
+              <div className="mt-auto pt-6 border-t border-white/10 space-y-3">
+                <Link href="/signup" onClick={() => setMobileNavOpen(false)}>
                   <Button className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold">
                     Sign Up
                   </Button>
                 </Link>
-                <Link href="/signin">
-                  <Button variant="ghost" className="w-full text-gray-400 hover:text-white">
+                <Link href="/signin" onClick={() => setMobileNavOpen(false)}>
+                  <Button variant="ghost" className="w-full text-gray-400 hover:text-white hover:bg-white/5">
                     Sign In
                   </Button>
                 </Link>
@@ -661,20 +661,18 @@ function NavItem({ label, section, active, onClick }: {
   onClick: () => void;
 }) {
   return (
-    <li>
-      <button
-        onClick={onClick}
-        className={`
-          w-full text-left px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium
-          ${active 
-            ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-l-2 border-[#c4dfc4]' 
-            : 'text-gray-400 hover:text-white hover:bg-white/5'
-          }
-        `}
-      >
-        {label}
-      </button>
-    </li>
+    <button
+      onClick={onClick}
+      className={`
+        w-full text-left px-4 py-3 rounded-lg transition-all duration-200 font-medium
+        ${active 
+          ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-l-2 border-[#c4dfc4]' 
+          : 'text-gray-300 hover:text-white hover:bg-white/5'
+        }
+      `}
+    >
+      {label}
+    </button>
   );
 }
 
