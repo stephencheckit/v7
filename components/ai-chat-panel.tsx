@@ -478,13 +478,39 @@ Please extract and build the form now.`;
                   label = firstSentence ? firstSentence[0] : label.substring(0, 100) + '...';
                 }
                 
+                // Get widget metadata for this field type
+                const getWidgetMetadata = (type: string) => {
+                  const widgetMap: Record<string, { name: string; color: string }> = {
+                    'text': { name: 'text', color: '#c4dfc4' },
+                    'single-text': { name: 'single-text', color: '#c4dfc4' },
+                    'textarea': { name: 'textarea', color: '#c4dfc4' },
+                    'email': { name: 'email', color: '#c4dfc4' },
+                    'phone': { name: 'phone', color: '#c4dfc4' },
+                    'number': { name: 'number', color: '#c4dfc4' },
+                    'dropdown': { name: 'dropdown', color: '#c8e0f5' },
+                    'checkbox': { name: 'checkbox', color: '#c8e0f5' },
+                    'radio': { name: 'radio', color: '#c8e0f5' },
+                    'binary': { name: 'binary', color: '#c8e0f5' },
+                    'thumbs': { name: 'thumbs', color: '#c8e0f5' },
+                    'date': { name: 'date', color: '#ddc8f5' },
+                    'file': { name: 'file', color: '#ddc8f5' },
+                    'image': { name: 'image', color: '#ddc8f5' },
+                  };
+                  return widgetMap[type] || { name: type, color: '#c4dfc4' };
+                };
+                
+                const widgetMeta = getWidgetMetadata(field.type);
+                
                 return {
                   id: field.name || field.id || `field-${Date.now()}-${Math.random()}`,
                   type: field.type,
+                  name: widgetMeta.name,
                   label: label || 'Untitled Field',
                   placeholder: field.placeholder,
                   description: field.description,
                   required: field.required !== false,
+                  color: widgetMeta.color,
+                  icon: undefined, // Icon will be determined by the form builder based on type
                   options,
                 };
               }),
@@ -863,13 +889,39 @@ Please extract and build the form now.`;
                   });
                 }
                 
+                // Get widget metadata for this field type
+                const getWidgetMetadata = (type: string) => {
+                  const widgetMap: Record<string, { name: string; color: string }> = {
+                    'text': { name: 'text', color: '#c4dfc4' },
+                    'single-text': { name: 'single-text', color: '#c4dfc4' },
+                    'textarea': { name: 'textarea', color: '#c4dfc4' },
+                    'email': { name: 'email', color: '#c4dfc4' },
+                    'phone': { name: 'phone', color: '#c4dfc4' },
+                    'number': { name: 'number', color: '#c4dfc4' },
+                    'dropdown': { name: 'dropdown', color: '#c8e0f5' },
+                    'checkbox': { name: 'checkbox', color: '#c8e0f5' },
+                    'radio': { name: 'radio', color: '#c8e0f5' },
+                    'binary': { name: 'binary', color: '#c8e0f5' },
+                    'thumbs': { name: 'thumbs', color: '#c8e0f5' },
+                    'date': { name: 'date', color: '#ddc8f5' },
+                    'file': { name: 'file', color: '#ddc8f5' },
+                    'image': { name: 'image', color: '#ddc8f5' },
+                  };
+                  return widgetMap[type] || { name: type, color: '#c4dfc4' };
+                };
+                
+                const widgetMeta = getWidgetMetadata(fieldType);
+                
                 const newField = {
                   id: fieldId,
                   type: fieldType,
+                  name: widgetMeta.name,
                   label: fieldData.label,
                   placeholder: fieldData.placeholder || fieldData.help_text,
                   description: fieldData.description || fieldData.help_text,
                   required: fieldData.required !== false,
+                  color: widgetMeta.color,
+                  icon: undefined, // Icon will be determined by the form builder based on type
                   options,
                   position: fieldData.position, // Preserve position instruction
                 };
@@ -952,13 +1004,39 @@ Please extract and build the form now.`;
                 }));
               }
               
+              // Preserve existing name, color, icon or use defaults
+              const getWidgetMetadata = (type: string) => {
+                const widgetMap: Record<string, { name: string; color: string }> = {
+                  'text': { name: 'text', color: '#c4dfc4' },
+                  'single-text': { name: 'single-text', color: '#c4dfc4' },
+                  'textarea': { name: 'textarea', color: '#c4dfc4' },
+                  'email': { name: 'email', color: '#c4dfc4' },
+                  'phone': { name: 'phone', color: '#c4dfc4' },
+                  'number': { name: 'number', color: '#c4dfc4' },
+                  'dropdown': { name: 'dropdown', color: '#c8e0f5' },
+                  'checkbox': { name: 'checkbox', color: '#c8e0f5' },
+                  'radio': { name: 'radio', color: '#c8e0f5' },
+                  'binary': { name: 'binary', color: '#c8e0f5' },
+                  'thumbs': { name: 'thumbs', color: '#c8e0f5' },
+                  'date': { name: 'date', color: '#ddc8f5' },
+                  'file': { name: 'file', color: '#ddc8f5' },
+                  'image': { name: 'image', color: '#ddc8f5' },
+                };
+                return widgetMap[type] || { name: type, color: '#c4dfc4' };
+              };
+              
+              const widgetMeta = getWidgetMetadata(field.type);
+              
               return {
                 id: field.id,
                 type: field.type,
+                name: field.name || widgetMeta.name,
                 label: field.label,
                 placeholder: field.placeholder,
                 description: field.description,
                 required: field.required !== false,
+                color: field.color || widgetMeta.color,
+                icon: field.icon || undefined,
                 options,
               };
             });
@@ -972,7 +1050,7 @@ Please extract and build the form now.`;
             version: 1,
           };
           
-          const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+          const { fields, title, description } = convertBackendFormToFrontend(backendForm as any);
           onFormUpdate?.(fields, { title, description });
         } else {
           console.log('⚠️ No fields were added (parsing may have failed)');
@@ -1423,7 +1501,7 @@ Please extract and build the form now.`;
                       )}
                       
                       <div className="flex flex-wrap gap-1.5">
-                        {message.thinking.map((step, i) => (
+                        {message.thinking.map((step: string, i: number) => (
                           <span 
                             key={i} 
                             className={`text-xs font-medium ${message.completed ? 'text-gray-500' : 'text-gray-600'}`}
