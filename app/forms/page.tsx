@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, Pencil, Trash2 } from "lucide-react";
+import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface SimpleForm {
@@ -71,28 +71,6 @@ export default function FormsPage() {
 
   const handleReport = (formId: string) => {
     router.push(`/forms/${formId}/report`);
-  };
-
-  const handleDelete = async (formId: string, formTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${formTitle}"? This action cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/forms/${formId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete form');
-      }
-
-      alert('Form deleted successfully');
-      loadForms(); // Reload the forms list
-    } catch (error) {
-      console.error('Error deleting form:', error);
-      alert('Failed to delete form. Please try again.');
-    }
   };
 
   const copyShareUrl = () => {
@@ -276,18 +254,6 @@ export default function FormsPage() {
                                 >
                                   <BarChart3 className="h-4 w-4 mr-1" />
                                   Report
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(form.id, form.title);
-                                  }}
-                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Delete
                                 </Button>
                               </div>
                             </TableCell>
