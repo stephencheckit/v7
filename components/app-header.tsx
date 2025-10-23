@@ -57,7 +57,7 @@ export function AppHeader() {
       // @ts-ignore - simple_forms table not in generated types yet
       const { data: allForms, error: fetchError } = await supabase
         .from('simple_forms')
-        .select('id, name, description');
+        .select('id, title, description');
 
       console.log('🔍 Raw response:', { 
         data: allForms, 
@@ -75,10 +75,10 @@ export function AppHeader() {
         console.log('🔍 Filtering forms...');
         forms = allForms.filter(form => {
           const searchLower = query.toLowerCase();
-          const nameMatch = form.name?.toLowerCase().includes(searchLower);
+          const titleMatch = form.title?.toLowerCase().includes(searchLower);
           const descMatch = form.description?.toLowerCase().includes(searchLower);
-          console.log(`  - Form: ${form.name}, match: ${nameMatch || descMatch}`);
-          return nameMatch || descMatch;
+          console.log(`  - Form: ${form.title}, match: ${titleMatch || descMatch}`);
+          return titleMatch || descMatch;
         }).slice(0, 10);
       } else {
         console.error('❌ No forms or error occurred');
@@ -101,7 +101,7 @@ export function AppHeader() {
         forms.forEach(form => {
           results.push({
             id: form.id,
-            title: form.name || 'Untitled Form',
+            title: form.title || 'Untitled Form',
             description: form.description || 'Form',
             icon: FileText,
             link: `/forms/builder?edit=${form.id}`,
