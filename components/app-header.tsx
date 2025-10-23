@@ -54,29 +54,46 @@ export function AppHeader() {
       console.log('🔍 Searching for:', query);
       
       // Try fetching all forms first and filter client-side as fallback
+      // @ts-ignore - simple_forms table not in generated types yet
       const { data: allForms, error: fetchError } = await supabase
         .from('simple_forms')
         .select('id, name, description');
 
-      console.log('🔍 All forms fetched:', allForms?.length);
+      console.log('🔍 Raw response:', { 
+        data: allForms, 
+        error: fetchError,
+        hasData: !!allForms,
+        dataLength: allForms?.length,
+        errorDetails: fetchError ? JSON.stringify(fetchError) : null
+      });
 
       let forms = allForms;
       let error = fetchError;
 
       // Filter client-side
       if (allForms && !fetchError) {
+        console.log('🔍 Filtering forms...');
         forms = allForms.filter(form => {
           const searchLower = query.toLowerCase();
           const nameMatch = form.name?.toLowerCase().includes(searchLower);
           const descMatch = form.description?.toLowerCase().includes(searchLower);
+          console.log(`  - Form: ${form.name}, match: ${nameMatch || descMatch}`);
           return nameMatch || descMatch;
         }).slice(0, 10);
+      } else {
+        console.error('❌ No forms or error occurred');
       }
 
-      console.log('🔍 Filtered results:', { forms: forms?.length, error });
+      console.log('🔍 Filtered results:', { formsCount: forms?.length, hasError: !!error });
 
       if (error) {
-        console.error('❌ Search error:', error);
+        console.error('❌ Search error details:', {
+          error,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
       }
 
       if (!error && forms) {
