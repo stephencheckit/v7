@@ -19,6 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -52,11 +53,21 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   return (
     <Sidebar className="border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000]" collapsible="icon">
       <SidebarHeader className="border-b border-white px-3 pt-4 pb-[15px] bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
-        <Link href="/" className="flex items-center gap-2 font-semibold group-data-[collapsible=icon]:justify-center hover:opacity-80 transition-opacity">
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 font-semibold group-data-[collapsible=icon]:justify-center hover:opacity-80 transition-opacity"
+          onClick={() => {
+            // Close mobile sidebar when clicking logo
+            if (isMobile) {
+              setOpenMobile(false);
+            }
+          }}
+        >
           <div className="flex h-8 w-8 items-center justify-center shrink-0">
             <Image 
               src="/checkit-checkit.png" 
@@ -85,7 +96,15 @@ export function AppSidebar() {
                           isActive={pathname === item.url}
                           className="w-full"
                         >
-                          <Link href={item.url}>
+                          <Link 
+                            href={item.url}
+                            onClick={() => {
+                              // Close mobile sidebar when clicking a link
+                              if (isMobile) {
+                                setOpenMobile(false);
+                              }
+                            }}
+                          >
                             <item.icon className="h-4 w-4" />
                             <span>{item.title}</span>
                           </Link>

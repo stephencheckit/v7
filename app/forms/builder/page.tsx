@@ -255,13 +255,14 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
         ref={setNodeRef}
         style={style}
         className={`group relative p-4 rounded-lg border-2 transition-all duration-200 bg-card/30 ${
-          isDraggingNewWidget ? '' : 'hover:bg-muted/50'
+          !isDraggingNewWidget ? 'hover:bg-muted/50' : ''
         } ${
-          isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98]' : 'border-transparent hover:border-opacity-50'
+          isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98]' : 'border-transparent'
         }`}
         onMouseEnter={(e) => {
           if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = field.color;
+            e.currentTarget.style.borderOpacity = '1';
           }
         }}
         onMouseLeave={(e) => {
