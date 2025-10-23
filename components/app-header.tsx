@@ -165,10 +165,23 @@ export function AppHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-4 md:px-6">
-        {/* Mobile & Desktop: Hamburger menu on LEFT */}
-        <SidebarTrigger className="shrink-0">
-          <Menu className="h-5 w-5" />
-        </SidebarTrigger>
+        {/* Mobile: Logo on LEFT */}
+        <Link href="/" className="flex md:hidden items-center gap-2 shrink-0">
+          <Image
+            src="/checkit-checkit.png"
+            alt="Checkit V7"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
+        </Link>
+
+        {/* Desktop: Hamburger on LEFT */}
+        <div className="hidden md:block shrink-0">
+          <SidebarTrigger>
+            <Menu className="h-5 w-5" />
+          </SidebarTrigger>
+        </div>
 
         <div className="flex flex-1 items-center gap-4 min-w-0">
           <div className="relative w-full max-w-md">
@@ -185,7 +198,7 @@ export function AppHeader() {
           </div>
         </div>
 
-        {/* User Menu */}
+        {/* Desktop: User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10 hidden md:flex">
@@ -225,6 +238,13 @@ export function AppHeader() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Mobile: Hamburger on RIGHT */}
+        <div className="md:hidden shrink-0">
+          <SidebarTrigger>
+            <Menu className="h-5 w-5" />
+          </SidebarTrigger>
+        </div>
       </header>
 
       {/* Search Results Modal */}
