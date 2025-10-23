@@ -5,6 +5,38 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **UI/UX Fixes: Form Builder & Sidebar - October 23, 2025**
+**Commit:** `ddbd8cf` - Fix form builder hover borders and sidebar navigation behavior
+
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Fixed:**
+
+1. **Form Builder Hover Borders**
+   - ✅ Fixed hover borders to show colored borders on form elements during regular building
+   - ✅ Borders now properly display when hovering over existing form fields
+   - ✅ Hover borders disabled when dragging new widgets from sidebar (prevents visual clutter)
+   - ✅ Smooth transition effects for better visual feedback
+
+2. **Sidebar Navigation Behavior**
+   - ✅ Fixed sidebar to stay collapsed when clicking navigation links on desktop
+   - ✅ No more unexpected auto-opening/closing when navigating
+   - ✅ Mobile sidebar now auto-closes after clicking a link for better UX
+   - ✅ Maintains collapsed/expanded state preference across navigation
+
+**Technical Changes:**
+- Updated `app/forms/builder/page.tsx`: Enhanced hover logic with `isDraggingNewWidget` check
+- Updated `components/app-sidebar.tsx`: Added `useSidebar()` hook and click handlers for mobile/desktop behavior
+- Added `borderOpacity = '1'` to ensure full visibility of hover borders
+- Conditional closing of mobile sidebar using `setOpenMobile(false)`
+
+**Files Modified:**
+- `app/forms/builder/page.tsx`
+- `components/app-sidebar.tsx`
+
+---
+
 ### **Functional Search - October 23, 2025**
 **Commit:** `f9f2276` - Implement functional search with database queries for forms and pages
 
