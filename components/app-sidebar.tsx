@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -53,13 +53,19 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isMobile, setOpenMobile, state } = useSidebar();
   
-  const handleLinkClick = (e: React.MouseEvent) => {
-    // Only close mobile sidebar, don't affect desktop collapsed state
+  const handleLinkClick = (url: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Only close mobile sidebar
     if (isMobile) {
       setOpenMobile(false);
     }
+    
+    // Use router.push for client-side navigation
+    router.push(url);
   };
 
   return (
@@ -68,7 +74,7 @@ export function AppSidebar() {
         <Link 
           href="/" 
           className="flex items-center gap-2 font-semibold group-data-[collapsible=icon]:justify-center hover:opacity-80 transition-opacity"
-          onClick={handleLinkClick}
+          onClick={handleLinkClick("/")}
         >
           <div className="flex h-8 w-8 items-center justify-center shrink-0">
             <Image 
@@ -95,14 +101,11 @@ export function AppSidebar() {
                       asChild
                       isActive={pathname === item.url}
                       className="w-full"
-                      tooltip={{
-                        children: item.title,
-                        hidden: state === "expanded"
-                      }}
+                      tooltip={state === "collapsed" ? item.title : undefined}
                     >
                       <Link 
                         href={item.url}
-                        onClick={handleLinkClick}
+                        onClick={handleLinkClick(item.url)}
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
