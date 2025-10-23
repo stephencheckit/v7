@@ -15,7 +15,7 @@ import { celsiusToFahrenheit } from "@/lib/sensors/temperature-utils";
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(req.url);
@@ -24,7 +24,7 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "1000");
 
     const supabase = createClient();
-    const { id } = params;
+    const { id } = await params;
 
     // Calculate time range
     const timeRangeMs = getTimeRangeMs(range);

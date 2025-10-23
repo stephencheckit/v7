@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/client";
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(req.url);
@@ -21,7 +21,7 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "50");
 
     const supabase = createClient();
-    const { id } = params;
+    const { id } = await params;
 
     // Build query
     let query = supabase
