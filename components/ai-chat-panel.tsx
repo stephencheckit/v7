@@ -6,37 +6,39 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus } from "lucide-react";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2 } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
 import { convertBackendFormToFrontend } from "@/lib/converters/form-types";
 import { parseExcelFile, generateFormPrompt, type ParsedExcelData } from "@/lib/utils/excel-parser";
 
+type AIMode = 'strategy' | 'execution';
+
 interface Message {
   role: "user" | "assistant";
   content: string;
+  displayContent?: string;  // Cleaned text for display during streaming
+  thinking?: string[];      // Operation indicators like "🔨 Creating form..."
+  completed?: boolean;      // Mark as completed to show checkmark instead of spinner
+  mode?: AIMode;           // What mode AI is operating in
 }
 
 interface AIChatPanelProps {
   isOpen: boolean;
   onToggle: () => void;
-  currentPage?: 'builder' | 'distribution' | 'reporting'; // What page/tab user is on
+  formId?: string | null;  // Current form ID or null for new forms
+  currentPage?: 'builder' | 'distribution'; // What page/tab user is on
   onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
-  onReportUpdate?: (sections: any[]) => void;
   currentFields?: FrontendFormField[];
-  currentSections?: any[];
-  reportData?: any;
 }
 
 export function AIChatPanel({ 
   isOpen, 
   onToggle, 
+  formId,
   currentPage = 'builder',
   onFormUpdate, 
-  onReportUpdate,
-  currentFields = [],
-  currentSections = [],
-  reportData
+  currentFields = []
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,11 +51,112 @@ export function AIChatPanel({
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const processedMessageIds = useRef<Set<string>>(new Set());
+  const [aiMode, setAiMode] = useState<AIMode | 'auto'>('auto'); // auto, strategy, or execution
+  const [detectedMode, setDetectedMode] = useState<AIMode>('strategy');
+  const previousFormIdRef = useRef<string | null | undefined>(undefined);
   
   // Ensure client-only rendering to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  // Load conversation history when form ID changes
+  useEffect(() => {
+    // Skip if formId hasn't actually changed
+    if (previousFormIdRef.current === formId) {
+      return;
+    }
+    
+    // Update the ref for next render
+    const previousFormId = previousFormIdRef.current;
+    previousFormIdRef.current = formId;
+    
+    if (!formId || formId === 'new') {
+      // Only clear messages if we're switching TO a new form (not on initial load)
+      if (previousFormId !== undefined && previousFormId !== null) {
+        console.log(`📝 Switching to new form, clearing ${messages.length} messages`);
+        setMessages([]);
+      }
+      return;
+    }
+
+    // Load existing conversation for this form
+    async function loadConversation() {
+      try {
+        const response = await fetch(`/api/ai/conversations/${formId}`);
+        const data = await response.json();
+        
+        if (data.messages && data.messages.length > 0) {
+          console.log(`📝 Loaded ${data.messages.length} messages for form ${formId}`);
+          setMessages(data.messages);
+        } else {
+          // No saved conversation - keep existing messages if we were on a new form
+          if (previousFormId === null || previousFormId === 'new') {
+            console.log(`📝 No saved conversation for ${formId}, preserving ${messages.length} messages from new form`);
+          } else {
+            // Switching between existing forms - clear messages
+            console.log(`📝 No conversation found for form ${formId}, clearing messages`);
+            setMessages([]);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error loading conversation:', error);
+      }
+    }
+
+    loadConversation();
+  }, [formId]);
+  
+  // Save conversation to database after each message exchange
+  useEffect(() => {
+    console.log(`🔍 Save effect triggered - formId: ${formId}, messages: ${messages.length}`);
+    
+    if (!formId || formId === 'new' || messages.length === 0) {
+      console.log(`⏭️ Skipping save - formId: ${formId}, messages.length: ${messages.length}`);
+      return;
+    }
+
+    console.log(`⏰ Scheduling save in 1 second for form ${formId}...`);
+    
+    // Debounce saves to avoid excessive writes
+    const timeoutId = setTimeout(async () => {
+      console.log(`💾 Attempting to save ${messages.length} messages for form ${formId}...`);
+      
+      // Check if messages can be stringified
+      try {
+        const testStringify = JSON.stringify({ messages });
+        console.log(`✅ Request body can be stringified, size: ${testStringify.length} bytes`);
+        console.log(`📋 Message roles:`, messages.map(m => m.role));
+      } catch (stringifyError) {
+        console.error(`❌ Cannot stringify messages:`, stringifyError);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/ai/conversations/${formId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages })
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`❌ Save failed with status ${response.status}:`, errorText);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log(`✅ Saved ${messages.length} messages for form ${formId}`, data);
+      } catch (error) {
+        console.error('❌ Error saving conversation:', error);
+      }
+    }, 1000); // 1 second debounce
+
+    return () => {
+      console.log(`🧹 Clearing save timeout for form ${formId}`);
+      clearTimeout(timeoutId);
+    };
+  }, [messages, formId]);
   
   // Handle Excel file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,6 +346,11 @@ Please extract and build the form now.`;
     cleaned = cleaned.replace(/```\s*(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\([^)]*\{[\s\S]*?\}\s*\)\s*```/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
     
+    // Remove mode announcements (redundant with badge)
+    cleaned = cleaned.replace(/⚡\s*EXECUTION\s*Mode:?\s*/gi, '');
+    cleaned = cleaned.replace(/🎯\s*STRATEGY\s*Mode:?\s*/gi, '');
+    cleaned = cleaned.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
+    
     // Remove form operations - use same flexible regex as parser
     // This handles compact JSON without newlines and nested braces
     cleaned = cleaned.replace(/CREATE_FORM:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
@@ -307,86 +415,6 @@ Please extract and build the form now.`;
       const content = lastMessage.content;
       console.log('📝 Parsing complete message (length:', content.length, ')');
       console.log('🎯 Current Page:', currentPage);
-      
-      // REPORTING PAGE: Parse report operations
-      if (currentPage === 'reporting' && onReportUpdate) {
-        console.log('📊 Parsing reporting operations...');
-        
-        // Parse ADD_CHART, ADD_INSIGHT, UPDATE_SECTION, etc.
-        const addChartRegex = /ADD_CHART:\s*```json\s*(\{[\s\S]*?\})\s*```/g;
-        const addInsightRegex = /ADD_INSIGHT:\s*```json\s*(\{[\s\S]*?\})\s*```/g;
-        const generateReportRegex = /GENERATE_REPORT:\s*```json\s*(\{[\s\S]*?\})\s*```/g;
-        
-        const chartMatches = Array.from(content.matchAll(addChartRegex));
-        const insightMatches = Array.from(content.matchAll(addInsightRegex));
-        const reportMatches = Array.from(content.matchAll(generateReportRegex));
-        
-        const newSections = [...currentSections];
-        
-        // Process ADD_CHART
-        for (const match of chartMatches) {
-          try {
-            const chartData = JSON.parse(match[1]);
-            console.log('📊 Found ADD_CHART:', chartData);
-            newSections.push({
-              type: 'chart',
-              id: chartData.id || `chart-${Date.now()}`,
-              title: chartData.title,
-              chartType: chartData.type || 'bar',
-              dataSource: chartData.data_source,
-              description: chartData.description
-            });
-          } catch (e) {
-            console.error('Failed to parse ADD_CHART:', e);
-          }
-        }
-        
-        // Process ADD_INSIGHT
-        for (const match of insightMatches) {
-          try {
-            const insightData = JSON.parse(match[1]);
-            console.log('💡 Found ADD_INSIGHT:', insightData);
-            newSections.push({
-              type: 'insight',
-              id: insightData.id || `insight-${Date.now()}`,
-              title: insightData.title,
-              content: insightData.content,
-              importance: insightData.importance || 'medium'
-            });
-          } catch (e) {
-            console.error('Failed to parse ADD_INSIGHT:', e);
-          }
-        }
-        
-        // Process GENERATE_REPORT (creates multiple sections at once)
-        for (const match of reportMatches) {
-          try {
-            const reportData = JSON.parse(match[1]);
-            console.log('📑 Found GENERATE_REPORT:', reportData);
-            
-            // Clear existing sections and add all sections from report
-            newSections.length = 0;
-            if (reportData.sections) {
-              reportData.sections.forEach((section: any) => {
-                newSections.push({
-                  ...section,
-                  id: section.id || `${section.type}-${Date.now()}-${Math.random()}`
-                });
-              });
-            }
-          } catch (e) {
-            console.error('Failed to parse GENERATE_REPORT:', e);
-          }
-        }
-        
-        // Update report sections if any were added
-        if (newSections.length !== currentSections.length) {
-          console.log('✅ Updating report sections:', newSections.length);
-          onReportUpdate(newSections);
-        }
-        
-        return; // Don't process form operations on reporting page
-      }
       
       // FORM MODE: Parse form operations
       // Extract create_form calls from multiple formats:
@@ -770,13 +798,15 @@ Please extract and build the form now.`;
         // Format 1: <tool name="add_field">{...}</tool>
         // Format 2: add_field({...}) or Calling add_field({...}) - need to handle nested braces
         // Format 3: ```add_field({...})```
-        const addFieldRegex0 = /ADD_FIELD:\s*\n?\s*(\{[\s\S]*?\})/g;
-        const addFieldRegex1 = /<tool name="add_field">\s*\n?\s*(\{[\s\S]*?\})\s*\n?\s*<\/tool>/g;
+        // Updated regex to handle nested braces (e.g., position: { "after": "..." })
+        const addFieldRegex0 = /ADD_FIELD:\s*\n?\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/g;
+        const addFieldRegex1 = /<tool name="add_field">\s*\n?\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})\s*\n?\s*<\/tool>/g;
         
         // Better regex for nested JSON - capture everything between add_field( and )
         // Allow optional "Calling " prefix
-        const addFieldRegex2 = /(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)/g;
-        const addFieldRegex3 = /```\s*(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)\s*```/g;
+        // Updated to handle two levels of nested braces
+        const addFieldRegex2 = /(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})\s*\)/g;
+        const addFieldRegex3 = /```\s*(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})\s*\)\s*```/g;
         
         const matches0 = Array.from(content.matchAll(addFieldRegex0));
         const matches1 = Array.from(content.matchAll(addFieldRegex1));
@@ -841,6 +871,7 @@ Please extract and build the form now.`;
                   description: fieldData.description || fieldData.help_text,
                   required: fieldData.required !== false,
                   options,
+                  position: fieldData.position, // Preserve position instruction
                 };
                 console.log('✅ Adding field:', newField);
                 addedFields.push(newField);
@@ -858,7 +889,60 @@ Please extract and build the form now.`;
           if (addedFields.length > 0) {
             console.log('🎉 Adding fields to existing form:', addedFields);
             console.log('📋 Current fields:', currentFields);
-            const updatedFields = [...currentFields, ...addedFields].map((field: any) => {
+            
+            // Process each added field's position
+            let updatedFields = [...currentFields];
+            
+            for (const newField of addedFields) {
+              const position = newField.position;
+              console.log(`🎯 Processing field "${newField.label}" with position:`, position);
+              console.log(`📋 Current field IDs:`, updatedFields.map(f => f.id));
+              
+              if (!position || position === 'bottom') {
+                // Default: add to end
+                console.log(`➡️ Adding "${newField.label}" to end (no position/bottom)`);
+                updatedFields.push(newField);
+              } else if (position === 'top') {
+                // Add to beginning
+                console.log(`⬆️ Adding "${newField.label}" to beginning (top)`);
+                updatedFields.unshift(newField);
+              } else if (typeof position === 'object') {
+                if (position.after) {
+                  // Insert after specific field
+                  const afterIndex = updatedFields.findIndex(f => f.id === position.after);
+                  console.log(`🔍 Looking for field "${position.after}", found at index: ${afterIndex}`);
+                  if (afterIndex >= 0) {
+                    console.log(`✅ Inserting "${newField.label}" after index ${afterIndex}`);
+                    updatedFields.splice(afterIndex + 1, 0, newField);
+                  } else {
+                    console.log(`⚠️ Field "${position.after}" not found, adding to end`);
+                    updatedFields.push(newField); // Fallback to end
+                  }
+                } else if (position.before) {
+                  // Insert before specific field
+                  const beforeIndex = updatedFields.findIndex(f => f.id === position.before);
+                  console.log(`🔍 Looking for field "${position.before}", found at index: ${beforeIndex}`);
+                  if (beforeIndex >= 0) {
+                    console.log(`✅ Inserting "${newField.label}" before index ${beforeIndex}`);
+                    updatedFields.splice(beforeIndex, 0, newField);
+                  } else {
+                    console.log(`⚠️ Field "${position.before}" not found, adding to beginning`);
+                    updatedFields.unshift(newField); // Fallback to beginning
+                  }
+                } else {
+                  console.log(`➡️ Position object has no after/before, adding to end`);
+                  updatedFields.push(newField); // Fallback
+                }
+              } else {
+                console.log(`➡️ Unknown position type, adding to end`);
+                updatedFields.push(newField); // Fallback
+              }
+              
+              console.log(`📋 After adding "${newField.label}", field order:`, updatedFields.map(f => f.label));
+            }
+            
+            // Clean up position property and ensure options format
+            updatedFields = updatedFields.map((field: any) => {
               // Ensure options are in correct format
               let options = field.options;
               if (options && Array.isArray(options) && options.length > 0 && typeof options[0] === 'string') {
@@ -901,7 +985,7 @@ Please extract and build the form now.`;
     } catch (error) {
       console.error("❌ Failed to process AI response:", error);
     }
-  }, [messages, isLoading, currentPage, onFormUpdate, onReportUpdate, currentFields, currentSections]);
+  }, [messages, isLoading, currentPage, onFormUpdate, currentFields]);
 
   const handleSubmit = async (e?: React.FormEvent | null, customPrompt?: string) => {
     if (e) e.preventDefault();
@@ -934,10 +1018,15 @@ Please extract and build the form now.`;
       // Build context based on current page
       let systemContext = `\n\n**Current Context:**\nUser is on the "${currentPage}" page.`;
       
+      // Add form ID context
+      if (formId) {
+        systemContext += `\nForm ID: ${formId} (editing existing form)`;
+      } else {
+        systemContext += `\nNew form (not yet saved)`;
+      }
+      
       if (currentPage === 'builder' && currentFields.length > 0) {
         systemContext += `\n\n**Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
-      } else if (currentPage === 'reporting' && currentSections.length > 0) {
-        systemContext += `\n\n**Report State:**\nThe report currently has ${currentSections.length} section(s):\n${currentSections.map((s, i) => `${i + 1}. [${s.type}] ${s.title}`).join('\n')}`;
       } else if (currentPage === 'distribution') {
         systemContext += `\n\n**Distribution Settings:**\nUser is configuring WHO/WHEN/WHERE/HOW settings for form distribution.`;
       }
@@ -949,9 +1038,10 @@ Please extract and build the form now.`;
       
       const requestBody: any = {
         messages: [...messages, contextualMessage],
+        formId: formId || 'new', // Include form ID for context
         currentPage, // Let AI know what page we're on
         currentFields, // Always send current form state
-        reportData // Always send report data if available
+        mode: aiMode === 'auto' ? detectedMode : aiMode // Send current mode
       };
       
       const response = await fetch(apiEndpoint, {
@@ -982,7 +1072,7 @@ Please extract and build the form now.`;
       
       console.log('Stream reader acquired, adding loading message...');
       // Add a temporary loading message
-      setMessages(prev => [...prev, { role: 'assistant', content: '...' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '', thinking: [] }]);
       
       while (true) {
         const { done, value } = await reader.read();
@@ -990,23 +1080,169 @@ Please extract and build the form now.`;
           break;
         }
           
-          const chunk = decoder.decode(value, { stream: true });
-          // Just append all text - it's already in plain text format
-          assistantMessage += chunk;
+        const chunk = decoder.decode(value, { stream: true });
+        assistantMessage += chunk;
+        
+        // Extract thinking/operation indicators in real-time
+        const thinking: string[] = [];
+        
+        // Detect mode based on operations
+        // Start with manual mode if set, otherwise detect from operations
+        let currentMode: AIMode = aiMode !== 'auto' ? (aiMode as AIMode) : 'strategy';
+        
+        // If in AUTO mode, detect based on operations
+        if (aiMode === 'auto') {
+          // If we see operations, we're in EXECUTION mode
+          const hasOperations = assistantMessage.includes('CREATE_FORM:') || 
+                               assistantMessage.includes('ADD_FIELD:') ||
+                               assistantMessage.includes('UPDATE_FIELD:') ||
+                               assistantMessage.includes('REMOVE_FIELD:') ||
+                               assistantMessage.includes('UPDATE_FORM_META:');
           
-        // Store the RAW message (we'll clean it later AFTER parsing in useEffect)
+          if (hasOperations) {
+            currentMode = 'execution';
+            setDetectedMode('execution'); // Update state immediately
+          }
+        }
+        
+        // Build thinking indicators based on detected mode
+        if (currentMode === 'execution' || 
+            assistantMessage.includes('CREATE_FORM:') ||
+            assistantMessage.includes('ADD_FIELD:') ||
+            assistantMessage.includes('UPDATE_FIELD:') ||
+            assistantMessage.includes('REMOVE_FIELD:') ||
+            assistantMessage.includes('UPDATE_FORM_META:')) {
+          
+          // EXECUTION mode - show operation indicators
+          if (assistantMessage.includes('CREATE_FORM:')) {
+            thinking.push('🔨 Creating form structure...');
+          }
+          if (assistantMessage.match(/ADD_FIELD:/g)) {
+            const fieldCount = (assistantMessage.match(/ADD_FIELD:/g) || []).length;
+            thinking.push(`📝 Adding ${fieldCount} field${fieldCount > 1 ? 's' : ''}...`);
+          }
+          if (assistantMessage.includes('UPDATE_FIELD:')) {
+            thinking.push('✏️ Updating field...');
+          }
+          if (assistantMessage.includes('REMOVE_FIELD:')) {
+            thinking.push('🗑️ Removing field...');
+          }
+          if (assistantMessage.includes('UPDATE_FORM_META:')) {
+            thinking.push('📋 Updating form info...');
+          }
+          
+          // If we detected operations, make sure mode is execution
+          if (thinking.length > 0) {
+            currentMode = 'execution';
+          }
+        }
+        
+        // If no operations detected, show STRATEGY indicator
+        if (thinking.length === 0) {
+          thinking.push('💭 Analyzing...');
+          if (aiMode === 'auto') {
+            currentMode = 'strategy';
+            setDetectedMode('strategy');
+          }
+        }
+        
+        // Extract just the conversational text (hide JSON)
+        // During streaming, JSON might be incomplete, so cut off at operation keywords
+        let displayText = assistantMessage;
+        
+        // Remove mode announcements (redundant with badge)
+        displayText = displayText.replace(/⚡\s*EXECUTION\s*Mode:?\s*/gi, '');
+        displayText = displayText.replace(/🎯\s*STRATEGY\s*Mode:?\s*/gi, '');
+        displayText = displayText.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
+        
+        // Find the first occurrence of any operation keyword and truncate there
+        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:'];
+        let cutoffIndex = -1;
+        
+        for (const keyword of operationKeywords) {
+          const index = displayText.indexOf(keyword);
+          if (index !== -1 && (cutoffIndex === -1 || index < cutoffIndex)) {
+            cutoffIndex = index;
+          }
+        }
+        
+        // If we found an operation, only show text before it
+        if (cutoffIndex !== -1) {
+          displayText = displayText.substring(0, cutoffIndex);
+        }
+        
+        displayText = displayText.replace(/\n{3,}/g, '\n\n').trim();
+        
+        // Get previous message to check if we should freeze the display text
         setMessages(prev => {
           const newMessages = [...prev];
+          const prevMessage = newMessages[newMessages.length - 1];
+          
+          // Once we have displayContent set, don't let it shrink (freeze it)
+          // Only update if new displayText is LONGER or if we don't have displayContent yet
+          const shouldUpdateDisplay = !prevMessage.displayContent || 
+                                       displayText.length > (prevMessage.displayContent?.length || 0);
+          
           newMessages[newMessages.length - 1] = { 
             role: 'assistant', 
-            content: assistantMessage  // Store RAW message for parsing
+            content: assistantMessage,  // Store full for parsing
+            displayContent: shouldUpdateDisplay ? (displayText || 'Thinking...') : prevMessage.displayContent,
+            thinking: thinking.length > 0 ? thinking : ['💭 Analyzing...'],
+            mode: aiMode === 'auto' ? currentMode : aiMode as AIMode
           };
           return newMessages;
         });
       }
       
-      // Raw message stored - useEffect will parse and clean it
+      // Stream complete - final update will trigger useEffect to parse operations
       console.log('✅ Stream complete. Message length:', assistantMessage.length);
+      
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const prevMessage = newMessages[newMessages.length - 1];
+        
+        // Detect final mode based on operations in the completed message
+        const hasOperations = assistantMessage.includes('CREATE_FORM:') || 
+                             assistantMessage.includes('ADD_FIELD:') ||
+                             assistantMessage.includes('UPDATE_FIELD:') ||
+                             assistantMessage.includes('REMOVE_FIELD:') ||
+                             assistantMessage.includes('UPDATE_FORM_META:');
+        
+        const finalMode: AIMode = aiMode === 'auto' 
+          ? (hasOperations ? 'execution' : 'strategy')
+          : (aiMode as AIMode);
+        
+        // Keep thinking indicators as a completion log, convert to past tense
+        const completedThinking = prevMessage.thinking?.map(step => {
+          if (step.startsWith('💭')) {
+            return '✓ Analyzed';
+          }
+          
+          // Remove emoji and convert to past tense
+          let completed = step.replace(/^[🔨📝✏️🗑️📋]\s*/, '');
+          
+          // Convert present progressive to past tense
+          completed = completed
+            .replace(/Creating form structure\.\.\./g, 'Created form structure')
+            .replace(/Adding (\d+) fields\.\.\./g, 'Added $1 fields')
+            .replace(/Adding (\d+) field\.\.\./g, 'Added $1 field')
+            .replace(/Updating field\.\.\./g, 'Updated field')
+            .replace(/Removing field\.\.\./g, 'Removed field')
+            .replace(/Updating form info\.\.\./g, 'Updated form info');
+          
+          return `✓ ${completed}`;
+        });
+        
+        newMessages[newMessages.length - 1] = { 
+          role: 'assistant', 
+          content: assistantMessage,
+          displayContent: undefined,  // Clear display content, will use cleaned version
+          thinking: completedThinking,  // Keep as completion log
+          completed: true,  // Mark as completed to stop spinner
+          mode: finalMode  // Use detected final mode
+        };
+        return newMessages;
+      });
       
     } catch (error) {
       console.error('=== CHAT ERROR ===');
@@ -1028,24 +1264,12 @@ Please extract and build the form now.`;
     setInput(prompt);
   };
 
-  // Contextual prompts based on current page
-  const suggestedPrompts = currentPage === 'reporting' 
-    ? [
-        "Show me compliance trends",
-        "Generate a report for Google",
-        "What are the key findings?",
-      ]
-    : currentPage === 'distribution'
-    ? [
-        "Set up email distribution",
-        "Configure access controls",
-        "Schedule form availability",
-      ]
-    : [
-        "Create kitchen inspection checklist",
-        "Build temperature log form",
-        "Make food safety audit",
-      ];
+  // Static prompts - consistent across all tabs for persistent experience
+  const suggestedPrompts = [
+    "Create kitchen inspection checklist",
+    "Build temperature log form",
+    "Make food safety audit",
+  ];
 
   return (
     <div
@@ -1072,7 +1296,7 @@ Please extract and build the form now.`;
               <div>
                 <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Assistant</h3>
                 <p className="text-xs text-gray-600">
-                  {currentPage === 'reporting' ? 'Chat to build your report' : currentPage === 'distribution' ? 'Chat to configure distribution' : 'Chat to build your form'}
+                  Chat to build and manage your forms
                 </p>
               </div>
             </div>
@@ -1095,6 +1319,50 @@ Please extract and build the form now.`;
         )}
       </div>
 
+      {/* Mode Toggle */}
+      {isOpen && (
+        <div className="border-b border-white/20 px-4 py-2 bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4]">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-700 font-medium">AI Mode:</span>
+            <div className="flex gap-1 bg-white/40 p-0.5 rounded-md">
+              <button
+                onClick={() => setAiMode('auto')}
+                className={`text-xs px-3 py-1 rounded transition-all ${
+                  aiMode === 'auto' 
+                    ? 'bg-white text-gray-900 font-semibold shadow' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Auto-detect based on your request"
+              >
+                🔄 Auto
+              </button>
+              <button
+                onClick={() => setAiMode('strategy')}
+                className={`text-xs px-3 py-1 rounded transition-all ${
+                  aiMode === 'strategy' 
+                    ? 'bg-purple-500/20 text-purple-900 font-semibold border border-purple-500/30' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Strategy mode: AI will discuss and plan"
+              >
+                🎯 Strategy
+              </button>
+              <button
+                onClick={() => setAiMode('execution')}
+                className={`text-xs px-3 py-1 rounded transition-all ${
+                  aiMode === 'execution' 
+                    ? 'bg-blue-500/20 text-blue-900 font-semibold border border-blue-500/30' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Execution mode: AI will take action immediately"
+              >
+                ⚡ Execution
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Messages */}
       {isOpen && (
         <>
@@ -1111,12 +1379,7 @@ Please extract and build the form now.`;
                   </div>
                   <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
                     <p className="text-xs text-gray-800 mb-2">
-                      {currentPage === 'reporting'
-                        ? "📊 Hi! I'm your AI assistant. I can help analyze data and generate insights for your reports."
-                        : currentPage === 'distribution'
-                        ? "📤 Hi! I'm your AI assistant. I can help you configure distribution settings and access controls."
-                        : "👋 Hi! I'm your AI assistant. I can help you build forms, configure settings, or generate reports - just tell me what you need!"
-                      }
+                      👋 Hi! I'm your AI assistant. I can help you build forms, configure distribution settings, analyze data, or generate reports - just tell me what you need!
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {suggestedPrompts.map((prompt, idx) => (
@@ -1135,48 +1398,78 @@ Please extract and build the form now.`;
 
               {/* Chat Messages */}
               {isMounted && messages.map((message: any, idx: number) => (
-                <div
-                  key={idx}
-                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
-                >
-                  {message.role === "assistant" && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
-                      <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+                <div key={idx}>
+                  {/* Thinking indicators with MODE badge - OUTSIDE bubble, sticky status */}
+                  {message.thinking && message.thinking.length > 0 && (
+                    <div className="mb-3 flex items-center gap-2 text-gray-600">
+                      {message.completed ? (
+                        <CheckCircle2 className="h-4 w-4 text-[#c4dfc4]" />
+                      ) : (
+                        <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
+                      )}
+                      
+                      {/* Mode badge - only show after completion to avoid flicker */}
+                      {message.completed && message.mode && (
+                        <Badge 
+                          className={`text-xs font-bold uppercase px-2 py-0.5 ${
+                            message.mode === 'execution' 
+                              ? 'bg-blue-500/20 text-blue-700 border-blue-500/30' 
+                              : 'bg-purple-500/20 text-purple-700 border-purple-500/30'
+                          }`}
+                          variant="outline"
+                        >
+                          {message.mode === 'execution' ? '⚡ EXECUTION' : '🎯 STRATEGY'}
+                        </Badge>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-1.5">
+                        {message.thinking.map((step, i) => (
+                          <span 
+                            key={i} 
+                            className={`text-xs font-medium ${message.completed ? 'text-gray-500' : 'text-gray-600'}`}
+                          >
+                            {step}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  <Card
-                    className={`p-3 shadow-sm ${
-                      message.role === "user"
-                        ? "max-w-[85%] bg-white border-0"
-                        : "flex-1 bg-white border-gray-200"
-                    }`}
-                  >
-                    <p className="text-xs text-gray-800 whitespace-pre-wrap">
-                      {message.role === "assistant" 
-                        ? cleanMessageForDisplay(message.content)
-                        : message.content
-                      }
-                    </p>
-                  </Card>
-                  {message.role === "user" && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
-                      <span className="text-xs font-medium text-gray-700">U</span>
+                  
+                  {/* Only show bubble if there's actual content to display */}
+                  {((message.role === "assistant" && (message.displayContent || message.content) && (message.displayContent || cleanMessageForDisplay(message.content)) !== 'Thinking...') || message.role === "user") && (
+                    <div
+                      className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
+                    >
+                      {message.role === "assistant" && (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
+                          <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+                        </div>
+                      )}
+                      <Card
+                        className={`p-3 shadow-sm ${
+                          message.role === "user"
+                            ? "max-w-[85%] bg-white border-0"
+                            : "flex-1 bg-white border-gray-200"
+                        }`}
+                      >
+                        <p className="text-xs text-gray-800 whitespace-pre-wrap">
+                          {message.role === "assistant" 
+                            ? (message.displayContent || cleanMessageForDisplay(message.content))
+                            : message.content
+                          }
+                        </p>
+                      </Card>
+                      {message.role === "user" && (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
+                          <span className="text-xs font-medium text-gray-700">U</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               ))}
 
-              {/* Loading Indicator */}
-              {isLoading && (
-                <div className="flex gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
-                    <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
-                  </div>
-                  <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
-                    <p className="text-xs text-gray-500">Thinking...</p>
-                  </Card>
-                </div>
-              )}
+              {/* Loading handled by thinking indicators above */}
             </div>
           </div>
 
@@ -1236,11 +1529,7 @@ Please extract and build the form now.`;
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={
-                  currentPage === 'reporting' ? "Ask about your data..." 
-                  : currentPage === 'distribution' ? "Ask about distribution settings..." 
-                  : "Describe your form or upload Excel..."
-                }
+                placeholder="Describe your form or upload Excel..."
                 disabled={isLoading || isParsingFile}
                 className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
               />
