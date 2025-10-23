@@ -1663,35 +1663,23 @@ function FormsPageContent() {
                             </div>
                             
                             {shareUrl && (
-                              <div className="space-y-4">
-                                <div>
-                                  <label className="text-sm font-medium text-gray-300 block mb-2">Form URL</label>
-                                  <div className="flex gap-2">
-                                    <Input
-                                      value={shareUrl}
-                                      readOnly
-                                      className="bg-[#0a0a0a] border-border/50 text-gray-100 font-mono text-sm"
-                                    />
-                                    <Button
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(shareUrl);
-                                        alert('Link copied to clipboard!');
-                                      }}
-                                      className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                                    >
-                                      Copy
-                                    </Button>
-                                  </div>
-                                </div>
-
-                                <div className="p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
-                                  <h3 className="text-sm font-medium text-white mb-2">Share Options</h3>
-                                  <div className="space-y-2 text-sm text-gray-400">
-                                    <p>• Send this link directly to your audience</p>
-                                    <p>• Embed on your website</p>
-                                    <p>• Share on social media</p>
-                                    <p>• Include in email campaigns</p>
-                                  </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">Form URL</label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={shareUrl}
+                                    readOnly
+                                    className="bg-[#0a0a0a] border-border/50 text-gray-100 font-mono text-sm"
+                                  />
+                                  <Button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(shareUrl);
+                                      alert('Link copied to clipboard!');
+                                    }}
+                                    className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                                  >
+                                    Copy
+                                  </Button>
                                 </div>
                               </div>
                             )}
