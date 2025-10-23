@@ -1389,13 +1389,9 @@ Please extract and build the form now.`;
             </button>
           </>
         ) : (
-          <button
-            onClick={onToggle}
-            className="hover:bg-[#b5d0b5] p-2 rounded-lg transition-colors"
-            title="Open AI Assistant"
-          >
+          <div className="p-2">
             <Sparkles className="h-5 w-5 text-[#0a0a0a]" />
-          </button>
+          </div>
         )}
       </div>
 
@@ -1628,6 +1624,15 @@ Please extract and build the form now.`;
             </form>
           </div>
         </>
+      )}
+
+      {/* Clickable area for collapsed sidebar on Builder tab */}
+      {!isOpen && !disabled && (
+        <div 
+          className="absolute inset-0 cursor-pointer hover:bg-white/10 transition-colors"
+          onClick={onToggle}
+          title="Open AI Assistant"
+        />
       )}
 
       {/* Disabled Overlay - shown on Settings/Publish tabs (both expanded and collapsed) */}
