@@ -1,24 +1,12 @@
 // Email notification service using Resend
 
 import { Resend } from "resend";
+import { Database } from "@/lib/supabase/database.types";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export interface Sensor {
-  id: string;
-  name: string;
-  location: string;
-  equipment_type: string;
-  min_temp_celsius: number;
-  max_temp_celsius: number;
-}
-
-export interface SensorAlert {
-  id: string;
-  started_at: string;
-  severity: string;
-  status: string;
-}
+type Sensor = Database["public"]["Tables"]["sensors"]["Row"];
+type SensorAlert = Database["public"]["Tables"]["sensor_alerts"]["Row"];
 
 /**
  * Send temperature alert email
@@ -45,14 +33,14 @@ export async function sendTemperatureAlert(
 
     const html = getAlertEmailTemplate({
       sensorName: sensor.name,
-      location: sensor.location,
+      location: sensor.location ?? "Unknown Location",
       equipmentType: sensor.equipment_type,
       currentTemp,
       unit,
       minTemp,
       maxTemp,
       duration,
-      severity: alert.severity,
+      severity: alert.severity ?? "warning",
       sensorId: sensor.id,
     });
 
@@ -92,7 +80,7 @@ export async function sendResolutionEmail(
 
     const html = getResolutionEmailTemplate({
       sensorName: sensor.name,
-      location: sensor.location,
+      location: sensor.location ?? "Unknown Location",
       resolvedBy,
       resolutionAction,
       notes,
