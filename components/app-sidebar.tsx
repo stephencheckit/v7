@@ -92,7 +92,8 @@ export function AppSidebar() {
               <TooltipProvider delayDuration={0}>
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    {state === "collapsed" ? (
+                    {/* On mobile, always show full text. On desktop, show icon-only when collapsed */}
+                    {!isMobile && state === "collapsed" ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
