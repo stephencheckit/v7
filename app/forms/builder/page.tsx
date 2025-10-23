@@ -690,6 +690,7 @@ function FormsPageContent() {
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"builder" | "settings" | "publish">("builder");
   const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou">("general");
+  const [activePublishSection, setActivePublishSection] = useState<"share">("share");
   const [formStatus, setFormStatus] = useState<"published" | "draft">("published");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   
@@ -1591,6 +1592,24 @@ function FormsPageContent() {
               ) : (
                 <>
                   {/* Publish View */}
+                  {/* Left Panel - Publish Navigation */}
+                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                    <div className="p-3 space-y-1">
+                      <button
+                        onClick={() => setActivePublishSection("share")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                          activePublishSection === "share"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                        }`}
+                      >
+                        <div className="text-sm">Share</div>
+                        <div className="text-xs text-gray-500">Links and sharing options</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Middle Panel - Publish Content */}
                   <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
                     {/* Publish Sub-Header */}
                     <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
@@ -1641,6 +1660,7 @@ function FormsPageContent() {
                     <div className="flex-1 overflow-y-auto">
                       <ScrollArea className="h-full p-8">
                         <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                          {activePublishSection === "share" && (
                           <div className="text-center space-y-6">
                             <div className="text-4xl mb-4">🚀</div>
                             <h2 className="text-2xl font-bold text-white">Publish Your Form</h2>
@@ -1696,6 +1716,7 @@ function FormsPageContent() {
                               </div>
                             )}
                           </div>
+                          )}
                         </Card>
                       </ScrollArea>
                     </div>
