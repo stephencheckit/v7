@@ -164,22 +164,13 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-4 md:px-6">
-        {/* Mobile: Hamburger menu on LEFT (matches home page) */}
-        <div className="md:hidden">
-          <SidebarTrigger>
-            <Menu className="h-5 w-5" />
-          </SidebarTrigger>
-        </div>
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-4 md:px-6">
+        {/* Mobile & Desktop: Hamburger menu on LEFT */}
+        <SidebarTrigger className="shrink-0">
+          <Menu className="h-5 w-5" />
+        </SidebarTrigger>
 
-        {/* Desktop: Sidebar trigger on left */}
-        <div className="hidden md:block">
-          <SidebarTrigger>
-            <Menu className="h-5 w-5" />
-          </SidebarTrigger>
-        </div>
-
-        <div className="flex flex-1 items-center gap-4">
+        <div className="flex flex-1 items-center gap-4 min-w-0">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
