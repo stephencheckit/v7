@@ -1363,7 +1363,7 @@ Please extract and build the form now.`;
       <div
         className={`flex items-center transition-all duration-300 ${
           isOpen
-            ? "border-b border-white/20 bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4] p-4 justify-between h-16"
+            ? "border-b border-white bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4] p-4 justify-between h-16"
             : "flex-col pt-4 pb-4 justify-center"
         }`}
       >

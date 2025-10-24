@@ -186,42 +186,12 @@ export default function SettingsPage() {
             <TabsList className="bg-[#1a1a1a] flex flex-wrap md:flex-nowrap">
               <TabsTrigger value="workspace">Workspace</TabsTrigger>
               <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="users" disabled className="opacity-50 cursor-not-allowed">
-                <span className="flex items-center gap-2">
-                  Users & Teams
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="locations" disabled className="opacity-50 cursor-not-allowed">
-                <span className="flex items-center gap-2">
-                  Locations
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="integrations" disabled className="opacity-50 cursor-not-allowed">
-                <span className="flex items-center gap-2">
-                  Integrations
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="notifications" disabled className="opacity-50 cursor-not-allowed">
-                <span className="flex items-center gap-2">
-                  Notifications
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="billing" disabled className="opacity-50 cursor-not-allowed">
-                <span className="flex items-center gap-2">
-                  Billing
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="security" disabled className="opacity-50 cursor-not-allowed">
-                <span className="flex items-center gap-2">
-                  Security
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
-                </span>
-              </TabsTrigger>
+              <TabsTrigger value="users">Users & Teams</TabsTrigger>
+              <TabsTrigger value="locations">Locations</TabsTrigger>
+              <TabsTrigger value="integrations">Integrations</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
 
             {/* Workspace Tab */}
@@ -482,7 +452,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Users & Teams Tab */}
-            <TabsContent value="users" className="space-y-6">
+            <TabsContent value="users" className="space-y-6 relative">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
+                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
+                  <div className="text-center space-y-3">
+                    <Users className="h-12 w-12 text-[#c4dfc4] mx-auto" />
+                    <h3 className="text-xl font-bold text-white">Users & Teams</h3>
+                    <p className="text-gray-400 max-w-sm">
+                      This feature is coming soon. You'll be able to manage users, create teams, and assign permissions.
+                    </p>
+                  </div>
+                </Card>
+              </div>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -584,7 +565,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Locations Tab */}
-            <TabsContent value="locations" className="space-y-6">
+            <TabsContent value="locations" className="space-y-6 relative">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
+                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
+                  <div className="text-center space-y-3">
+                    <MapPin className="h-12 w-12 text-[#c4dfc4] mx-auto" />
+                    <h3 className="text-xl font-bold text-white">Locations</h3>
+                    <p className="text-gray-400 max-w-sm">
+                      This feature is coming soon. You'll be able to manage multiple locations and assign users to specific facilities.
+                    </p>
+                  </div>
+                </Card>
+              </div>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -640,7 +632,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Integrations Tab */}
-            <TabsContent value="integrations" className="space-y-6">
+            <TabsContent value="integrations" className="space-y-6 relative">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
+                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
+                  <div className="text-center space-y-3">
+                    <Plug className="h-12 w-12 text-[#c4dfc4] mx-auto" />
+                    <h3 className="text-xl font-bold text-white">Integrations</h3>
+                    <p className="text-gray-400 max-w-sm">
+                      This feature is coming soon. You'll be able to connect with Slack, webhooks, and other third-party services.
+                    </p>
+                  </div>
+                </Card>
+              </div>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white">API Keys</CardTitle>
@@ -752,7 +755,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Notifications Tab */}
-            <TabsContent value="notifications" className="space-y-6">
+            <TabsContent value="notifications" className="space-y-6 relative">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
+                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
+                  <div className="text-center space-y-3">
+                    <Bell className="h-12 w-12 text-[#c4dfc4] mx-auto" />
+                    <h3 className="text-xl font-bold text-white">Notifications</h3>
+                    <p className="text-gray-400 max-w-sm">
+                      This feature is coming soon. You'll be able to customize email alerts, SMS notifications, and more.
+                    </p>
+                  </div>
+                </Card>
+              </div>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white">Email Notifications</CardTitle>
@@ -810,7 +824,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Billing Tab */}
-            <TabsContent value="billing" className="space-y-6">
+            <TabsContent value="billing" className="space-y-6 relative">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
+                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
+                  <div className="text-center space-y-3">
+                    <CreditCard className="h-12 w-12 text-[#c4dfc4] mx-auto" />
+                    <h3 className="text-xl font-bold text-white">Billing</h3>
+                    <p className="text-gray-400 max-w-sm">
+                      This feature is coming soon. You'll be able to manage subscriptions, payment methods, and view billing history.
+                    </p>
+                  </div>
+                </Card>
+              </div>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white">Current Plan</CardTitle>
@@ -901,7 +926,18 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Security Tab */}
-            <TabsContent value="security" className="space-y-6">
+            <TabsContent value="security" className="space-y-6 relative">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
+                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
+                  <div className="text-center space-y-3">
+                    <Shield className="h-12 w-12 text-[#c4dfc4] mx-auto" />
+                    <h3 className="text-xl font-bold text-white">Security</h3>
+                    <p className="text-gray-400 max-w-sm">
+                      This feature is coming soon. You'll be able to enable 2FA, manage sessions, and update your password.
+                    </p>
+                  </div>
+                </Card>
+              </div>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white">Two-Factor Authentication</CardTitle>
