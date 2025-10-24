@@ -1186,7 +1186,7 @@ function FormsPageContent() {
           </div>
 
               {/* Middle Panel - Form Editor - GRADIENT BLACK */}
-              <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+              <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
                 {/* Form Sub-Header - Only for Middle Panel */}
                 <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                   <div className="flex items-center justify-between gap-4 px-6 py-2">
@@ -1352,7 +1352,7 @@ function FormsPageContent() {
                   </div>
 
                   {/* Middle Panel - Settings Content */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
                     {/* Settings Sub-Header */}
                     <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                       <div className="flex items-center justify-between gap-4 px-6 py-2">
@@ -1646,7 +1646,7 @@ function FormsPageContent() {
                   </div>
 
                   {/* Middle Panel - Publish Content */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
                     {/* Publish Sub-Header */}
                     <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                       <div className="flex items-center justify-between gap-4 px-6 py-2">
@@ -1821,7 +1821,7 @@ function FormsPageContent() {
                   </div>
 
                   {/* Middle Panel - Report Content */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col" style={{ marginRight: 'var(--ai-chat-width, 48px)' }}>
+                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
                     {/* Report Sub-Header */}
                     <div className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a]">
                       <div className="flex items-center justify-between gap-4 px-6 py-2">
