@@ -15,6 +15,8 @@ const PUBLIC_ROUTES = [
   "/home-5",
   "/signin",
   "/signup",
+  "/forgot-password",
+  "/reset-password",
   "/preview",
   "/demo-form",
   "/test-printer",
