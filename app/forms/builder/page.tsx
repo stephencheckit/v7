@@ -1190,9 +1190,12 @@ function FormsPageContent() {
                 {/* Form Sub-Header - Only for Middle Panel */}
                 <div 
                   className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                  style={{ width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})` }}
+                  style={{ 
+                    width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                    paddingRight: isChatOpen ? '24px' : '72px'
+                  }}
                 >
-                  <div className="flex items-center justify-between gap-4 px-6 py-2">
+                  <div className="flex items-center justify-between gap-4 pl-6 py-2">
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       <div className="text-white font-medium truncate max-w-xs">
                         {formName || "Untitled Form"}
@@ -1359,9 +1362,12 @@ function FormsPageContent() {
                     {/* Settings Sub-Header */}
                     <div 
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                      style={{ width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})` }}
+                      style={{ 
+                        width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                        paddingRight: isChatOpen ? '24px' : '72px'
+                      }}
                     >
-                      <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center justify-between gap-4 pl-6 py-2">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
                           <div className="text-white font-medium truncate max-w-xs">
                             {formName || "Untitled Form"}
@@ -1656,9 +1662,12 @@ function FormsPageContent() {
                     {/* Publish Sub-Header */}
                     <div 
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                      style={{ width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})` }}
+                      style={{ 
+                        width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                        paddingRight: isChatOpen ? '24px' : '72px'
+                      }}
                     >
-                      <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center justify-between gap-4 pl-6 py-2">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
                           <div className="text-white font-medium truncate max-w-xs">
                             {formName || "Untitled Form"}
@@ -1834,9 +1843,12 @@ function FormsPageContent() {
                     {/* Report Sub-Header */}
                     <div 
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                      style={{ width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})` }}
+                      style={{ 
+                        width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                        paddingRight: isChatOpen ? '24px' : '72px'
+                      }}
                     >
-                      <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center justify-between gap-4 pl-6 py-2">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
                           <div className="text-white font-medium truncate max-w-xs">
                             {formName || "Untitled Form"}
