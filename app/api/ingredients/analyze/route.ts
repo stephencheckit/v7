@@ -10,15 +10,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Get current user (optional for demo mode)
+    const { data: { user } } = await supabase.auth.getUser();
 
     const body = await request.json();
     const { foodItemId, ingredients } = body;
@@ -30,27 +23,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's workspace
-    const { data: workspaces } = await supabase
-      .from('workspaces')
-      .select('id')
-      .eq('owner_id', user.id)
-      .limit(1);
+    // Get user's workspace if available
+    let workspaceId = null;
+    if (user) {
+      const { data: workspaces } = await supabase
+        .from('workspaces')
+        .select('id')
+        .eq('owner_id', user.id)
+        .limit(1);
 
-    const workspaceId = workspaces?.[0]?.id;
-
-    if (!workspaceId) {
-      return NextResponse.json(
-        { error: 'No workspace found' },
-        { status: 404 }
-      );
+      workspaceId = workspaces?.[0]?.id || null;
     }
 
-    // Use Claude to analyze each ingredient's shelf life
-    const prompt = `You are a food safety expert. For each ingredient in the following list, provide detailed shelf life and storage information.
+    // HYBRID APPROACH: Check master library first (from database), then AI for unknowns
+    const analyzedIngredients: any[] = [];
+    const unknownIngredients: string[] = [];
+    let masterLibraryHits = 0;
+
+    // Step 1: Check master ingredient library from database
+    for (const ingredientName of ingredients) {
+      // Query database for master ingredient match (exact name or alias match)
+      const { data: masterMatches } = await supabase
+        .from('master_ingredients')
+        .select('*')
+        .or(`name.ilike.${ingredientName},aliases.cs.{${ingredientName}}`)
+        .limit(1);
+      
+      const masterMatch = masterMatches?.[0];
+      
+      if (masterMatch) {
+        // Found in master library - use authoritative data
+        const storageMethod = masterMatch.storage_method;
+        const shelfLife = storageMethod === 'refrigerated' 
+          ? masterMatch.shelf_life_refrigerated 
+          : storageMethod === 'frozen'
+          ? masterMatch.shelf_life_frozen
+          : masterMatch.shelf_life_pantry;
+
+        analyzedIngredients.push({
+          name: masterMatch.canonical_name || masterMatch.name, // Use canonical name
+          category: masterMatch.category,
+          storageMethod: masterMatch.storage_method,
+          shelfLifeDays: shelfLife || 7,
+          optimalTempMin: masterMatch.optimal_temp_min || null,
+          optimalTempMax: masterMatch.optimal_temp_max || null,
+          allergenType: masterMatch.allergen_type || 'none',
+          safetyNotes: masterMatch.safety_notes || '',
+        });
+        masterLibraryHits++;
+
+        // Update match count for analytics
+        await supabase
+          .from('master_ingredients')
+          .update({ match_count: (masterMatch.match_count || 0) + 1 })
+          .eq('id', masterMatch.id);
+      } else {
+        // Not in master library - needs AI analysis
+        unknownIngredients.push(ingredientName);
+      }
+    }
+
+    // Step 2: Use AI only for unknown ingredients
+    if (unknownIngredients.length > 0) {
+      const prompt = `You are a food safety expert. For each ingredient in the following list, provide detailed shelf life and storage information.
 
 Ingredients to analyze:
-${ingredients.map((ing: string, idx: number) => `${idx + 1}. ${ing}`).join('\n')}
+${unknownIngredients.map((ing: string, idx: number) => `${idx + 1}. ${ing}`).join('\n')}
 
 For each ingredient, provide:
 1. Category (dairy, produce, protein, dry_goods, condiments, etc.)
@@ -76,28 +114,32 @@ Return the data as a valid JSON array with this exact structure:
 
 Only return the JSON array, no other text.`;
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+      const message = await anthropic.messages.create({
+        model: 'claude-3-7-sonnet-20250219',
+        max_tokens: 2048,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
 
-    const content = message.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude');
+      const content = message.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Claude');
+      }
+
+      // Parse the AI response
+      const cleanedText = content.text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      const aiAnalyzedIngredients = JSON.parse(cleanedText);
+      
+      // Combine AI results with master library results
+      analyzedIngredients.push(...aiAnalyzedIngredients);
     }
 
-    // Parse the AI response
-    const cleanedText = content.text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    const analyzedIngredients = JSON.parse(cleanedText);
-
-    // Save to database if foodItemId is provided
-    if (foodItemId) {
+    // Save to database if foodItemId and workspaceId are provided
+    if (foodItemId && workspaceId) {
       const ingredientsToInsert = analyzedIngredients.map((ing: any) => ({
         workspace_id: workspaceId,
         food_item_id: foodItemId,
@@ -126,12 +168,25 @@ Only return the JSON array, no other text.`;
         success: true,
         ingredients: analyzedIngredients,
         saved: savedIngredients?.length || 0,
+        stats: {
+          total: analyzedIngredients.length,
+          fromMasterLibrary: masterLibraryHits,
+          fromAI: unknownIngredients.length,
+          accuracy: masterLibraryHits > 0 ? 'high' : 'ai-generated',
+        },
       });
     }
 
     return NextResponse.json({
       success: true,
       ingredients: analyzedIngredients,
+      demo: !workspaceId,
+      stats: {
+        total: analyzedIngredients.length,
+        fromMasterLibrary: masterLibraryHits,
+        fromAI: unknownIngredients.length,
+        accuracy: masterLibraryHits > 0 ? 'high' : 'ai-generated',
+      },
     });
 
   } catch (error) {
