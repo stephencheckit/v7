@@ -1192,7 +1192,7 @@ function FormsPageContent() {
                   className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                   style={{ 
                     width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
-                    paddingRight: isChatOpen ? '24px' : '72px'
+                    paddingRight: isChatOpen ? '48px' : '72px'
                   }}
                 >
                   <div className="flex items-center justify-between gap-4 pl-6 py-2">
@@ -1364,7 +1364,7 @@ function FormsPageContent() {
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                       style={{ 
                         width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
-                        paddingRight: isChatOpen ? '24px' : '72px'
+                        paddingRight: isChatOpen ? '48px' : '72px'
                       }}
                     >
                       <div className="flex items-center justify-between gap-4 pl-6 py-2">
@@ -1664,7 +1664,7 @@ function FormsPageContent() {
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                       style={{ 
                         width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
-                        paddingRight: isChatOpen ? '24px' : '72px'
+                        paddingRight: isChatOpen ? '48px' : '72px'
                       }}
                     >
                       <div className="flex items-center justify-between gap-4 pl-6 py-2">
@@ -1845,7 +1845,7 @@ function FormsPageContent() {
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                       style={{ 
                         width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
-                        paddingRight: isChatOpen ? '24px' : '72px'
+                        paddingRight: isChatOpen ? '48px' : '72px'
                       }}
                     >
                       <div className="flex items-center justify-between gap-4 pl-6 py-2">
