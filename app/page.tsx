@@ -58,8 +58,8 @@ export default function HomePage() {
           ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-6">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 mb-8">
+            {/* Logo - hidden on mobile (shown in header) */}
+            <Link href="/" className="hidden lg:flex items-center gap-3 mb-8">
               <Image 
                 src="/checkit-checkit.png" 
                 alt="Checkit V7 Logo" 
