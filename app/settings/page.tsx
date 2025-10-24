@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +24,14 @@ import {
   Mail,
   Smartphone,
   Globe,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Briefcase,
+  Loader2,
+  Save
 } from "lucide-react";
+import { useAuth } from "@/lib/auth/auth-context";
+import { supabase } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -62,6 +69,104 @@ const integrations = [
 ];
 
 export default function SettingsPage() {
+  const { workspaceId, user, updateProfile } = useAuth();
+  const [workspace, setWorkspace] = useState<any>(null);
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [workspaceMembers, setWorkspaceMembers] = useState<any[]>([]);
+  const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Profile form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    if (workspaceId) {
+      loadWorkspaceData();
+    }
+  }, [workspaceId]);
+
+  useEffect(() => {
+    if (user) {
+      // Load user metadata
+      setFirstName(user.user_metadata?.first_name || '');
+      setLastName(user.user_metadata?.last_name || '');
+      setPhone(user.user_metadata?.phone || '');
+    }
+  }, [user]);
+
+  const loadWorkspaceData = async () => {
+    if (!workspaceId) return;
+    
+    setIsLoadingWorkspace(true);
+    try {
+      // Load workspace details
+      const { data: workspaceData, error: workspaceError } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', workspaceId)
+        .single();
+
+      if (workspaceError) throw workspaceError;
+      
+      setWorkspace(workspaceData);
+      setWorkspaceName(workspaceData.name);
+
+      // Load workspace members with user details using RPC function
+      const { data: membersData, error: membersError } = await supabase
+        .rpc('get_workspace_members_with_users', { workspace_uuid: workspaceId });
+
+      if (membersError) throw membersError;
+      
+      setWorkspaceMembers(membersData || []);
+    } catch (error: any) {
+      console.error('Error loading workspace:', error);
+      toast.error('Failed to load workspace data');
+    } finally {
+      setIsLoadingWorkspace(false);
+    }
+  };
+
+  const handleSaveWorkspaceName = async () => {
+    if (!workspaceId || !workspaceName.trim()) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('workspaces')
+        .update({ name: workspaceName.trim() })
+        .eq('id', workspaceId);
+
+      if (error) throw error;
+      
+      setWorkspace({ ...workspace, name: workspaceName.trim() });
+      toast.success('Workspace name updated successfully');
+    } catch (error: any) {
+      console.error('Error updating workspace:', error);
+      toast.error('Failed to update workspace name');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error("First name and last name are required");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateProfile(firstName, lastName, phone);
+      toast.success("Profile updated successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     
       <div className="w-full h-full overflow-auto">
@@ -77,8 +182,9 @@ export default function SettingsPage() {
               </p>
             </div>
 
-          <Tabs defaultValue="account" className="space-y-6">
+          <Tabs defaultValue="workspace" className="space-y-6">
             <TabsList className="bg-[#1a1a1a] flex flex-wrap md:flex-nowrap">
+              <TabsTrigger value="workspace">Workspace</TabsTrigger>
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="users">Users & Teams</TabsTrigger>
               <TabsTrigger value="locations">Locations</TabsTrigger>
@@ -87,6 +193,166 @@ export default function SettingsPage() {
               <TabsTrigger value="billing">Billing</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
+
+            {/* Workspace Tab */}
+            <TabsContent value="workspace" className="space-y-6">
+              <Card className="shadow-lg border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-[#c4dfc4]" />
+                    Workspace Information
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your workspace settings and details
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isLoadingWorkspace ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#c4dfc4]" />
+                    </div>
+                  ) : workspace ? (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="workspaceName" className="text-gray-300">Workspace Name</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="workspaceName"
+                            value={workspaceName}
+                            onChange={(e) => setWorkspaceName(e.target.value)}
+                            className="bg-[#1a1a1a] border-gray-700"
+                            placeholder="My Workspace"
+                          />
+                          <Button
+                            onClick={handleSaveWorkspaceName}
+                            disabled={isSaving || workspaceName === workspace.name}
+                            className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5]"
+                          >
+                            {isSaving ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Save className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <Separator className="bg-gray-700" />
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label className="text-gray-300">Workspace ID</Label>
+                          <Input
+                            value={workspace.id}
+                            readOnly
+                            className="bg-[#0a0a0a] border-gray-700 text-gray-400 font-mono text-sm"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-gray-300">Plan</Label>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-[#c4dfc4] text-[#0a0a0a] capitalize">
+                              {workspace.plan || 'free'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-gray-300">Workspace Slug</Label>
+                        <Input
+                          value={workspace.slug}
+                          readOnly
+                          className="bg-[#0a0a0a] border-gray-700 text-gray-400 font-mono text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-gray-300">Created</Label>
+                        <Input
+                          value={new Date(workspace.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                          readOnly
+                          className="bg-[#0a0a0a] border-gray-700 text-gray-400"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-gray-400">
+                      No workspace found
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Users className="h-5 w-5 text-[#c8e0f5]" />
+                    Workspace Members
+                  </CardTitle>
+                  <CardDescription>
+                    Users who have access to this workspace
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingWorkspace ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#c4dfc4]" />
+                    </div>
+                  ) : workspaceMembers.length > 0 ? (
+                    <div className="overflow-x-auto -mx-4 md:mx-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-gray-700 hover:bg-transparent">
+                            <TableHead className="text-gray-400">Name</TableHead>
+                            <TableHead className="text-gray-400">Email</TableHead>
+                            <TableHead className="text-gray-400">Role</TableHead>
+                            <TableHead className="text-gray-400">Joined</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {workspaceMembers.map((member: any) => (
+                            <TableRow key={member.id} className="border-gray-700 hover:bg-gray-800/50">
+                              <TableCell className="font-medium text-white">
+                                {member.first_name && member.last_name 
+                                  ? `${member.first_name} ${member.last_name}`
+                                  : member.email?.split('@')[0] || 'Unknown'}
+                                {member.user_id === user?.id && (
+                                  <Badge variant="secondary" className="ml-2 text-xs">You</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-gray-300">
+                                {member.email || 'No email'}
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-[#c4dfc4] text-[#0a0a0a] capitalize">
+                                  {member.role}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-gray-300">
+                                {new Date(member.joined_at).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-400">
+                      No members found
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Account Tab */}
             <TabsContent value="account" className="space-y-6">
@@ -101,24 +367,66 @@ export default function SettingsPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName" className="text-gray-300">First Name</Label>
-                      <Input id="firstName" defaultValue="Charlie" className="bg-[#1a1a1a] border-gray-700" />
+                      <Input 
+                        id="firstName" 
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="bg-[#1a1a1a] border-gray-700" 
+                        placeholder="First name"
+                        disabled={isSaving}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName" className="text-gray-300">Last Name</Label>
-                      <Input id="lastName" defaultValue="Checkit" className="bg-[#1a1a1a] border-gray-700" />
+                      <Input 
+                        id="lastName" 
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="bg-[#1a1a1a] border-gray-700" 
+                        placeholder="Last name"
+                        disabled={isSaving}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-300">Email</Label>
-                    <Input id="email" type="email" defaultValue="charlie@checkit.com" className="bg-[#1a1a1a] border-gray-700" />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      value={user?.email || ""} 
+                      readOnly
+                      className="bg-[#1a1a1a] border-gray-700 text-gray-400" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-gray-300">Phone Number</Label>
-                    <Input id="phone" type="tel" defaultValue="+1 (555) 123-4567" className="bg-[#1a1a1a] border-gray-700" />
+                    <Input 
+                      id="phone" 
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+1 (555) 123-4567" 
+                      className="bg-[#1a1a1a] border-gray-700"
+                      disabled={isSaving}
+                    />
                   </div>
                   <Separator className="bg-gray-700" />
-                  <Button className="bg-gradient-to-r from-[#c4dfc4] to-[#c8e0f5] text-[#0a0a0a] hover:from-[#c4dfc4]/90 hover:to-[#c8e0f5]/90">
-                    Save Changes
+                  <Button 
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="bg-gradient-to-r from-[#c4dfc4] to-[#c8e0f5] text-[#0a0a0a] hover:from-[#c4dfc4]/90 hover:to-[#c8e0f5]/90"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>

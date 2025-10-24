@@ -1,21 +1,33 @@
 // Sensors API - List and create sensors
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
+import { getUserWorkspaceId } from "@/lib/workspace-helper";
 
 /**
  * GET /api/sensors
  * 
- * List all sensors with their latest readings
+ * List all sensors with their latest readings (filtered by workspace)
  */
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
+    
+    // Get user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: "Unauthorized - no workspace found" },
+        { status: 401 }
+      );
+    }
 
-    // Fetch all active sensors
+    // Fetch sensors for this workspace only
     const { data: sensors, error: sensorsError } = await supabase
       .from("sensors")
       .select("*")
+      .eq("workspace_id", workspaceId)
       .eq("is_active", true)
       .order("name");
 
@@ -70,10 +82,22 @@ export async function GET(req: NextRequest) {
 /**
  * POST /api/sensors
  * 
- * Create a new sensor
+ * Create a new sensor (in authenticated user's workspace)
  */
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    
+    // Get user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: "Unauthorized - no workspace found" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
 
     // Validate required fields
@@ -94,26 +118,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = createClient();
-
-    // Check if sensor already exists
+    // Check if sensor already exists in this workspace
     const { data: existing } = await supabase
       .from("sensors")
       .select("id")
+      .eq("workspace_id", workspaceId)
       .eq("dt_device_id", dt_device_id)
       .single();
 
     if (existing) {
       return NextResponse.json(
-        { error: "Sensor with this device ID already exists" },
+        { error: "Sensor with this device ID already exists in your workspace" },
         { status: 409 }
       );
     }
 
-    // Create sensor
+    // Create sensor with workspace_id
     const { data: sensor, error: createError } = await supabase
       .from("sensors")
       .insert({
+        workspace_id: workspaceId,
         dt_device_id,
         dt_project_id: dt_project_id || "unknown",
         name,
@@ -122,13 +146,7 @@ export async function POST(req: NextRequest) {
         min_temp_celsius: min_temp_celsius || (equipment_type === "freezer" ? -23 : 0),
         max_temp_celsius: max_temp_celsius || (equipment_type === "freezer" ? -18 : 4),
         alert_delay_minutes: body.alert_delay_minutes || 15,
-        alert_recipients: body.alert_recipients || [
-          {
-            name: "Charlie Checkit",
-            email: "charlie@checkit.com",
-            notify_methods: ["email", "in_app"],
-          },
-        ],
+        alert_recipients: body.alert_recipients || [],
       })
       .select()
       .single();

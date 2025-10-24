@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import { ConditionalLayout } from "@/components/conditional-layout";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -62,11 +63,13 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} antialiased`}
         style={{ fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif' }}
       >
-        <NotificationProvider>
-          <ConditionalLayout>
-            {children}
-          </ConditionalLayout>
-        </NotificationProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+          </NotificationProvider>
+        </AuthProvider>
         <Toaster position="top-right" richColors />
       </body>
     </html>

@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
+import { getUserWorkspaceId } from '@/lib/workspace-helper';
 import { nanoid } from 'nanoid';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 /**
- * POST /api/forms - Create a new form
+ * POST /api/forms - Create a new form (in authenticated user's workspace)
  * Body: { title, description, schema }
  * Returns: { id, shareUrl, form }
  */
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    
+    // Get user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - no workspace found' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { title, description, schema, status, thank_you_settings } = body;
 
@@ -32,9 +40,10 @@ export async function POST(req: NextRequest) {
                    `${req.nextUrl.protocol}//${req.nextUrl.host}`;
     const shareUrl = `${appUrl}/f/${formId}`;
 
-    // Build insert data
+    // Build insert data with workspace_id
     const insertData: any = {
       id: formId,
+      workspace_id: workspaceId,
       title,
       description: description || '',
       schema,
@@ -88,20 +97,33 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * GET /api/forms - List all forms
+ * GET /api/forms - List all forms (filtered by workspace)
  * Query params: limit (default 50), offset (default 0)
  * Returns: { forms: [...], total }
  */
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    
+    // Get user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - no workspace found' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = req.nextUrl;
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Get forms with submission stats
+    // Get forms with submission stats for this workspace only
     const { data: forms, error, count } = await supabase
       .from('simple_forms')
       .select('*, simple_form_stats(*)', { count: 'exact' })
+      .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

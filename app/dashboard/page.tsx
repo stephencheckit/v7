@@ -26,6 +26,7 @@ import {
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Thermometer, Users, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth/auth-context";
 
 // Food Safety Data
 const complianceData = [
@@ -63,6 +64,25 @@ const inspectionScores = [
 
 export default function DashboardPage() {
   const [sensorAlerts, setSensorAlerts] = useState(0);
+  const { user } = useAuth();
+
+  // Extract first name from user metadata or email
+  const getUserName = () => {
+    if (!user) return "there";
+    
+    // Try to get first name from metadata
+    const firstName = user.user_metadata?.first_name;
+    if (firstName) return firstName;
+    
+    // Fallback to email-based name
+    if (user.email) {
+      const emailName = user.email.split('@')[0];
+      const name = emailName.split(/[._-]/)[0];
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+    
+    return "there";
+  };
 
   useEffect(() => {
     // Fetch sensor alerts
@@ -94,7 +114,7 @@ export default function DashboardPage() {
               <div>
                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
                   <LayoutDashboard className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-                  <span className="hidden sm:inline">Welcome back, Charlie</span>
+                  <span className="hidden sm:inline">Welcome back, {getUserName()}</span>
                   <span className="sm:hidden">Dashboard</span>
                 </h1>
                 <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">

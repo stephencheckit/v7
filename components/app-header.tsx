@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, Search, FileText, Settings, Home, Layout, User, Tag } from "lucide-react";
+import { Menu, Search, FileText, Settings, Home, Layout, User, Tag, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/auth/auth-context";
 
 interface SearchResult {
   id: string;
@@ -39,7 +40,9 @@ export function AppHeader() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
+  const { user, signOut } = useAuth();
 
   const performSearch = async (query: string) => {
     if (query.trim().length === 0) {
@@ -201,19 +204,38 @@ export function AppHeader() {
         {/* Desktop: User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10 hidden md:flex">
-              <Avatar className="h-8 w-8 bg-[#c4dfc4]">
-                <AvatarFallback className="bg-[#c4dfc4] text-[#0a0a0a] font-semibold text-sm">
-                  CC
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium text-white hidden md:inline-block">
-                Charlie Checkit
-              </span>
+            <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10 hidden md:flex" disabled={isSigningOut}>
+              {isSigningOut ? (
+                <>
+                  <div className="h-8 w-8 rounded-full bg-[#c4dfc4]/20 flex items-center justify-center">
+                    <div className="h-4 w-4 border-2 border-[#c4dfc4] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-400">Signing out...</span>
+                </>
+              ) : (
+                <>
+                  <Avatar className="h-8 w-8 bg-[#c4dfc4]">
+                    <AvatarFallback className="bg-[#c4dfc4] text-[#0a0a0a] font-semibold text-sm">
+                      {user?.user_metadata?.first_name && user?.user_metadata?.last_name
+                        ? `${user.user_metadata.first_name[0]}${user.user_metadata.last_name[0]}`.toUpperCase()
+                        : user?.email?.substring(0, 2).toUpperCase() || "??"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-white hidden md:inline-block">
+                    {user?.user_metadata?.first_name && user?.user_metadata?.last_name
+                      ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                      : user?.email?.split('@')[0] || "User"}
+                  </span>
+                </>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 bg-[#1a1a1a] border-border/50" align="end">
-            <DropdownMenuLabel className="text-gray-400">My Account</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-gray-400">
+              {user?.user_metadata?.first_name && user?.user_metadata?.last_name
+                ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                : user?.email || "My Account"}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem 
               onClick={() => router.push('/settings')}
@@ -231,9 +253,14 @@ export function AppHeader() {
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem 
-              onClick={() => router.push('/signin')}
+              onClick={async () => {
+                setIsSigningOut(true);
+                await signOut();
+                window.location.href = '/signin';
+              }}
               className="text-red-400 focus:bg-red-500/10 focus:text-red-300 cursor-pointer"
             >
+              <LogOut className="mr-2 h-4 w-4" />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

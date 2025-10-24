@@ -1,15 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
+import { getUserWorkspaceId } from '@/lib/workspace-helper';
 import { NextResponse } from 'next/server';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ formId: string }> }
 ) {
+  const supabase = await createClient();
+  const workspaceId = await getUserWorkspaceId();
+  
+  if (!workspaceId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { formId } = await params;
   
   // Don't load conversations for new forms
@@ -21,6 +24,7 @@ export async function GET(
     .from('ai_conversations')
     .select('messages')
     .eq('form_id', formId)
+    .eq('workspace_id', workspaceId)
     .single();
 
   if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
@@ -37,6 +41,13 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ formId: string }> }
 ) {
+  const supabase = await createClient();
+  const workspaceId = await getUserWorkspaceId();
+  
+  if (!workspaceId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { formId } = await params;
   const { messages } = await request.json();
   
@@ -126,6 +137,7 @@ export async function POST(
       .from('ai_conversations')
       .upsert({
         form_id: `test_${formId}`,
+        workspace_id: workspaceId,
         messages: [{ role: 'user', content: 'test' }],
         updated_at: new Date().toISOString()
       }, {
@@ -151,6 +163,7 @@ export async function POST(
     .from('ai_conversations')
     .upsert({
       form_id: formId,
+      workspace_id: workspaceId,
       messages: cleanedMessages,
       updated_at: new Date().toISOString()
     }, {
