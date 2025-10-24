@@ -10,17 +10,3 @@ export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonK
 export function createClient() {
   return supabase;
 }
-
-// Helper function to create a Supabase client with a custom token (for server-side)
-export function createServerClient(accessToken?: string) {
-  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-    global: {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-    },
-  });
-}
-
