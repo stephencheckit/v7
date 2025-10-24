@@ -186,12 +186,42 @@ export default function SettingsPage() {
             <TabsList className="bg-[#1a1a1a] flex flex-wrap md:flex-nowrap">
               <TabsTrigger value="workspace">Workspace</TabsTrigger>
               <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="users">Users & Teams</TabsTrigger>
-              <TabsTrigger value="locations">Locations</TabsTrigger>
-              <TabsTrigger value="integrations">Integrations</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              <TabsTrigger value="billing">Billing</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="users" disabled className="opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-2">
+                  Users & Teams
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="locations" disabled className="opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-2">
+                  Locations
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="integrations" disabled className="opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-2">
+                  Integrations
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="notifications" disabled className="opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-2">
+                  Notifications
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="billing" disabled className="opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-2">
+                  Billing
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="security" disabled className="opacity-50 cursor-not-allowed">
+                <span className="flex items-center gap-2">
+                  Security
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">Soon</Badge>
+                </span>
+              </TabsTrigger>
             </TabsList>
 
             {/* Workspace Tab */}
