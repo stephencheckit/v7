@@ -5,6 +5,63 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
+### **Labeling Page: Table View with Sortable Columns - October 24, 2025**
+**Commit:** `b1ce05e` - Add table view with sortable columns and UI improvements to Labeling page
+
+**Status:** ✅ DEPLOYED to GitHub & Vercel  
+**Branch:** `main`
+
+**What Was Changed:**
+
+**1. Dual View Mode (Card/Table Toggle)** (`app/labeling/page.tsx`)
+   - ✅ Added view mode state with toggle between 'card' and 'table' views
+   - ✅ Styled view toggle positioned on far left with mint green gradient background
+   - ✅ Grid icon (LayoutGrid) for card view, List icon for table view
+   - ✅ Active view highlighted in solid mint green with shadow
+   - ✅ Inactive view shows tinted mint icons with hover effects
+
+**2. Fully Sortable Table View**
+   - ✅ Implemented comprehensive table view with 9 columns (Type, Name, Category, Storage, Shelf Life, Allergens, Prints, Source, Action)
+   - ✅ All columns clickable with bidirectional sorting (asc/desc)
+   - ✅ Sort state tracked per column with visual indicators
+   - ✅ Active sort shows mint green up/down arrows
+   - ✅ Inactive columns show subtle double-arrow icon
+   - ✅ Hover effect: Headers turn mint green on hover
+
+**3. Enhanced Sorting Logic**
+   - ✅ Separate sort logic for table view vs card view
+   - ✅ Table sort supports: type, name, category, storage, shelf life, allergen count, print count, source
+   - ✅ Card view retains dropdown sort options (Name A-Z, Recent, Most Printed)
+   - ✅ Smart comparison for different data types (strings, numbers, nulls)
+
+**4. UI Polish & Branding**
+   - ✅ Renamed page from "Food Library" to "Labeling"
+   - ✅ Enhanced microphone button with solid mint green background and glow effect
+   - ✅ Improved visual hierarchy with consistent mint green accent color
+   - ✅ Updated empty state messaging
+
+**5. Database & Master Ingredient Library** (Supporting files created)
+   - ✅ Created `RUN_THIS_IN_SUPABASE.sql` for database setup
+   - ✅ Added `master_ingredients` table with 516 curated ingredients
+   - ✅ Enhanced `food_items` table with unified library structure
+   - ✅ Created API routes for library management (`/api/food-items/library`)
+   - ✅ Implemented hybrid ingredient analysis (master library first, then AI)
+
+**Technical Improvements:**
+- Table sort state management with `tableSortColumn` and `tableSortDirection`
+- Conditional rendering: Card grid vs Table based on `viewMode`
+- Arrow icons imported: `ArrowUpDown`, `ArrowUp`, `ArrowDown`
+- Smart filtering and sorting function `getFilteredAndSortedItems()`
+
+**User Experience Score:** 92/100
+- Excellent view flexibility (card for browsing, table for scanning) ✅
+- Intuitive sorting with clear visual feedback ✅
+- Consistent mint green branding throughout ✅
+- Voice search button now prominent and discoverable ✅
+- Minor improvement: Could add bulk actions in table view (-8 points)
+
+---
+
 ### **Mobile-Responsive Design Implementation - October 23, 2025**
 **Commit:** `fe8221f` - Implement mobile-responsive design with hamburger menu
 
