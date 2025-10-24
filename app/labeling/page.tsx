@@ -57,6 +57,7 @@ const loadingStages = [
 export default function PrepLabelsPage() {
   // Unified Food Library
   const [foodLibrary, setFoodLibrary] = useState<FoodLibraryItem[]>([]);
+  const [isLoadingLibrary, setIsLoadingLibrary] = useState(true);
   
   // UI State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -91,6 +92,7 @@ export default function PrepLabelsPage() {
   // Load library from database on mount
   useEffect(() => {
     const loadLibraryFromDatabase = async () => {
+      setIsLoadingLibrary(true);
       try {
         const response = await fetch('/api/food-items/library');
         if (response.ok) {
@@ -102,6 +104,9 @@ export default function PrepLabelsPage() {
         }
       } catch (error) {
         console.error('Error loading library from database:', error);
+        toast.error('Failed to load library');
+      } finally {
+        setIsLoadingLibrary(false);
       }
     };
 
@@ -654,18 +659,34 @@ export default function PrepLabelsPage() {
     <div className="w-full h-full overflow-auto">
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-[1800px] space-y-6">
-          {/* Header */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-                  <Tag className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-                  Labeling
-                </h1>
-                <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-                  Manage food items & ingredients, search, and print labels
-                </p>
+          {/* Initial Loading State */}
+          {isLoadingLibrary ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+              <div className="relative">
+                <Loader2 className="h-16 w-16 text-[#c4dfc4] animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Tag className="h-8 w-8 text-[#c4dfc4]/30" />
+                </div>
               </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl font-bold text-white">Loading your library...</h3>
+                <p className="text-gray-400">Fetching all your food items and ingredients</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                      <Tag className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+                      Labeling
+                    </h1>
+                    <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+                      Manage food items & ingredients, search, and print labels
+                    </p>
+                  </div>
 
               <div className="flex gap-2 shrink-0">
                 <input
@@ -1231,6 +1252,8 @@ export default function PrepLabelsPage() {
               </div>
             </DialogContent>
           </Dialog>
+            </>
+          )}
         </div>
       </div>
     </div>
