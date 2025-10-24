@@ -9,13 +9,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { StructuredData } from "@/components/structured-data";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState("home");
@@ -56,104 +49,63 @@ export default function HomePage() {
   return (
     <>
       <StructuredData />
-      <div className="min-h-screen bg-[#0a0a0a] overflow-x-hidden">
-        {/* HEADER - Matches platform layout */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-4 md:px-6">
-          {/* Mobile: Logo on LEFT */}
-          <Link href="/" className="flex md:hidden items-center gap-2 shrink-0">
-            <Image
-              src="/checkit-checkit.png"
-              alt="Checkit V7"
-              width={32}
-              height={32}
-              className="w-8 h-8 object-contain"
-            />
-          </Link>
-
-          {/* Desktop: Logo on LEFT */}
-          <Link href="/" className="hidden md:flex items-center gap-2 shrink-0">
-            <Image
-              src="/checkit-checkit.png"
-              alt="Checkit V7"
-              width={32}
-              height={32}
-              className="w-8 h-8 object-contain"
-            />
-            <span className="text-lg font-bold text-white">Checkit V7</span>
-          </Link>
-
-          {/* Center spacing */}
-          <div className="flex-1" />
-
-          {/* Desktop: Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            <button onClick={() => scrollToSection("home")} className="px-3 py-2 text-sm text-gray-300 hover:text-white transition-colors">Home</button>
-            <button onClick={() => scrollToSection("problems")} className="px-3 py-2 text-sm text-gray-300 hover:text-white transition-colors">Problems</button>
-            <button onClick={() => scrollToSection("pillars")} className="px-3 py-2 text-sm text-gray-300 hover:text-white transition-colors">Pillars</button>
-            <button onClick={() => scrollToSection("benefits")} className="px-3 py-2 text-sm text-gray-300 hover:text-white transition-colors">Benefits</button>
-            <button onClick={() => scrollToSection("pricing")} className="px-3 py-2 text-sm text-gray-300 hover:text-white transition-colors">Pricing</button>
-          </nav>
-
-          {/* Desktop: Auth Buttons */}
-          <div className="hidden md:flex items-center gap-2">
-            <Link href="/signin">
-              <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10">
-                Sign In
-              </Button>
+      <div className="flex min-h-screen bg-[#0a0a0a] overflow-x-hidden">
+        {/* LEFT NAVIGATION */}
+        <nav className={`
+          fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a]
+          border-r border-white/10 overflow-y-auto z-50
+          transition-transform duration-300
+          ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}>
+          <div className="p-6">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 mb-8">
+              <Image 
+                src="/checkit-checkit.png" 
+                alt="Checkit V7 Logo" 
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain"
+              />
+              <span className="text-xl font-bold text-white">Checkit V7</span>
             </Link>
-            <Link href="/signup">
-              <Button className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold">
-                Sign Up
-              </Button>
-            </Link>
-          </div>
 
-          {/* Mobile: Hamburger on RIGHT */}
-          <button 
-            onClick={() => setMobileNavOpen(true)}
-            className="md:hidden shrink-0 p-2 text-white"
-            aria-label="Open menu"
-          >
-            <MenuIcon className="w-5 h-5" />
-          </button>
-        </header>
+            <ul className="space-y-1">
+              <NavItem label="Home" section="home" active={activeSection === "home"} onClick={() => scrollToSection("home")} />
+              <NavItem label="Problems We Solve" section="problems" active={activeSection === "problems"} onClick={() => scrollToSection("problems")} />
+              <NavItem label="Three Pillars" section="pillars" active={activeSection === "pillars"} onClick={() => scrollToSection("pillars")} />
+              <NavItem label="Benefits" section="benefits" active={activeSection === "benefits"} onClick={() => scrollToSection("benefits")} />
+              <NavItem label="Why Executives Switch" section="executives" active={activeSection === "executives"} onClick={() => scrollToSection("executives")} />
+              <NavItem label="The Numbers" section="numbers" active={activeSection === "numbers"} onClick={() => scrollToSection("numbers")} />
+              <NavItem label="Pricing" section="pricing" active={activeSection === "pricing"} onClick={() => scrollToSection("pricing")} />
+            </ul>
 
-        {/* Mobile Navigation Sheet */}
-        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-          <SheetContent side="right" className="bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] border-white/10 w-[280px]">
-            <SheetHeader className="sr-only">
-              <SheetTitle>Navigation</SheetTitle>
-              <SheetDescription>Navigate through the homepage sections</SheetDescription>
-            </SheetHeader>
-            <div className="flex flex-col h-full py-6">
-              <nav className="flex-1 space-y-2">
-                <NavItem label="Home" section="home" active={activeSection === "home"} onClick={() => scrollToSection("home")} />
-                <NavItem label="Problems We Solve" section="problems" active={activeSection === "problems"} onClick={() => scrollToSection("problems")} />
-                <NavItem label="Three Pillars" section="pillars" active={activeSection === "pillars"} onClick={() => scrollToSection("pillars")} />
-                <NavItem label="Benefits" section="benefits" active={activeSection === "benefits"} onClick={() => scrollToSection("benefits")} />
-                <NavItem label="Why Executives Switch" section="executives" active={activeSection === "executives"} onClick={() => scrollToSection("executives")} />
-                <NavItem label="The Numbers" section="numbers" active={activeSection === "numbers"} onClick={() => scrollToSection("numbers")} />
-                <NavItem label="Pricing" section="pricing" active={activeSection === "pricing"} onClick={() => scrollToSection("pricing")} />
-              </nav>
-
-              <div className="mt-auto pt-6 border-t border-white/10 space-y-3">
-                <Link href="/signup" onClick={() => setMobileNavOpen(false)}>
-                  <Button className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold">
-                    Sign Up
-                  </Button>
-                </Link>
-                <Link href="/signin" onClick={() => setMobileNavOpen(false)}>
-                  <Button variant="ghost" className="w-full text-gray-400 hover:text-white hover:bg-white/5">
-                    Sign In
-                  </Button>
-                </Link>
-              </div>
+            <div className="mt-8 pt-8 border-t border-white/10 space-y-2">
+              <Link href="/signup">
+                <Button className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-gray-900 font-semibold">
+                  Sign Up
+                </Button>
+              </Link>
+              <Link href="/signin">
+                <Button variant="ghost" className="w-full text-gray-400 hover:text-white">
+                  Sign In
+                </Button>
+              </Link>
             </div>
-          </SheetContent>
-        </Sheet>
+          </div>
+        </nav>
+
+        {/* Mobile nav toggle */}
+        <button 
+          onClick={() => setMobileNavOpen(!mobileNavOpen)}
+          className="lg:hidden fixed top-4 left-4 z-50 bg-[#1a1a1a] border border-white/20 rounded-lg p-3 text-white"
+          aria-label="Toggle navigation"
+        >
+          {mobileNavOpen ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+        </button>
 
         {/* MAIN CONTENT */}
-        <main className="w-full">
+        <main className="flex-1 lg:ml-64 overflow-x-hidden w-full">
           <div className="min-h-screen text-white">
 
             {/* HERO */}
@@ -661,18 +613,20 @@ function NavItem({ label, section, active, onClick }: {
   onClick: () => void;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`
-        w-full text-left px-4 py-3 rounded-lg transition-all duration-200 font-medium
-        ${active 
-          ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-l-2 border-[#c4dfc4]' 
-          : 'text-gray-300 hover:text-white hover:bg-white/5'
-        }
-      `}
-    >
-      {label}
-    </button>
+    <li>
+      <button
+        onClick={onClick}
+        className={`
+          w-full text-left px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium
+          ${active 
+            ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-l-2 border-[#c4dfc4]' 
+            : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }
+        `}
+      >
+        {label}
+      </button>
+    </li>
   );
 }
 
