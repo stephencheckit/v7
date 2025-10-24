@@ -170,9 +170,9 @@ export default function SensorsPage() {
             {/* Compact Header - Single Row */}
             <div className="mb-4 md:mb-6 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-6">
               {/* Title */}
-              <h1 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-                <Thermometer className="h-5 w-5 md:h-6 md:w-6 text-[#c4dfc4]" />
-                Sensors Dashboard
+              <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                <Thermometer className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+                Sensors
               </h1>
               
               {/* Right Side Controls */}
