@@ -75,6 +75,7 @@ export type Database = {
           id: string
           messages: Json
           updated_at: string | null
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -82,6 +83,7 @@ export type Database = {
           id?: string
           messages?: Json
           updated_at?: string | null
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -89,8 +91,17 @@ export type Database = {
           id?: string
           messages?: Json
           updated_at?: string | null
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       api_keys: {
         Row: {
@@ -138,6 +149,90 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "api_keys_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      food_items: {
+        Row: {
+          allergens: string[] | null
+          category: string | null
+          created_at: string | null
+          day: string | null
+          id: string
+          ingredients: string[] | null
+          is_active: boolean | null
+          item_type: string | null
+          last_printed_at: string | null
+          meal: string | null
+          menu_upload_id: string | null
+          metadata: Json | null
+          name: string
+          print_count: number | null
+          print_history: Json | null
+          shelf_life_days: number
+          source_type: string | null
+          storage_method: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          allergens?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          day?: string | null
+          id?: string
+          ingredients?: string[] | null
+          is_active?: boolean | null
+          item_type?: string | null
+          last_printed_at?: string | null
+          meal?: string | null
+          menu_upload_id?: string | null
+          metadata?: Json | null
+          name: string
+          print_count?: number | null
+          print_history?: Json | null
+          shelf_life_days: number
+          source_type?: string | null
+          storage_method?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          allergens?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          day?: string | null
+          id?: string
+          ingredients?: string[] | null
+          is_active?: boolean | null
+          item_type?: string | null
+          last_printed_at?: string | null
+          meal?: string | null
+          menu_upload_id?: string | null
+          metadata?: Json | null
+          name?: string
+          print_count?: number | null
+          print_history?: Json | null
+          shelf_life_days?: number
+          source_type?: string | null
+          storage_method?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_items_menu_upload_id_fkey"
+            columns: ["menu_upload_id"]
+            isOneToOne: false
+            referencedRelation: "menu_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "food_items_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -440,6 +535,195 @@ export type Database = {
           },
         ]
       }
+      ingredients: {
+        Row: {
+          allergen_type: string | null
+          category: string | null
+          created_at: string | null
+          food_item_id: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          name: string
+          optimal_temp_max: number | null
+          optimal_temp_min: number | null
+          safety_notes: string | null
+          shelf_life_days: number
+          storage_method: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          allergen_type?: string | null
+          category?: string | null
+          created_at?: string | null
+          food_item_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name: string
+          optimal_temp_max?: number | null
+          optimal_temp_min?: number | null
+          safety_notes?: string | null
+          shelf_life_days: number
+          storage_method?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          allergen_type?: string | null
+          category?: string | null
+          created_at?: string | null
+          food_item_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name?: string
+          optimal_temp_max?: number | null
+          optimal_temp_min?: number | null
+          safety_notes?: string | null
+          shelf_life_days?: number
+          storage_method?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingredients_food_item_id_fkey"
+            columns: ["food_item_id"]
+            isOneToOne: false
+            referencedRelation: "food_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingredients_food_item_id_fkey"
+            columns: ["food_item_id"]
+            isOneToOne: false
+            referencedRelation: "unified_food_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingredients_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      master_ingredients: {
+        Row: {
+          aliases: string[] | null
+          allergen_type: string | null
+          canonical_name: string
+          category: string
+          created_at: string | null
+          data_source: string | null
+          id: string
+          match_count: number | null
+          metadata: Json | null
+          name: string
+          optimal_temp_max: number | null
+          optimal_temp_min: number | null
+          safety_notes: string | null
+          shelf_life_frozen: number | null
+          shelf_life_pantry: number | null
+          shelf_life_refrigerated: number | null
+          storage_method: string
+          updated_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          aliases?: string[] | null
+          allergen_type?: string | null
+          canonical_name: string
+          category: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          match_count?: number | null
+          metadata?: Json | null
+          name: string
+          optimal_temp_max?: number | null
+          optimal_temp_min?: number | null
+          safety_notes?: string | null
+          shelf_life_frozen?: number | null
+          shelf_life_pantry?: number | null
+          shelf_life_refrigerated?: number | null
+          storage_method: string
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          aliases?: string[] | null
+          allergen_type?: string | null
+          canonical_name?: string
+          category?: string
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          match_count?: number | null
+          metadata?: Json | null
+          name?: string
+          optimal_temp_max?: number | null
+          optimal_temp_min?: number | null
+          safety_notes?: string | null
+          shelf_life_frozen?: number | null
+          shelf_life_pantry?: number | null
+          shelf_life_refrigerated?: number | null
+          storage_method?: string
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      menu_uploads: {
+        Row: {
+          analysis_duration: number | null
+          analyzed_at: string | null
+          created_at: string | null
+          id: string
+          image_size: number | null
+          image_url: string
+          items_found: number | null
+          updated_at: string | null
+          uploaded_by: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          analysis_duration?: number | null
+          analyzed_at?: string | null
+          created_at?: string | null
+          id?: string
+          image_size?: number | null
+          image_url: string
+          items_found?: number | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          analysis_duration?: number | null
+          analyzed_at?: string | null
+          created_at?: string | null
+          id?: string
+          image_size?: number | null
+          image_url?: string
+          items_found?: number | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_uploads_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_content: {
         Row: {
           category: string | null
@@ -491,6 +775,7 @@ export type Database = {
           threshold_max: number | null
           threshold_min: number | null
           updated_at: string | null
+          workspace_id: string | null
         }
         Insert: {
           alert_type?: string
@@ -512,6 +797,7 @@ export type Database = {
           threshold_max?: number | null
           threshold_min?: number | null
           updated_at?: string | null
+          workspace_id?: string | null
         }
         Update: {
           alert_type?: string
@@ -533,6 +819,7 @@ export type Database = {
           threshold_max?: number | null
           threshold_min?: number | null
           updated_at?: string | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -554,6 +841,7 @@ export type Database = {
           sensor_id: string
           temperature_celsius: number
           temperature_fahrenheit: number
+          workspace_id: string | null
         }
         Insert: {
           id?: string
@@ -564,6 +852,7 @@ export type Database = {
           sensor_id: string
           temperature_celsius: number
           temperature_fahrenheit: number
+          workspace_id?: string | null
         }
         Update: {
           id?: string
@@ -574,6 +863,7 @@ export type Database = {
           sensor_id?: string
           temperature_celsius?: number
           temperature_fahrenheit?: number
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -668,6 +958,7 @@ export type Database = {
           signal_strength: number | null
           type: string
           updated_at: string | null
+          workspace_id: string | null
         }
         Insert: {
           alert_delay_minutes?: number | null
@@ -688,6 +979,7 @@ export type Database = {
           signal_strength?: number | null
           type?: string
           updated_at?: string | null
+          workspace_id?: string | null
         }
         Update: {
           alert_delay_minutes?: number | null
@@ -708,8 +1000,17 @@ export type Database = {
           signal_strength?: number | null
           type?: string
           updated_at?: string | null
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sensors_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       simple_form_submissions: {
         Row: {
@@ -719,6 +1020,7 @@ export type Database = {
           id: string
           is_preview: boolean | null
           submitted_at: string | null
+          workspace_id: string | null
         }
         Insert: {
           ai_metadata?: Json | null
@@ -727,6 +1029,7 @@ export type Database = {
           id?: string
           is_preview?: boolean | null
           submitted_at?: string | null
+          workspace_id?: string | null
         }
         Update: {
           ai_metadata?: Json | null
@@ -735,6 +1038,7 @@ export type Database = {
           id?: string
           is_preview?: boolean | null
           submitted_at?: string | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -742,6 +1046,13 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "simple_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simple_form_submissions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -756,6 +1067,7 @@ export type Database = {
           thank_you_settings: Json | null
           title: string
           updated_at: string | null
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -766,6 +1078,7 @@ export type Database = {
           thank_you_settings?: Json | null
           title: string
           updated_at?: string | null
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -776,8 +1089,17 @@ export type Database = {
           thank_you_settings?: Json | null
           title?: string
           updated_at?: string | null
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "simple_forms_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       simple_submissions: {
         Row: {
@@ -1081,9 +1403,89 @@ export type Database = {
           },
         ]
       }
+      unified_food_library: {
+        Row: {
+          allergens: string[] | null
+          category: string | null
+          created_at: string | null
+          id: string | null
+          ingredients: string[] | null
+          is_active: boolean | null
+          item_type: string | null
+          last_printed_at: string | null
+          metadata: Json | null
+          name: string | null
+          print_count: number | null
+          print_history: Json | null
+          shelf_life_days: number | null
+          source_type: string | null
+          storage_method: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          allergens?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          id?: string | null
+          ingredients?: string[] | null
+          is_active?: boolean | null
+          item_type?: string | null
+          last_printed_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          print_count?: number | null
+          print_history?: Json | null
+          shelf_life_days?: number | null
+          source_type?: string | null
+          storage_method?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          allergens?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          id?: string | null
+          ingredients?: string[] | null
+          is_active?: boolean | null
+          item_type?: string | null
+          last_printed_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          print_count?: number | null
+          print_history?: Json | null
+          shelf_life_days?: number | null
+          source_type?: string | null
+          storage_method?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_items_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_workspace_members_with_users: {
+        Args: { workspace_uuid: string }
+        Returns: {
+          email: string
+          first_name: string
+          id: string
+          joined_at: string
+          last_name: string
+          role: string
+          user_id: string
+          workspace_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
