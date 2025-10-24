@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth/auth-context";
 
@@ -41,8 +41,45 @@ export function AppHeader() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const { user, signOut } = useAuth();
+  
+  const isFormBuilderPage = pathname?.includes('/forms/builder');
+  
+  // Listen for AI chat state changes (from form builder)
+  useEffect(() => {
+    if (!isFormBuilderPage) return;
+    
+    const getInitialChatState = () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('ai-chat-open');
+        return saved !== null ? saved === 'true' : true;
+      }
+      return true;
+    };
+    
+    setIsChatOpen(getInitialChatState());
+    
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'ai-chat-open') {
+        setIsChatOpen(e.newValue === 'true');
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also poll for changes since storage event doesn't fire in same tab
+    const interval = setInterval(() => {
+      setIsChatOpen(getInitialChatState());
+    }, 100);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [isFormBuilderPage]);
 
   const performSearch = async (query: string) => {
     if (query.trim().length === 0) {
@@ -167,7 +204,14 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-4 md:px-6">
+      <header 
+        className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-4 md:pl-6 transition-all duration-300"
+        style={{
+          paddingRight: isFormBuilderPage 
+            ? (isChatOpen ? '400px' : '64px')
+            : '24px'
+        }}
+      >
         {/* Mobile: Logo on LEFT */}
         <Link href="/" className="flex md:hidden items-center gap-2 shrink-0">
           <Image
