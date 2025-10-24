@@ -529,7 +529,8 @@ export default function PrepLabelsPage() {
                 <span className="text-sm">{isRound2 ? 'Deep analyzing ingredients...' : 'Processing with AI magic...'}</span>
               </div>
             </div>
-          </Card>
+            </Card>
+          </div>
         )}
 
         {/* Menu Preview (if uploaded) */}
