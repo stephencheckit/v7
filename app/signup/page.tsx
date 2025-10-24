@@ -201,7 +201,7 @@ export default function SignUpPage() {
           <Link href="/">
             <Button 
               variant="outline"
-              className="w-full border-gray-300 text-gray-700 hover:bg-gray-100"
+              className="w-full border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
