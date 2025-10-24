@@ -53,7 +53,7 @@ export default function HomePage() {
         {/* LEFT NAVIGATION */}
         <nav className={`
           fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a]
-          border-r border-white/10 overflow-y-auto z-50
+          border-r border-white/10 overflow-y-auto z-[60]
           transition-transform duration-300
           ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
@@ -95,18 +95,38 @@ export default function HomePage() {
           </div>
         </nav>
 
-        {/* Mobile nav toggle */}
-        <button 
-          onClick={() => setMobileNavOpen(!mobileNavOpen)}
-          className="lg:hidden fixed top-4 left-4 z-50 bg-[#1a1a1a] border border-white/20 rounded-lg p-3 text-white"
-          aria-label="Toggle navigation"
-        >
-          {mobileNavOpen ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
-        </button>
+        {/* Mobile Overlay */}
+        {mobileNavOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
+
+        {/* Mobile Header */}
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a1a1a] border-b border-white/10 px-4 py-3 flex items-center gap-3">
+          <button 
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="bg-[#1a1a1a] border border-white/20 rounded-lg p-2 text-white"
+            aria-label="Toggle navigation"
+          >
+            {mobileNavOpen ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+          </button>
+          <Link href="/" className="flex items-center gap-2">
+            <Image 
+              src="/checkit-checkit.png" 
+              alt="Checkit V7 Logo" 
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
+            />
+            <span className="text-lg font-bold text-white">Checkit V7</span>
+          </Link>
+        </div>
 
         {/* MAIN CONTENT */}
         <main className="flex-1 lg:ml-64 overflow-x-hidden w-full">
-          <div className="min-h-screen text-white">
+          <div className="min-h-screen text-white pt-16 lg:pt-0">
 
             {/* HERO */}
             <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
