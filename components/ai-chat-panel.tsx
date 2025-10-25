@@ -498,6 +498,7 @@ Please extract and build the form now.`;
                     'date': { name: 'date', color: '#ddc8f5' },
                     'file': { name: 'file', color: '#ddc8f5' },
                     'image': { name: 'image', color: '#ddc8f5' },
+                    'signature': { name: 'signature', color: '#ddc8f5' },
                   };
                   return widgetMap[type] || { name: type, color: '#c4dfc4' };
                 };
@@ -910,6 +911,7 @@ Please extract and build the form now.`;
                     'date': { name: 'date', color: '#ddc8f5' },
                     'file': { name: 'file', color: '#ddc8f5' },
                     'image': { name: 'image', color: '#ddc8f5' },
+                    'signature': { name: 'signature', color: '#ddc8f5' },
                   };
                   return widgetMap[type] || { name: type, color: '#c4dfc4' };
                 };

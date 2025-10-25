@@ -41,12 +41,37 @@ export async function POST(
       );
     }
 
-    // Insert submission
+    // Extract and process signatures from submission data
+    const signatures: any[] = [];
+    const signatureAudit: any[] = [];
+    
+    if (form.schema?.fields) {
+      form.schema.fields
+        .filter((f: any) => f.type === 'signature')
+        .forEach((field: any) => {
+          const fieldName = field.name || field.id;
+          if (submissionData[fieldName]) {
+            const signatureData = submissionData[fieldName];
+            signatures.push(signatureData);
+            signatureAudit.push({
+              timestamp: new Date().toISOString(),
+              action: 'signature_captured',
+              signatureId: signatureData.id,
+              userId: signatureData.signedById || null,
+              ipAddress: signatureData.ipAddress || 'unknown'
+            });
+          }
+        });
+    }
+
+    // Insert submission with signatures
     const { data: submission, error: submissionError } = await supabase
       .from('simple_form_submissions')
       .insert({
         form_id: formId,
         data: submissionData,
+        signatures: signatures.length > 0 ? signatures : [],
+        signature_audit: signatureAudit.length > 0 ? signatureAudit : [],
         ai_metadata: ai_metadata || null,
         is_preview: is_preview || false,
       })

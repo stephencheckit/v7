@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { AIVisionAssistant } from "@/components/ai-vision-assistant";
+import { SignaturePadWidget } from "@/components/signature-pad-widget";
 
 interface FormField {
   id: string;
@@ -49,6 +50,7 @@ export default function PublicFormPage() {
   // Check if this is a preview
   const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const isPreview = searchParams.get('preview') === 'true';
+  const timestamp = searchParams.get('t'); // Get timestamp for cache busting
 
   const [form, setForm] = useState<FormData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +61,17 @@ export default function PublicFormPage() {
   const [aiMetadata, setAiMetadata] = useState<Record<string, any>>({});
   const [analysisFeed, setAnalysisFeed] = useState<any[]>([]);
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+
+  // Reset state when timestamp changes (new preview load)
+  useEffect(() => {
+    if (isPreview && timestamp) {
+      setSubmitted(false);
+      setFormValues({});
+      setAiMetadata({});
+      setAnalysisFeed([]);
+      setError(null);
+    }
+  }, [timestamp, isPreview]);
 
   useEffect(() => {
     loadForm();
@@ -546,6 +559,29 @@ export default function PublicFormPage() {
                       👎 No
                     </button>
                   </div>
+                )}
+
+                {/* Signature */}
+                {field.type === "signature" && (
+                  <SignaturePadWidget
+                    field={{
+                      id: field.id,
+                      name: field.name,
+                      label: field.label,
+                      required: field.required,
+                      signatureMeaning: (field as any).signatureMeaning || 'Completed by',
+                      requireCertification: (field as any).requireCertification !== false,
+                      certificationText: (field as any).certificationText || 'I certify that my electronic signature is the legally binding equivalent of my handwritten signature.',
+                      signatureSettings: (field as any).signatureSettings || {
+                        penColor: '#000000',
+                        backgroundColor: '#ffffff',
+                        requirePassword: true
+                      }
+                    }}
+                    value={formValues[field.name]}
+                    onChange={(value) => handleFieldChange(field.name, value)}
+                    disabled={submitting || submitted}
+                  />
                 )}
               </div>
             ))}

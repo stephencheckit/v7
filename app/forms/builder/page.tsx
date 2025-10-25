@@ -3,6 +3,7 @@
 import { useState, useEffect as React_useEffect, Suspense } from "react";
 import * as React from "react";
 import { AIChatPanel } from "@/components/ai-chat-panel";
+import { SignatureDisplay } from "@/components/signature-display";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ import {
   Eye,
   ExternalLink,
   Table,
+  PenTool,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -91,6 +93,7 @@ const widgetTypes = [
       { id: "date", name: "Date Picker", icon: Calendar, description: "Date selection", color: "#ddc8f5" },
       { id: "file", name: "File Upload", icon: Upload, description: "Upload files", color: "#ddc8f5" },
       { id: "image", name: "Image Upload", icon: ImageIcon, description: "Upload images", color: "#ddc8f5" },
+      { id: "signature", name: "Signature", icon: PenTool, description: "CFR-compliant signature", color: "#ddc8f5" },
     ],
   },
   {
@@ -116,6 +119,15 @@ export interface FormField {
   dateRange?: boolean;
   rows?: string[];
   columns?: string[];
+  signatureType?: 'biometric';
+  signatureMeaning?: string;
+  requireCertification?: boolean;
+  certificationText?: string;
+  signatureSettings?: {
+    penColor?: string;
+    backgroundColor?: string;
+    requirePassword?: boolean;
+  };
 }
 
 function SortableOption({ 
@@ -762,6 +774,60 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
                 </table>
               </div>
             </div>
+          ) : field.type === "signature" ? (
+            <div className="space-y-3">
+              {/* Signature Preview */}
+              <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50 text-center">
+                <PenTool className="h-8 w-8 mx-auto mb-2 text-purple-400" />
+                <p className="text-sm text-muted-foreground">Signature capture area</p>
+                <p className="text-xs text-muted-foreground mt-1">Users will sign here</p>
+              </div>
+
+              {/* Signature Settings */}
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Password Verification
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={field.signatureSettings?.requirePassword ?? true}
+                      onChange={(e) => {
+                        const currentSettings = field.signatureSettings || {};
+                        onUpdate(field.id, { 
+                          signatureSettings: {
+                            ...currentSettings,
+                            requirePassword: e.target.checked
+                          }
+                        });
+                      }}
+                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      {field.signatureSettings?.requirePassword ?? true ? 'Required' : 'Optional'}
+                    </span>
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground italic pl-1">
+                  {field.signatureSettings?.requirePassword ?? true 
+                    ? '🔒 Authenticated users must re-enter password to sign'
+                    : '✓ Authenticated users can sign without re-entering password'}
+                </p>
+
+                <div className="pt-2">
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">
+                    Signature Meaning
+                  </label>
+                  <Input
+                    value={field.signatureMeaning || 'Completed by'}
+                    onChange={(e) => onUpdate(field.id, { signatureMeaning: e.target.value })}
+                    placeholder="e.g., Approved by, Completed by"
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+            </div>
           ) : (
             <Input placeholder={field.placeholder} type={field.type === "email" ? "email" : field.type === "number" ? "number" : "text"} />
           )}
@@ -1091,6 +1157,15 @@ function FormsPageContent() {
           dateRange: widget.id === 'date' ? false : undefined,
           rows: widget.id === 'matrix' ? ['Row 1', 'Row 2', 'Row 3'] : undefined,
           columns: widget.id === 'matrix' ? ['Not Satisfied', 'Somewhat Satisfied', 'Satisfied'] : undefined,
+          signatureType: widget.id === 'signature' ? 'biometric' : undefined,
+          signatureMeaning: widget.id === 'signature' ? 'Completed by' : undefined,
+          requireCertification: widget.id === 'signature' ? true : undefined,
+          certificationText: widget.id === 'signature' ? 'I certify that my electronic signature is the legally binding equivalent of my handwritten signature.' : undefined,
+          signatureSettings: widget.id === 'signature' ? {
+            penColor: '#000000',
+            backgroundColor: '#ffffff',
+            requirePassword: true
+          } : undefined,
         };
 
         // Check if dropping over the drop zone or a specific field
@@ -1157,6 +1232,15 @@ function FormsPageContent() {
       dateRange: widget.id === 'date' ? false : undefined,
       rows: widget.id === 'matrix' ? ['Row 1', 'Row 2', 'Row 3'] : undefined,
       columns: widget.id === 'matrix' ? ['Not Satisfied', 'Somewhat Satisfied', 'Satisfied'] : undefined,
+      signatureType: widget.id === 'signature' ? 'biometric' : undefined,
+      signatureMeaning: widget.id === 'signature' ? 'Completed by' : undefined,
+      requireCertification: widget.id === 'signature' ? true : undefined,
+      certificationText: widget.id === 'signature' ? 'I certify that my electronic signature is the legally binding equivalent of my handwritten signature.' : undefined,
+      signatureSettings: widget.id === 'signature' ? {
+        penColor: '#000000',
+        backgroundColor: '#ffffff',
+        requirePassword: true
+      } : undefined,
     };
     setFormFields([newField, ...formFields]);
   };
@@ -1250,8 +1334,19 @@ function FormsPageContent() {
     }
     
     const formId = lastSavedFormId || editingFormId;
-    const previewUrl = `${window.location.origin}/f/${formId}?preview=true`;
-    window.open(previewUrl, '_blank');
+    // Add timestamp to prevent browser caching and ensure fresh state on each preview
+    const timestamp = Date.now();
+    const previewUrl = `${window.location.origin}/f/${formId}?preview=true&t=${timestamp}`;
+    
+    // Open in a named window - this will reuse the preview tab if it's still open
+    // The timestamp in URL ensures fresh state even when reusing the tab
+    const previewWindow = window.open(previewUrl, 'formPreview');
+    
+    // Force reload if window already exists
+    if (previewWindow) {
+      previewWindow.location.href = previewUrl;
+      previewWindow.focus();
+    }
   };
 
   const copyShareUrl = () => {
@@ -2212,21 +2307,26 @@ function FormsPageContent() {
                               <div>
                                 <h3 className="text-lg font-semibold text-white mb-3">Individual Responses</h3>
                                 <div className="space-y-2">
-                                  {submissions.slice(0, 10).map((submission: any) => (
+                                    {submissions.slice(0, 10).map((submission: any) => (
                                     <Card 
                                       key={submission.id}
                                       className="p-4 bg-[#0a0a0a] border-border/50 cursor-pointer hover:bg-[#0a0a0a]/80 transition-colors"
                                       onClick={() => setSelectedResponseId(submission.id)}
                                     >
                                       <div className="flex justify-between items-start">
-                                        <div>
+                                        <div className="flex-1">
                                           <div className="text-sm font-medium text-white">
                                             {submission.data?.email || 
                                              submission.data?.name || 
                                              `Response ${submission.id.toString().slice(0, 8)}`}
                                           </div>
-                                          <div className="text-xs text-gray-500 mt-1">
-                                            {new Date(submission.submitted_at).toLocaleString()}
+                                          <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                                            <span>{new Date(submission.submitted_at).toLocaleString()}</span>
+                                            {submission.signatures && submission.signatures.length > 0 && (
+                                              <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-400">
+                                                ✓ {submission.signatures.length} Signature{submission.signatures.length > 1 ? 's' : ''}
+                                              </Badge>
+                                            )}
                                           </div>
                                         </div>
                                         <Badge variant="outline" className="text-xs">
@@ -2261,18 +2361,78 @@ function FormsPageContent() {
 
                                   <Separator className="bg-white/10" />
 
+                                  {/* Signatures Section */}
+                                  {submission.signatures && submission.signatures.length > 0 && (
+                                    <div className="space-y-4">
+                                      <h3 className="text-lg font-semibold text-white">Electronic Signatures</h3>
+                                      {submission.signatures.map((signature: any, idx: number) => (
+                                        <SignatureDisplay 
+                                          key={signature.id || idx}
+                                          signature={signature}
+                                          showDetails={true}
+                                        />
+                                      ))}
+                                      <Separator className="bg-white/10 mt-6" />
+                                    </div>
+                                  )}
+
+                                  {/* Audit Trail Section */}
+                                  {submission.signature_audit && submission.signature_audit.length > 0 && (
+                                    <div className="space-y-4">
+                                      <h3 className="text-lg font-semibold text-white">Signature Audit Trail</h3>
+                                      <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                        <div className="space-y-3">
+                                          {submission.signature_audit.map((audit: any, idx: number) => (
+                                            <div key={idx} className="flex items-start gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
+                                              <div className="flex-1 space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                  <span className="text-sm font-medium text-white capitalize">
+                                                    {audit.action.replace(/_/g, ' ')}
+                                                  </span>
+                                                  <Badge variant="outline" className="text-xs">
+                                                    {new Date(audit.timestamp).toLocaleString()}
+                                                  </Badge>
+                                                </div>
+                                                <div className="text-xs text-gray-400 space-y-0.5">
+                                                  {audit.signatureId && (
+                                                    <div>Signature ID: {audit.signatureId}</div>
+                                                  )}
+                                                  {audit.userId && (
+                                                    <div>User ID: {audit.userId}</div>
+                                                  )}
+                                                  {audit.ipAddress && (
+                                                    <div>IP: {audit.ipAddress}</div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </Card>
+                                      <Separator className="bg-white/10 mt-6" />
+                                    </div>
+                                  )}
+
                                   {/* Response Data */}
                                   <div className="space-y-4">
-                                    {Object.entries(submission.data || {}).map(([key, value]: [string, any]) => (
-                                      <div key={key} className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300 capitalize">
-                                          {key.replace(/_/g, ' ')}
-                                        </label>
-                                        <div className="p-3 rounded-lg bg-[#0a0a0a] border border-border/50 text-white">
-                                          {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                    <h3 className="text-lg font-semibold text-white">Form Responses</h3>
+                                    {Object.entries(submission.data || {}).map(([key, value]: [string, any]) => {
+                                      // Skip signature data objects (they're shown above)
+                                      if (typeof value === 'object' && value !== null && 'signatureData' in value) {
+                                        return null;
+                                      }
+                                      
+                                      return (
+                                        <div key={key} className="space-y-2">
+                                          <label className="text-sm font-medium text-gray-300 capitalize">
+                                            {key.replace(/_/g, ' ')}
+                                          </label>
+                                          <div className="p-3 rounded-lg bg-[#0a0a0a] border border-border/50 text-white">
+                                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                          </div>
                                         </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               </Card>

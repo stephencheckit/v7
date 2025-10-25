@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Download, Calendar, Users } from "lucide-react";
+import { SignatureDisplay } from "@/components/signature-display";
+import { Loader2, ArrowLeft, Download, Calendar, Users, Shield, ChevronDown, ChevronUp } from "lucide-react";
 
 interface FieldStat {
   fieldId: string;
@@ -39,6 +40,7 @@ export default function ReportPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedSubmissions, setExpandedSubmissions] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadReport();
@@ -73,6 +75,21 @@ export default function ReportPage() {
       minute: '2-digit',
     });
   };
+
+  const toggleSubmissionExpanded = (submissionId: string) => {
+    const newExpanded = new Set(expandedSubmissions);
+    if (newExpanded.has(submissionId)) {
+      newExpanded.delete(submissionId);
+    } else {
+      newExpanded.add(submissionId);
+    }
+    setExpandedSubmissions(newExpanded);
+  };
+
+  // Count submissions with signatures
+  const signedSubmissionsCount = report?.submissions.filter(
+    (s: any) => s.signatures && s.signatures.length > 0
+  ).length || 0;
 
   if (loading) {
     return (
@@ -132,13 +149,26 @@ export default function ReportPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-[#c4dfc4]/20 to-transparent border-[#c4dfc4]/30 p-6">
             <div className="flex items-center gap-3 mb-2">
               <Users className="w-6 h-6 text-[#c4dfc4]" />
               <h3 className="text-sm font-medium text-gray-400">Total Submissions</h3>
             </div>
             <p className="text-4xl font-bold text-white">{report.stats.total}</p>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-[#ddc8f5]/20 to-transparent border-[#ddc8f5]/30 p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Shield className="w-6 h-6 text-[#ddc8f5]" />
+              <h3 className="text-sm font-medium text-gray-400">Signed Submissions</h3>
+            </div>
+            <p className="text-4xl font-bold text-white">{signedSubmissionsCount}</p>
+            {signedSubmissionsCount > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                {((signedSubmissionsCount / report.stats.total) * 100).toFixed(0)}% of total
+              </p>
+            )}
           </Card>
 
           <Card className="bg-gradient-to-br from-[#c8e0f5]/20 to-transparent border-[#c8e0f5]/30 p-6">
@@ -149,9 +179,9 @@ export default function ReportPage() {
             <p className="text-lg font-semibold text-white">{formatDate(report.stats.lastSubmission)}</p>
           </Card>
 
-          <Card className="bg-gradient-to-br from-[#ddc8f5]/20 to-transparent border-[#ddc8f5]/30 p-6">
+          <Card className="bg-gradient-to-br from-[#e0c8f5]/20 to-transparent border-[#e0c8f5]/30 p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-6 h-6 text-[#ddc8f5]" />
+              <Calendar className="w-6 h-6 text-[#e0c8f5]" />
               <h3 className="text-sm font-medium text-gray-400">Created</h3>
             </div>
             <p className="text-lg font-semibold text-white">{formatDate(report.form.created_at)}</p>
@@ -260,6 +290,128 @@ export default function ReportPage() {
             </div>
           </Card>
         </div>
+
+        {/* Detailed Submissions with Signatures */}
+        {signedSubmissionsCount > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-white mb-4">Signed Submissions</h2>
+            <div className="space-y-4">
+              {report.submissions
+                .filter((s: any) => s.signatures && s.signatures.length > 0)
+                .map((submission: any) => {
+                  const isExpanded = expandedSubmissions.has(submission.id);
+                  return (
+                    <Card key={submission.id} className="bg-[#1a1a1a] border-white/10 overflow-hidden">
+                      {/* Submission Header */}
+                      <div 
+                        className="p-4 cursor-pointer hover:bg-white/5 transition-colors flex items-center justify-between"
+                        onClick={() => toggleSubmissionExpanded(submission.id)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Shield className="w-5 h-5 text-purple-400" />
+                          <div>
+                            <div className="text-sm font-medium text-white">
+                              {submission.data?.email || 
+                               submission.data?.name || 
+                               `Submission ${submission.id.toString().slice(0, 8)}`}
+                            </div>
+                            <div className="text-xs text-gray-400 flex items-center gap-2 mt-1">
+                              <span>{new Date(submission.submitted_at).toLocaleString()}</span>
+                              <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-400">
+                                {submission.signatures.length} Signature{submission.signatures.length > 1 ? 's' : ''}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </Button>
+                      </div>
+
+                      {/* Expanded Content */}
+                      {isExpanded && (
+                        <div className="border-t border-white/10 p-6 space-y-6">
+                          {/* Signatures */}
+                          <div>
+                            <h3 className="text-lg font-semibold text-white mb-4">Electronic Signatures</h3>
+                            <div className="space-y-4">
+                              {submission.signatures.map((signature: any, idx: number) => (
+                                <SignatureDisplay 
+                                  key={signature.id || idx}
+                                  signature={signature}
+                                  showDetails={true}
+                                />
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Audit Trail */}
+                          {submission.signature_audit && submission.signature_audit.length > 0 && (
+                            <div>
+                              <h3 className="text-lg font-semibold text-white mb-4">Audit Trail</h3>
+                              <Card className="bg-[#0a0a0a] border-border/50 p-4">
+                                <div className="space-y-3">
+                                  {submission.signature_audit.map((audit: any, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
+                                      <div className="flex-1 space-y-1">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-sm font-medium text-white capitalize">
+                                            {audit.action.replace(/_/g, ' ')}
+                                          </span>
+                                          <Badge variant="outline" className="text-xs">
+                                            {new Date(audit.timestamp).toLocaleString()}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-xs text-gray-400 space-y-0.5">
+                                          {audit.signatureId && (
+                                            <div>Signature ID: {audit.signatureId}</div>
+                                          )}
+                                          {audit.userId && (
+                                            <div>User ID: {audit.userId}</div>
+                                          )}
+                                          {audit.ipAddress && (
+                                            <div>IP: {audit.ipAddress}</div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </Card>
+                            </div>
+                          )}
+
+                          {/* Form Data */}
+                          <div>
+                            <h3 className="text-lg font-semibold text-white mb-4">Form Responses</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {Object.entries(submission.data || {}).map(([key, value]: [string, any]) => {
+                                // Skip signature data objects (they're shown above)
+                                if (typeof value === 'object' && value !== null && 'signatureData' in value) {
+                                  return null;
+                                }
+                                
+                                return (
+                                  <div key={key} className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-400 capitalize">
+                                      {key.replace(/_/g, ' ')}
+                                    </label>
+                                    <div className="p-2 rounded bg-[#0a0a0a] border border-border/50 text-sm text-white">
+                                      {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
+            </div>
+          </div>
+        )}
       </div>
     
   );
