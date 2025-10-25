@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import { ConditionalLayout } from "@/components/conditional-layout";
 import { AuthProvider } from "@/lib/auth/auth-context";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -63,14 +64,16 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} antialiased`}
         style={{ fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif' }}
       >
-        <AuthProvider>
-          <NotificationProvider>
-            <ConditionalLayout>
-              {children}
-            </ConditionalLayout>
-          </NotificationProvider>
-        </AuthProvider>
-        <Toaster position="top-right" richColors />
+        <ErrorBoundary>
+          <AuthProvider>
+            <NotificationProvider>
+              <ConditionalLayout>
+                {children}
+              </ConditionalLayout>
+            </NotificationProvider>
+          </AuthProvider>
+          <Toaster position="top-right" richColors />
+        </ErrorBoundary>
       </body>
     </html>
   );

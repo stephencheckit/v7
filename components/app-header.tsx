@@ -246,9 +246,10 @@ export function AppHeader() {
         </div>
 
         {/* Desktop: User Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10 hidden md:flex" disabled={isSigningOut}>
+        <div className="hidden md:flex items-center justify-end pr-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10" disabled={isSigningOut}>
               {isSigningOut ? (
                 <>
                   <div className="h-8 w-8 rounded-full bg-[#c4dfc4]/20 flex items-center justify-center">
@@ -309,6 +310,7 @@ export function AppHeader() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
 
         {/* Mobile: Hamburger on RIGHT */}
         <div className="md:hidden shrink-0">

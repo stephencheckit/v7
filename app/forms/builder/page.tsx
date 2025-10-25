@@ -38,6 +38,7 @@ import {
   CheckCircle2,
   Eye,
   ExternalLink,
+  Table,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -81,6 +82,7 @@ const widgetTypes = [
       { id: "checkbox", name: "Checkboxes", icon: CheckSquare, description: "Multi-select", color: "#c8e0f5" },
       { id: "radio", name: "Radio Buttons", icon: Circle, description: "Single choice", color: "#c8e0f5" },
       { id: "thumbs", name: "Thumbs Up/Down", icon: ThumbsUp, description: "Thumbs feedback", color: "#c8e0f5" },
+      { id: "matrix", name: "Matrix/Likert", icon: Table, description: "Grid with rows/columns", color: "#c8e0f5" },
     ],
   },
   {
@@ -112,6 +114,8 @@ export interface FormField {
   options?: string[];
   multiSelect?: boolean;
   dateRange?: boolean;
+  rows?: string[];
+  columns?: string[];
 }
 
 function SortableOption({ 
@@ -277,7 +281,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
         >
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </button>
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 space-y-3 min-w-0">
           {field.type !== "group" && (
             <div className="flex items-center gap-3">
               <div className="flex-1 flex items-center gap-1">
@@ -644,6 +648,120 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
                 {field.type === "image" ? "Accepted formats: JPG, PNG, GIF, WebP" : "Maximum file size: 10MB"}
               </p>
             </div>
+          ) : field.type === "matrix" ? (
+            <div className="space-y-3 w-full">
+              {/* Editable Matrix Table */}
+              <div className="overflow-x-auto">
+                <table className="border-collapse text-sm w-max min-w-full">
+                  <thead>
+                    <tr>
+                      <th className="sticky left-0 z-10 border border-border/50 bg-muted/30 p-1 text-left font-medium text-xs w-48">
+                        <Input
+                          value={(field.label || "Question").split('\n')[0]}
+                          onChange={(e) => {
+                            onUpdate(field.id, { label: e.target.value });
+                          }}
+                          className="text-xs font-medium bg-transparent border-0 shadow-none p-1 h-auto hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
+                          placeholder="Type a question"
+                        />
+                      </th>
+                      {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((col, idx) => (
+                        <th key={`col-${idx}`} className="border border-border/50 bg-muted/30 p-1 text-center font-medium text-xs min-w-[120px] group relative">
+                          <Input
+                            value={col}
+                            onChange={(e) => {
+                              const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"])];
+                              newColumns[idx] = e.target.value;
+                              onUpdate(field.id, { columns: newColumns });
+                            }}
+                            className="text-xs font-medium text-center bg-transparent border-0 shadow-none p-1 h-auto hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
+                            placeholder={`Column ${idx + 1}`}
+                          />
+                          <button
+                            onClick={() => {
+                              const newColumns = (field.columns || ["Option 1", "Option 2", "Option 3"]).filter((_, i) => i !== idx);
+                              onUpdate(field.id, { columns: newColumns.length > 0 ? newColumns : ["Option 1"] });
+                            }}
+                            className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-0.5"
+                            title="Delete column"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </th>
+                      ))}
+                      <th className="border border-border/50 bg-muted/30 p-1 text-center w-10">
+                        <button
+                          onClick={() => {
+                            const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"]), `Option ${((field.columns?.length || 3) + 1)}`];
+                            onUpdate(field.id, { columns: newColumns });
+                          }}
+                          className="hover:bg-accent rounded p-1"
+                          title="Add column"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(field.rows || ["Row 1", "Row 2", "Row 3"]).map((row, rowIdx) => (
+                      <tr key={`row-${rowIdx}`} className="group">
+                        <td className="sticky left-0 z-10 border border-border/50 bg-background p-1 font-medium text-xs">
+                          <div className="relative">
+                            <Input
+                              value={row}
+                              onChange={(e) => {
+                                const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"])];
+                                newRows[rowIdx] = e.target.value;
+                                onUpdate(field.id, { rows: newRows });
+                              }}
+                              className="text-xs bg-transparent border-0 shadow-none p-1 h-auto pr-6 hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
+                              placeholder={`Row ${rowIdx + 1}`}
+                            />
+                            <button
+                              onClick={() => {
+                                const newRows = (field.rows || ["Row 1", "Row 2", "Row 3"]).filter((_, i) => i !== rowIdx);
+                                onUpdate(field.id, { rows: newRows.length > 0 ? newRows : ["Row 1"] });
+                              }}
+                              className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Delete row"
+                            >
+                              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                            </button>
+                          </div>
+                        </td>
+                        {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((_, colIdx) => (
+                          <td key={`cell-${rowIdx}-${colIdx}`} className="border border-border/50 p-2 text-center">
+                            <input
+                              type="radio"
+                              name={`matrix-preview-${field.id}-${rowIdx}`}
+                              className="h-4 w-4"
+                              disabled
+                            />
+                          </td>
+                        ))}
+                        <td className="border border-border/50 p-1 text-center"></td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td colSpan={((field.columns?.length || 3) + 2)} className="border border-border/50 p-1 text-center bg-muted/20">
+                        <button
+                          onClick={() => {
+                            const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"]), `Row ${((field.rows?.length || 3) + 1)}`];
+                            onUpdate(field.id, { rows: newRows });
+                          }}
+                          className="hover:bg-accent rounded p-1 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto"
+                          title="Add row"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Add row
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           ) : (
             <Input placeholder={field.placeholder} type={field.type === "email" ? "email" : field.type === "number" ? "number" : "text"} />
           )}
@@ -971,6 +1089,8 @@ function FormsPageContent() {
           options: widget.id === 'dropdown' || widget.id === 'checkbox' || widget.id === 'radio' ? ['Option 1', 'Option 2', 'Option 3'] : undefined,
           multiSelect: widget.id === 'checkbox' || widget.id === 'dropdown' ? false : undefined,
           dateRange: widget.id === 'date' ? false : undefined,
+          rows: widget.id === 'matrix' ? ['Row 1', 'Row 2', 'Row 3'] : undefined,
+          columns: widget.id === 'matrix' ? ['Not Satisfied', 'Somewhat Satisfied', 'Satisfied'] : undefined,
         };
 
         // Check if dropping over the drop zone or a specific field
@@ -1035,6 +1155,8 @@ function FormsPageContent() {
       options: widget.id === 'dropdown' || widget.id === 'checkbox' || widget.id === 'radio' ? ['Option 1', 'Option 2', 'Option 3'] : undefined,
       multiSelect: widget.id === 'checkbox' || widget.id === 'dropdown' ? false : undefined,
       dateRange: widget.id === 'date' ? false : undefined,
+      rows: widget.id === 'matrix' ? ['Row 1', 'Row 2', 'Row 3'] : undefined,
+      columns: widget.id === 'matrix' ? ['Not Satisfied', 'Somewhat Satisfied', 'Satisfied'] : undefined,
     };
     setFormFields([newField, ...formFields]);
   };
@@ -1186,12 +1308,16 @@ function FormsPageContent() {
           </div>
 
               {/* Middle Panel - Form Editor - GRADIENT BLACK */}
-              <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
+              <div 
+                className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                  isChatOpen ? 'mr-[400px]' : 'mr-16'
+                }`}
+              >
                 {/* Form Sub-Header - Only for Middle Panel */}
                 <div 
                   className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                   style={{ 
-                    width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                    width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
                     paddingRight: isChatOpen ? '64px' : '80px'
                   }}
                 >

@@ -12,12 +12,10 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error('Error exchanging code for session:', error);
-      // Redirect to signin with error
       return NextResponse.redirect(requestUrl.origin + '/signin?error=auth_failed');
     }
   }
 
-  // URL to redirect to after sign in process completes
   return NextResponse.redirect(requestUrl.origin + next);
 }
 

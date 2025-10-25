@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
+import * as Sentry from '@sentry/nextjs';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserWorkspace(session.user.id);
+        // Set Sentry user context
+        Sentry.setUser({
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.email?.split('@')[0],
+        });
       }
       setIsLoading(false);
     });
@@ -42,9 +49,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserWorkspace(session.user.id);
+        // Set Sentry user context on sign in
+        Sentry.setUser({
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.email?.split('@')[0],
+        });
       } else {
         setWorkspaceId(null);
         localStorage.removeItem('current_workspace_id');
+        // Clear Sentry user context on sign out
+        Sentry.setUser(null);
       }
     });
 
@@ -77,6 +92,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setWorkspaceId(data.workspace_id);
         // Store in localStorage for quick access
         localStorage.setItem('current_workspace_id', data.workspace_id);
+        // Add workspace context to Sentry
+        Sentry.setContext('workspace', {
+          workspace_id: data.workspace_id,
+        });
       }
     } catch (error) {
       console.error('Error loading workspace:', error);

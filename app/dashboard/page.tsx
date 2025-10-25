@@ -85,7 +85,6 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    // Fetch sensor alerts
     const fetchSensorAlerts = async () => {
       try {
         const response = await fetch("/api/sensors");
