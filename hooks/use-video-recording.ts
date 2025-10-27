@@ -28,15 +28,15 @@ export function useVideoRecording() {
     }
   }, [stream, isCameraOn]);
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (facingMode: 'user' | 'environment' = 'environment') => {
     try {
-      console.log('[useVideoRecording] Requesting camera access...');
+      console.log('[useVideoRecording] Requesting camera access with facingMode:', facingMode);
       
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          // Don't specify facingMode for better desktop compatibility
+          facingMode: { ideal: facingMode }
         },
         audio: false
       });

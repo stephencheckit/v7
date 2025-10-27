@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, X, Loader2, Check } from 'lucide-react';
+import { Camera, X, SwitchCamera, ChevronUp, ChevronDown, Upload } from 'lucide-react';
 import { useVideoRecording } from '@/hooks/use-video-recording';
+import { Badge } from '@/components/ui/badge';
 
 interface AIVisionAssistantProps {
   formSchema: { fields: any[] };
@@ -20,11 +21,15 @@ export function AIVisionAssistant({
 }: AIVisionAssistantProps) {
   const [isActive, setIsActive] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [snapshotCount, setSnapshotCount] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const snapshotCountRef = useRef(0); // Use ref to avoid dependency issues
+  const snapshotCountRef = useRef(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const {
     isCameraOn,
@@ -34,6 +39,18 @@ export function AIVisionAssistant({
     stopCamera,
     captureSnapshot,
   } = useVideoRecording();
+
+  // Calculate total questions
+  const totalQuestions = formSchema.fields.length;
+
+  // Update answered count based on current values
+  useEffect(() => {
+    const answered = formSchema.fields.filter(field => {
+      const value = currentValues[field.name];
+      return value !== undefined && value !== null && value !== '';
+    }).length;
+    setAnsweredCount(answered);
+  }, [currentValues, formSchema.fields]);
 
   // Timer: counts up from 0
   useEffect(() => {
@@ -62,7 +79,6 @@ export function AIVisionAssistant({
         const snapshot = captureSnapshot();
         if (!snapshot) return;
 
-        // Increment using ref to avoid dependency issues
         snapshotCountRef.current += 1;
         setSnapshotCount(snapshotCountRef.current);
         await analyzeSnapshot(snapshot, snapshotCountRef.current);
@@ -134,11 +150,11 @@ export function AIVisionAssistant({
   };
 
   const handleStart = async () => {
-    const success = await startCamera();
+    const success = await startCamera(facingMode);
     if (success) {
       setIsActive(true);
       setSnapshotCount(0);
-      snapshotCountRef.current = 0; // Reset ref too
+      snapshotCountRef.current = 0;
     }
   };
 
@@ -147,90 +163,228 @@ export function AIVisionAssistant({
     stopCamera();
   };
 
+  const handleFlipCamera = async () => {
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newFacingMode);
+    
+    // Restart camera with new facing mode
+    if (isActive) {
+      stopCamera();
+      const success = await startCamera(newFacingMode);
+      if (!success) {
+        // If failed, revert
+        setFacingMode(facingMode);
+        await startCamera(facingMode);
+      }
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const imageBase64 = event.target?.result as string;
+      snapshotCountRef.current += 1;
+      setSnapshotCount(snapshotCountRef.current);
+      await analyzeSnapshot(imageBase64, snapshotCountRef.current);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getTimerColor = () => {
-    if (timeElapsed < 120) return 'text-green-400';
-    if (timeElapsed < 150) return 'text-yellow-400';
-    return 'text-red-400';
+  const getProgressColor = () => {
+    const percentage = (answeredCount / totalQuestions) * 100;
+    if (percentage >= 80) return 'text-green-400';
+    if (percentage >= 50) return 'text-yellow-400';
+    return 'text-gray-400';
   };
 
   if (!isActive && !isCameraOn) {
     return (
-      <div className="mb-6">
-        <Button
-          onClick={handleStart}
-          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-        >
-          <Camera className="w-4 h-4 mr-2" />
-          Enable AI Vision Assistant
-        </Button>
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            onClick={handleStart}
+            className="flex-1 bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] h-12"
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            Start AI Vision
+          </Button>
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            variant="outline"
+            className="flex-1 border-[#c4dfc4]/30 hover:bg-[#c4dfc4]/10 h-12"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Photo
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+        </div>
       </div>
     );
   }
 
-  return (
-    <>
-      {/* Corner Video Overlay */}
-      <div className="fixed bottom-4 right-4 z-50 w-64 rounded-lg overflow-hidden border-2 border-[#c4dfc4] bg-[#1a1a1a] shadow-2xl">
-        {/* Video Feed */}
-        <div className="relative h-48 bg-black">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
-          <canvas ref={canvasRef} className="hidden" />
-          
-          {/* Analyzing Overlay */}
-          {isAnalyzing && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-[#c4dfc4] animate-spin" />
+  // Collapsed view - thin bar at top
+  if (isCollapsed) {
+    return (
+      <div className="w-full bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border border-[#c4dfc4]/30 rounded-lg p-3 mb-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-black/70 px-2 py-1 rounded">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-xs text-white font-medium">Recording</span>
             </div>
-          )}
-
-          {/* Recording Indicator */}
-          <div className="absolute top-2 left-2 flex items-center gap-2 bg-black/70 px-2 py-1 rounded">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-xs text-white font-medium">Recording</span>
+            <Badge variant="outline" className={`text-xs font-mono ${getProgressColor()}`}>
+              {answeredCount} / {totalQuestions} answered
+            </Badge>
+            {isAnalyzing && (
+              <span className="text-xs text-[#c4dfc4] flex items-center gap-1">
+                <div className="w-1.5 h-1.5 bg-[#c4dfc4] rounded-full animate-pulse" />
+                Analyzing...
+              </span>
+            )}
           </div>
-        </div>
-
-        {/* Controls */}
-        <div className="p-3 bg-[#1a1a1a] border-t border-white/10">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-xs text-gray-400">
-              Snapshots: <span className="text-white font-medium">{snapshotCount}</span>
-            </div>
-            <div className={`text-sm font-mono font-bold ${getTimerColor()}`}>
-              {formatTime(timeElapsed)}
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400 font-mono">{formatTime(timeElapsed)}</span>
+            <Button
+              onClick={() => setIsCollapsed(false)}
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleStop}
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2 text-red-400 hover:text-red-300"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
-          
-          {timeElapsed >= 120 && (
-            <div className="text-xs text-yellow-400 mb-2 text-center">
-              Tip: Consider wrapping up
-            </div>
-          )}
-
-          <Button
-            onClick={handleStop}
-            size="sm"
-            variant="outline"
-            className="w-full hover:bg-white/5"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Stop AI Assistant
-          </Button>
         </div>
       </div>
-    </>
+    );
+  }
+
+  // Expanded view - video at top
+  return (
+    <div className="w-full mb-6 bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border border-[#c4dfc4]/30 rounded-lg overflow-hidden">
+      {/* Video Feed - Takes up 20-30% of viewport height */}
+      <div className="relative bg-black" style={{ height: 'min(30vh, 300px)' }}>
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
+        />
+        <canvas ref={canvasRef} className="hidden" />
+        
+        {/* Recording Indicator */}
+        <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/70 px-3 py-1.5 rounded-lg">
+          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+          <span className="text-xs text-white font-medium">Recording</span>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="absolute top-3 right-3 bg-black/70 px-3 py-1.5 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={`text-xs font-mono ${getProgressColor()}`}>
+              {answeredCount} / {totalQuestions}
+            </Badge>
+            {isAnalyzing && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-[#c4dfc4] rounded-full animate-pulse" />
+                <span className="text-xs text-[#c4dfc4]">Analyzing</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Camera Controls Overlay */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleFlipCamera}
+              size="sm"
+              className="bg-black/70 hover:bg-black/80 border border-white/20"
+            >
+              <SwitchCamera className="w-4 h-4 mr-1.5" />
+              Flip
+            </Button>
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              size="sm"
+              className="bg-black/70 hover:bg-black/80 border border-white/20"
+            >
+              <Upload className="w-4 h-4 mr-1.5" />
+              Upload
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setIsCollapsed(true)}
+              size="sm"
+              className="bg-black/70 hover:bg-black/80 border border-white/20"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleStop}
+              size="sm"
+              className="bg-red-500/80 hover:bg-red-500 border border-red-400/30"
+            >
+              <X className="w-4 h-4 mr-1.5" />
+              Stop
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Bar */}
+      <div className="bg-[#0a0a0a]/50 border-t border-white/10 px-4 py-2">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-4">
+            <span className="text-gray-400">
+              Snapshots: <span className="text-white font-medium">{snapshotCount}</span>
+            </span>
+            <span className="text-gray-400">
+              Time: <span className="text-white font-mono">{formatTime(timeElapsed)}</span>
+            </span>
+          </div>
+          <span className="text-gray-500 italic">
+            AI is watching and filling fields automatically
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 

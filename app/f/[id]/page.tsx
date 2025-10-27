@@ -374,23 +374,12 @@ export default function PublicFormPage() {
 
           {/* AI Vision Assistant - Only show if enabled */}
           {form && form.ai_vision_enabled && (
-            <div className="mb-6">
-              <div className="p-4 rounded-lg bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border border-[#c4dfc4]/30 mb-3">
-                <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
-                  <span className="text-[#c4dfc4]">✨</span>
-                  AI-Powered Form Filling
-                </h3>
-                <p className="text-xs text-gray-400">
-                  Upload an image or video, and AI will automatically fill out the form by analyzing your content. Great for converting photos of documents, checklists, or inspection reports.
-                </p>
-              </div>
-              <AIVisionAssistant
-                formSchema={form.schema}
-                currentValues={formValues}
-                onFieldSuggestion={handleAISuggestion}
-                onAnalysisComplete={handleAnalysisComplete}
-              />
-            </div>
+            <AIVisionAssistant
+              formSchema={form.schema}
+              currentValues={formValues}
+              onFieldSuggestion={handleAISuggestion}
+              onAnalysisComplete={handleAnalysisComplete}
+            />
           )}
 
           {/* Error Message */}
