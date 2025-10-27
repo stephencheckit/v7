@@ -2489,16 +2489,66 @@ function FormsPageContent() {
                                     );
                                   }
 
-                                  // For text fields, show all responses
+                                  // For text fields and signatures, show all responses
                                   return (
                                     <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
                                       <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
                                       <div className="space-y-2 max-h-64 overflow-y-auto">
-                                        {fieldResponses.map((response: any, idx: number) => (
-                                          <div key={idx} className="p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
-                                            <p className="text-sm text-gray-300">{String(response)}</p>
-                                          </div>
-                                        ))}
+                                        {fieldResponses.map((response: any, idx: number) => {
+                                          // Check if this is a signature object
+                                          if (typeof response === 'object' && response !== null && response.signatureData) {
+                                            return (
+                                              <div key={idx} className="p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
+                                                <div className="flex items-start gap-3">
+                                                  <img 
+                                                    src={response.signatureData} 
+                                                    alt="Signature" 
+                                                    className="h-16 border border-border/50 bg-white rounded"
+                                                    style={{ minWidth: '120px' }}
+                                                  />
+                                                  <div className="flex-1 space-y-1 text-xs">
+                                                    <div className="flex items-center gap-2">
+                                                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                                        ✓ Verified Signature
+                                                      </Badge>
+                                                    </div>
+                                                    <p className="text-white font-medium">
+                                                      Signed by: {response.signedBy}
+                                                    </p>
+                                                    <p className="text-gray-400">
+                                                      {new Date(response.signedAt).toLocaleString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                        hour: 'numeric',
+                                                        minute: '2-digit',
+                                                        hour12: true
+                                                      })}
+                                                    </p>
+                                                    {response.signedById && (
+                                                      <p className="text-green-400 text-xs flex items-center gap-1">
+                                                        <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                                        Password Verified
+                                                      </p>
+                                                    )}
+                                                    {response.ipAddress && response.ipAddress !== 'unknown' && (
+                                                      <p className="text-gray-500">
+                                                        {response.deviceType} • {response.ipAddress}
+                                                      </p>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          }
+                                          
+                                          // Regular text response
+                                          return (
+                                            <div key={idx} className="p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
+                                              <p className="text-sm text-gray-300">{String(response)}</p>
+                                            </div>
+                                          );
+                                        })}
                                       </div>
                                       <div className="mt-3 text-xs text-gray-500">
                                         {fieldResponses.length} responses

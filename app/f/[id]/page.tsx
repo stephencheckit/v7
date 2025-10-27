@@ -281,15 +281,46 @@ export default function PublicFormPage() {
             {thankYouSettings.showResponseSummary && Object.keys(formValues).length > 0 && (
               <div className="mt-4 md:mt-6 p-3 md:p-4 rounded-lg bg-[#0a0a0a] border border-border/30 text-left">
                 <h3 className="text-sm font-medium text-gray-400 mb-3">Your Response:</h3>
-                <div className="space-y-2">
-                  {Object.entries(formValues).map(([key, value]) => (
-                    <div key={key} className="text-sm">
-                      <span className="text-gray-500">{key}:</span>{' '}
-                      <span className="text-gray-300">
-                        {Array.isArray(value) ? value.join(', ') : String(value)}
-                      </span>
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  {Object.entries(formValues).map(([key, value]) => {
+                    // Check if this is a signature object
+                    if (typeof value === 'object' && value !== null && (value as any).signatureData) {
+                      const sig = value as any;
+                      return (
+                        <div key={key} className="p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
+                          <div className="flex items-start gap-3">
+                            <img 
+                              src={sig.signatureData} 
+                              alt="Signature" 
+                              className="h-12 border border-white/20 bg-white rounded"
+                              style={{ minWidth: '100px' }}
+                            />
+                            <div className="flex-1 space-y-1">
+                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                                ✓ Verified Signature
+                              </Badge>
+                              <p className="text-xs text-gray-400">
+                                Signed by {sig.signedBy}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(sig.signedAt).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    // Regular response
+                    return (
+                      <div key={key} className="text-sm">
+                        <span className="text-gray-500">{key}:</span>{' '}
+                        <span className="text-gray-300">
+                          {Array.isArray(value) ? value.join(', ') : String(value)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
