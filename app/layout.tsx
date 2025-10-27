@@ -60,6 +60,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="apple-touch-icon" href="/checkit-checkit.png" />
+        <meta name="apple-mobile-web-app-title" content="Checkit V7" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body
         className={`${spaceGrotesk.variable} antialiased`}
         style={{ fontFamily: 'var(--font-space-grotesk), system-ui, sans-serif' }}
