@@ -6,9 +6,10 @@
 *Most recent deployments listed first*
 
 ### **🚨 CRITICAL FIX: Workspace Backfill for Form Creation - October 27, 2025 (Latest)**
-**Status:** ⚠️ REQUIRES MANUAL SQL RUN
-**Commit:** `a9a725a`
+**Status:** ✅ FIXED AND APPLIED
+**Commit:** `a9a725a` + `c2f8fa0`
 **Deployed:** October 27, 2025
+**Applied:** October 27, 2025 via MCP Supabase CLI
 
 **Problem:**
 - Users clicking "Forms > Add New Form > Build from Scratch" get error: `Failed to create form`
@@ -61,6 +62,12 @@ JOIN workspaces w ON w.id = wm.workspace_id;
 **Prevention:**
 - Trigger ensures all future users get workspace automatically
 - No action needed for new signups
+
+**Results of Fix:**
+- ✅ Backfilled 2 existing users with workspaces
+- ✅ charlie@checkit.net → "Charlie's Kitchen" (owner)
+- ✅ stephen.p.newman@gmail.com → "Stephen's Workspace" (owner)
+- ✅ Form creation now working for all users
 
 ---
 
