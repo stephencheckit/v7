@@ -299,10 +299,10 @@ export default function PublicFormPage() {
                               <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
                                 ✓ Verified Signature
                               </Badge>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-white font-medium">
                                 Signed by {sig.signedBy}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-400">
                                 {new Date(sig.signedAt).toLocaleString()}
                               </p>
                             </div>
