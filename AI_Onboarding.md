@@ -5,7 +5,66 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **✍️ Signature Response Display Fix - October 27, 2025 (Latest)**
+### **🚨 CRITICAL FIX: Workspace Backfill for Form Creation - October 27, 2025 (Latest)**
+**Status:** ⚠️ REQUIRES MANUAL SQL RUN
+**Commit:** `a9a725a`
+**Deployed:** October 27, 2025
+
+**Problem:**
+- Users clicking "Forms > Add New Form > Build from Scratch" get error: `Failed to create form`
+- Console error: `Unauthorized - no workspace found`
+- Existing users (created before workspace system) can't create forms
+
+**Root Cause:**
+- Workspace system was added in migration `20251025000000_create_workspaces_auth.sql`
+- Trigger `on_auth_user_created` only creates workspaces for NEW users
+- Existing users don't have workspace_members entries
+- API endpoint `/api/forms` requires `workspace_id` to create forms
+
+**Solution:**
+
+**1. Immediate Fix (Run this NOW):**
+   ```sql
+   -- See FIX_WORKSPACE_BUG.sql in repo root
+   -- Copy and paste into Supabase > SQL Editor > Run
+   ```
+   - ✅ Creates workspace for each user without one
+   - ✅ Generates unique slug from email
+   - ✅ Adds user as "owner" in workspace_members
+   - ✅ Shows count of users fixed
+
+**2. Migration Added:**
+   - `supabase/migrations/20251027000001_backfill_workspaces.sql`
+   - Same logic as immediate fix
+   - Will auto-apply to new environments
+
+**3. Files Created:**
+   - `FIX_WORKSPACE_BUG.sql` - Immediate fix script with instructions
+   - Includes verification query at end
+
+**How to Apply Fix:**
+1. Go to Supabase Dashboard
+2. Open SQL Editor
+3. Paste contents of `FIX_WORKSPACE_BUG.sql`
+4. Click "Run"
+5. Verify users have workspaces (query shows results)
+6. Test: Try creating a new form
+
+**Verification:**
+```sql
+SELECT u.email, w.name as workspace_name, wm.role
+FROM auth.users u
+JOIN workspace_members wm ON wm.user_id = u.id
+JOIN workspaces w ON w.id = wm.workspace_id;
+```
+
+**Prevention:**
+- Trigger ensures all future users get workspace automatically
+- No action needed for new signups
+
+---
+
+### **✍️ Signature Response Display Fix - October 27, 2025**
 **Status:** ✅ DEPLOYED
 **Commit:** `eacb990`
 **Deployed:** October 27, 2025
