@@ -1552,7 +1552,7 @@ function FormsPageContent() {
                     >
                 
                 {/* Editor Content */}
-                <div className="flex-1 overflow-y-auto pb-20">
+                <div className="flex-1 overflow-y-auto">
                   {loadingForm ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
@@ -1561,8 +1561,8 @@ function FormsPageContent() {
                       </div>
                     </div>
                   ) : (
-                  <ScrollArea className="h-full p-8 pb-24">
-              <Card className="max-w-2xl mx-auto p-8 bg-[#0f0f0f] border-border/50">
+                  <ScrollArea className="h-full p-8">
+              <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#0f0f0f] border-border/50">
                 <SortableContext
                   items={formFields.map((f) => f.id)}
                   strategy={verticalListSortingStrategy}
@@ -1764,9 +1764,9 @@ function FormsPageContent() {
                     >
 
                     {/* Settings Content */}
-                    <div className="flex-1 overflow-y-auto pb-20">
-                      <ScrollArea className="h-full p-8 pb-24">
-                        <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                    <div className="flex-1 overflow-y-auto">
+                      <ScrollArea className="h-full p-8">
+                        <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#1a1a1a] border-border/50">
                           {activeSettingsSection === "general" && (
                           <div className="space-y-8">
                             {/* Form Name */}
@@ -2109,9 +2109,9 @@ function FormsPageContent() {
                     >
 
                     {/* Publish Content */}
-                    <div className="flex-1 overflow-y-auto pb-20">
-                      <ScrollArea className="h-full p-8 pb-24">
-                        <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                    <div className="flex-1 overflow-y-auto">
+                      <ScrollArea className="h-full p-8">
+                        <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#1a1a1a] border-border/50">
                           {activePublishSection === "share" && (
                           <div className="space-y-8">
                             {/* Form Status - Synced with bottom nav */}
@@ -2336,10 +2336,10 @@ function FormsPageContent() {
                     >
 
                     {/* Report Content */}
-                    <div className="flex-1 overflow-y-auto pb-20">
-                      <ScrollArea className="h-full p-8 pb-24">
+                    <div className="flex-1 overflow-y-auto">
+                      <ScrollArea className="h-full p-8">
                         {submissions.length === 0 ? (
-                          <Card className="max-w-2xl mx-auto p-12 bg-[#1a1a1a] border-border/50 text-center">
+                          <Card className="max-w-2xl mx-auto p-12 mb-32 bg-[#1a1a1a] border-border/50 text-center">
                             <h3 className="text-xl font-semibold text-white mb-2">No Responses Yet</h3>
                             <p className="text-gray-400">
                               Responses will appear here once people start submitting your form.
@@ -2349,7 +2349,7 @@ function FormsPageContent() {
                           <Card className="max-w-4xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
                             <div className="space-y-8">
                               {/* Summary Stats */}
-                              <div>
+                              <div className="mb-32">
                                 <h2 className="text-2xl font-bold text-white mb-4">Response Summary</h2>
                                 <div className="grid grid-cols-3 gap-4">
                                   <Card className="p-4 bg-[#0a0a0a] border-border/50">
@@ -2864,72 +2864,62 @@ function FormsPageContent() {
         </div>
       )}
 
-      {/* Sticky Bottom Navigation - Between left panel and AI chat */}
+      {/* Sticky Bottom Navigation - Full width from left edge to AI chat */}
       <div 
-        className={`fixed bottom-0 z-40 bg-gradient-to-r from-[#0a0a0a] to-[#000000] border-t border-white/10 shadow-lg transition-all duration-300 ${
+        className={`fixed bottom-0 left-0 z-40 bg-gradient-to-r from-[#0a0a0a] to-[#000000] border-t border-white/10 shadow-lg transition-all duration-300 ${
           isChatOpen ? 'right-[400px]' : 'right-16'
         }`}
-        style={{ left: '320px' }}
       >
         <div className="flex items-center justify-between px-6 py-3">
-          {/* Left side - Draft/Published Toggle */}
-          <div className="flex items-center gap-3">
+          {/* Left side - Question count */}
+          <div className="flex items-center gap-2 text-gray-400">
+            <ListChecks className="w-4 h-4" />
+            <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+          </div>
+
+          {/* Center - Draft/Published Toggle (both buttons visible) */}
+          <div className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
             <button
-              onClick={() => setFormStatus(formStatus === "draft" ? "published" : "draft")}
+              onClick={() => setFormStatus("draft")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                formStatus === "draft"
+                  ? "bg-white/10 text-white font-medium border border-white/20"
+                  : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Draft
+            </button>
+            <button
+              onClick={() => setFormStatus("published")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                 formStatus === "published"
                   ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200"
+                  : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
               }`}
             >
-              {formStatus === "published" ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  Published
-                </>
-              ) : (
-                <>
-                  <FileText className="w-4 h-4" />
-                  Draft
-                </>
-              )}
+              <CheckCircle2 className="w-4 h-4" />
+              Published
             </button>
+          </div>
+
+          {/* Right side - Status and View/Publish link */}
+          <div className="flex items-center gap-4">
             {formStatus === "draft" && (
               <span className="text-xs text-gray-500">Preview mode only</span>
             )}
             {formStatus === "published" && shareUrl && (
-              <span className="text-xs text-[#c4dfc4]">✓ Live and collecting responses</span>
-            )}
-          </div>
-
-          {/* Right side - Question count and Publish/View link */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-400">
-              <ListChecks className="w-4 h-4" />
-              <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
-            </div>
-            
-            {formStatus === "published" && shareUrl ? (
-              <Button
-                size="sm"
-                onClick={() => window.open(shareUrl, '_blank')}
-                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                View Live Form
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setFormStatus("published");
-                  toast.success("Form published! Click again to view.");
-                }}
-                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Publish Form
-              </Button>
+              <>
+                <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                <Button
+                  size="sm"
+                  onClick={() => window.open(shareUrl, '_blank')}
+                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  View Form
+                </Button>
+              </>
             )}
           </div>
         </div>
