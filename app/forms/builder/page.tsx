@@ -1588,6 +1588,7 @@ function FormsPageContent() {
                   )}
                 </div>
               </div>
+                  </div>
                 </>
               ) : activeTab === "settings" ? (
                 <>
@@ -1904,6 +1905,7 @@ function FormsPageContent() {
                       </ScrollArea>
                     </div>
                   </div>
+                  </div>
                 </>
               ) : activeTab === "publish" ? (
                 <>
@@ -2066,6 +2068,7 @@ function FormsPageContent() {
                         </Card>
                       </ScrollArea>
                     </div>
+                  </div>
                   </div>
                 </>
               ) : (
@@ -2514,11 +2517,10 @@ function FormsPageContent() {
                       </ScrollArea>
                     </div>
                   </div>
+                  </div>
                 </>
               )}
             </div>
-          </div>
-
           </DndContext>
         )}
       
