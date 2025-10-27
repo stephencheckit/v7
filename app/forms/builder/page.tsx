@@ -185,7 +185,7 @@ function SortableOption({
         />
       )}
       <Input
-        value={option}
+        value={option || ''}
         onChange={(e) => onUpdate(index, e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -687,7 +687,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
                       {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((col, idx) => (
                         <th key={`col-${idx}`} className="border border-border/50 bg-muted/30 p-1 text-center font-medium text-xs min-w-[120px] group relative">
                           <Input
-                            value={col}
+                            value={col || ''}
                             onChange={(e) => {
                               const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"])];
                               newColumns[idx] = e.target.value;
@@ -728,7 +728,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
                         <td className="sticky left-0 z-10 border border-border/50 bg-background p-1 font-medium text-xs">
                           <div className="relative">
                             <Input
-                              value={row}
+                              value={row || ''}
                               onChange={(e) => {
                                 const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"])];
                                 newRows[rowIdx] = e.target.value;
@@ -909,9 +909,8 @@ function FormsPageContent() {
     }
   };
   
-  const [activeTab, setActiveTab] = useState<"builder" | "settings" | "publish" | "report">("builder");
-  const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou">("general");
-  const [activePublishSection, setActivePublishSection] = useState<"share">("share");
+  const [activeTab, setActiveTab] = useState<"builder" | "settings" | "report">("builder");
+  const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou" | "publish">("general");
   const [selectedResponseId, setSelectedResponseId] = useState<string | "all">("all");
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
@@ -1479,11 +1478,10 @@ function FormsPageContent() {
                         )}
                       </div>
                       <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
                           <TabsList className="bg-[#1a1a1a]">
                             <TabsTrigger value="builder">Builder</TabsTrigger>
                             <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="publish">Publish</TabsTrigger>
                             <TabsTrigger value="report">Report</TabsTrigger>
                           </TabsList>
                         </Tabs>
@@ -1652,6 +1650,58 @@ function FormsPageContent() {
                   </ScrollArea>
                   )}
                 </div>
+                
+                {/* Bottom Navigation Bar - Builder Tab */}
+                <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
+                  <div className="flex items-center justify-between px-6 py-3">
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <ListChecks className="w-4 h-4" />
+                      <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setFormStatus("draft")}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                          formStatus === "draft"
+                            ? "bg-white/10 text-white font-medium border border-white/20"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                        }`}
+                      >
+                        <FileText className="w-4 h-4" />
+                        Draft
+                      </button>
+                      <button
+                        onClick={() => setFormStatus("published")}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                          formStatus === "published"
+                            ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        Published
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {formStatus === "draft" && (
+                        <span className="text-xs text-gray-500">Preview mode only</span>
+                      )}
+                      {formStatus === "published" && shareUrl && (
+                        <>
+                          <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                          <Button
+                            size="sm"
+                            onClick={() => window.open(shareUrl, '_blank')}
+                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            View Form
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
                   </div>
                 </>
@@ -1664,7 +1714,14 @@ function FormsPageContent() {
                     }`}
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
-                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Link 
+                          href="/forms"
+                          className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
+                        >
+                          All Forms
+                        </Link>
+                        <span className="text-gray-600">/</span>
                         {isEditingFormName ? (
                           <Input
                             ref={formNameInputRef}
@@ -1688,11 +1745,10 @@ function FormsPageContent() {
                         )}
                       </div>
                       <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
                           <TabsList className="bg-[#1a1a1a]">
                             <TabsTrigger value="builder">Builder</TabsTrigger>
                             <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="publish">Publish</TabsTrigger>
                             <TabsTrigger value="report">Report</TabsTrigger>
                           </TabsList>
                         </Tabs>
@@ -1752,6 +1808,18 @@ function FormsPageContent() {
                         >
                           <div className="text-sm">Thank You Page</div>
                           <div className="text-xs text-gray-500">Post-submission experience</div>
+                        </button>
+                        
+                        <button
+                          onClick={() => setActiveSettingsSection("publish")}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeSettingsSection === "publish"
+                              ? "bg-[#c4dfc4]/20 text-white font-medium"
+                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                        >
+                          <div className="text-sm">Publish & Share</div>
+                          <div className="text-xs text-gray-500">Form status and URL</div>
                         </button>
                       </div>
                     </div>
@@ -2005,114 +2073,8 @@ function FormsPageContent() {
                             </div>
                           </div>
                           )}
-                        </Card>
-                      </ScrollArea>
-                    </div>
-                  </div>
-                  </div>
-                </>
-              ) : activeTab === "publish" ? (
-                <>
-                  {/* Publish Sub-Header - Extends full width from left edge */}
-                  <div 
-                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
-                      isChatOpen ? 'mr-[400px]' : 'mr-16'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4 px-6 py-2">
-                      <div className="flex items-center gap-4 min-w-0 flex-1">
-                        {isEditingFormName ? (
-                          <Input
-                            ref={formNameInputRef}
-                            value={formName}
-                            onChange={(e) => setFormName(e.target.value)}
-                            onBlur={handleSaveFormName}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleSaveFormName();
-                              }
-                            }}
-                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
-                          />
-                        ) : (
-                          <div 
-                            onClick={() => setIsEditingFormName(true)}
-                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
-                          >
-                            {formName || "Untitled Form"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
-                          <TabsList className="bg-[#1a1a1a]">
-                            <TabsTrigger value="builder">Builder</TabsTrigger>
-                            <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="publish">Publish</TabsTrigger>
-                            <TabsTrigger value="report">Report</TabsTrigger>
-                          </TabsList>
-                        </Tabs>
-                      </div>
-                      <div className="flex items-center gap-3 justify-end flex-1">
-                        {/* Auto-save indicator */}
-                        {saving && (
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>Saving...</span>
-                          </div>
-                        )}
-                        {!saving && lastSaveTime && (
-                          <div className="text-xs text-gray-500">
-                            Saved {formatTimeSince(lastSaveTime)}
-                          </div>
-                        )}
-                        
-                        {/* Preview button */}
-                        <Button 
-                          size="sm" 
-                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                          onClick={handlePreview}
-                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview
-                        </Button>
-                        
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Main Content Area - Below Sub-Header */}
-                  <div className="flex flex-1 overflow-hidden">
-                    {/* Left Panel - Publish Navigation */}
-                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                      <div className="p-3 space-y-1">
-                        <button
-                          onClick={() => setActivePublishSection("share")}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activePublishSection === "share"
-                              ? "bg-[#c4dfc4]/20 text-white font-medium"
-                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                          }`}
-                        >
-                          <div className="text-sm">Share</div>
-                          <div className="text-xs text-gray-500">Links and sharing options</div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Middle Panel - Publish Content */}
-                    <div 
-                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
-                        isChatOpen ? 'mr-[400px]' : 'mr-16'
-                      }`}
-                    >
-
-                    {/* Publish Content */}
-                    <div className="flex-1 overflow-y-auto">
-                      <ScrollArea className="h-full p-8">
-                        <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#1a1a1a] border-border/50">
-                          {activePublishSection === "share" && (
+                          {activeSettingsSection === "publish" && (
                           <div className="space-y-8">
                             {/* Form Status - Synced with bottom nav */}
                             <div className="space-y-3">
@@ -2156,7 +2118,7 @@ function FormsPageContent() {
                                 <label className="text-sm font-medium text-gray-300 block mb-2">Form URL</label>
                                 <div className="flex gap-2">
                                   <Input
-                                    value={shareUrl}
+                                    value={shareUrl || ''}
                                     readOnly
                                     className={`border-border/50 font-mono text-sm ${
                                       formStatus === "draft" 
@@ -2198,6 +2160,58 @@ function FormsPageContent() {
                         </Card>
                       </ScrollArea>
                     </div>
+
+                    {/* Bottom Navigation Bar - Settings Tab */}
+                    <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
+                      <div className="flex items-center justify-between px-6 py-3">
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <ListChecks className="w-4 h-4" />
+                          <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setFormStatus("draft")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                              formStatus === "draft"
+                                ? "bg-white/10 text-white font-medium border border-white/20"
+                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                          >
+                            <FileText className="w-4 h-4" />
+                            Draft
+                          </button>
+                          <button
+                            onClick={() => setFormStatus("published")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                              formStatus === "published"
+                                ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Published
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {formStatus === "draft" && (
+                            <span className="text-xs text-gray-500">Preview mode only</span>
+                          )}
+                          {formStatus === "published" && shareUrl && (
+                            <>
+                              <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                              <Button
+                                size="sm"
+                                onClick={() => window.open(shareUrl, '_blank')}
+                                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                              >
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                View Form
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   </div>
                 </>
@@ -2210,7 +2224,14 @@ function FormsPageContent() {
                     }`}
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
-                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Link 
+                          href="/forms"
+                          className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
+                        >
+                          All Forms
+                        </Link>
+                        <span className="text-gray-600">/</span>
                         {isEditingFormName ? (
                           <Input
                             ref={formNameInputRef}
@@ -2234,11 +2255,10 @@ function FormsPageContent() {
                         )}
                       </div>
                       <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
                           <TabsList className="bg-[#1a1a1a]">
                             <TabsTrigger value="builder">Builder</TabsTrigger>
                             <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="publish">Publish</TabsTrigger>
                             <TabsTrigger value="report">Report</TabsTrigger>
                           </TabsList>
                         </Tabs>
@@ -2257,6 +2277,7 @@ function FormsPageContent() {
                           </div>
                         )}
                         
+                        {/* Preview button */}
                         <Button 
                           size="sm" 
                           className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
@@ -2266,6 +2287,7 @@ function FormsPageContent() {
                           <Eye className="w-4 h-4 mr-2" />
                           Preview
                         </Button>
+                        
                       </div>
                     </div>
                   </div>
@@ -2714,6 +2736,58 @@ function FormsPageContent() {
                         )}
                       </ScrollArea>
                     </div>
+
+                    {/* Bottom Navigation Bar - Report Tab */}
+                    <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
+                      <div className="flex items-center justify-between px-6 py-3">
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <ListChecks className="w-4 h-4" />
+                          <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setFormStatus("draft")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                              formStatus === "draft"
+                                ? "bg-white/10 text-white font-medium border border-white/20"
+                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                          >
+                            <FileText className="w-4 h-4" />
+                            Draft
+                          </button>
+                          <button
+                            onClick={() => setFormStatus("published")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                              formStatus === "published"
+                                ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Published
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {formStatus === "draft" && (
+                            <span className="text-xs text-gray-500">Preview mode only</span>
+                          )}
+                          {formStatus === "published" && shareUrl && (
+                            <>
+                              <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                              <Button
+                                size="sm"
+                                onClick={() => window.open(shareUrl, '_blank')}
+                                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                              >
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                View Form
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   </div>
                 </>
@@ -2863,67 +2937,6 @@ function FormsPageContent() {
           </Card>
         </div>
       )}
-
-      {/* Sticky Bottom Navigation - Full width from left edge to AI chat */}
-      <div 
-        className={`fixed bottom-0 left-0 z-40 bg-gradient-to-r from-[#0a0a0a] to-[#000000] border-t border-white/10 shadow-lg transition-all duration-300 ${
-          isChatOpen ? 'right-[400px]' : 'right-16'
-        }`}
-      >
-        <div className="flex items-center justify-between px-6 py-3">
-          {/* Left side - Question count */}
-          <div className="flex items-center gap-2 text-gray-400">
-            <ListChecks className="w-4 h-4" />
-            <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
-          </div>
-
-          {/* Center - Draft/Published Toggle (both buttons visible) */}
-          <div className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
-            <button
-              onClick={() => setFormStatus("draft")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                formStatus === "draft"
-                  ? "bg-white/10 text-white font-medium border border-white/20"
-                  : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              Draft
-            </button>
-            <button
-              onClick={() => setFormStatus("published")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                formStatus === "published"
-                  ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                  : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
-              }`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Published
-            </button>
-          </div>
-
-          {/* Right side - Status and View/Publish link */}
-          <div className="flex items-center gap-4">
-            {formStatus === "draft" && (
-              <span className="text-xs text-gray-500">Preview mode only</span>
-            )}
-            {formStatus === "published" && shareUrl && (
-              <>
-                <span className="text-xs text-[#c4dfc4]">✓ Live</span>
-                <Button
-                  size="sm"
-                  onClick={() => window.open(shareUrl, '_blank')}
-                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View Form
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
