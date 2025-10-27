@@ -228,18 +228,18 @@ ${data.location ? `^FO10,210^A0N,16,16^FD${data.location}^FS` : ''}
 ^MNN
 ^PW457
 ^LL254
-^FO20,10^A0N,28,28^FD${name}^FS
-^FO20,42^GB417,1,1^FS
-^FO20,50^A0N,20,20^FDPrep: ${data.prepDate}^FS
-^FO20,75^A0N,20,20^FDEXP: ${data.expirationDate}^FS
-^FO20,105^GB417,1,1^FS
+^FO20,25^A0N,28,28^FD${name}^FS
+^FO20,57^GB417,1,1^FS
+^FO20,65^A0N,20,20^FDPrep: ${data.prepDate}^FS
+^FO20,90^A0N,20,20^FDEXP: ${data.expirationDate}^FS
+^FO20,120^GB417,1,1^FS
 ${data.ingredients && data.ingredients.length > 0 
-  ? `^FO20,115^A0N,16,16^FD${data.ingredients.slice(0, 3).join(', ').substring(0, 38)}^FS` 
+  ? `^FO20,130^A0N,16,16^FD${data.ingredients.slice(0, 3).join(', ').substring(0, 38)}^FS` 
   : ''}
-^FO20,140^A0N,16,16^FDAllergens: ${allergenText}^FS
-^FO20,165^GB417,1,1^FS
-^FO20,175^A0N,14,14^FDV7 Form Builder^FS
-^FO290,175^A0N,14,14^FD${new Date().toLocaleDateString()}^FS
+^FO20,155^A0N,16,16^FDAllergens: ${allergenText}^FS
+^FO20,180^GB417,1,1^FS
+^FO20,190^A0N,14,14^FDV7 Form Builder^FS
+^FO290,190^A0N,14,14^FD${new Date().toLocaleDateString()}^FS
 ^XZ
     `.trim();
 
