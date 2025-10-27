@@ -205,12 +205,7 @@ export function AppHeader() {
   return (
     <>
       <header 
-        className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-4 md:pl-6 transition-all duration-300"
-        style={{
-          paddingRight: isFormBuilderPage 
-            ? (isChatOpen ? '400px' : '64px')
-            : '24px'
-        }}
+        className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-4 md:pl-6 pr-4 md:pr-6 transition-all duration-300"
       >
         {/* Mobile: Logo on LEFT */}
         <Link href="/" className="flex md:hidden items-center gap-2 shrink-0">
