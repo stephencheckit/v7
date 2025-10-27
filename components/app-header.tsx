@@ -246,7 +246,7 @@ export function AppHeader() {
         </div>
 
         {/* Desktop: User Menu */}
-        <div className="hidden md:flex items-center justify-end pr-10">
+        <div className="hidden md:flex items-center justify-end ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10" disabled={isSigningOut}>

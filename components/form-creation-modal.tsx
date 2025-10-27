@@ -19,6 +19,7 @@ export function FormCreationModal({ isOpen, onClose }: FormCreationModalProps) {
   const router = useRouter();
   const [step, setStep] = useState<'select' | 'ai-draft'>('select');
   const [isCreating, setIsCreating] = useState(false);
+  const [creatingOption, setCreatingOption] = useState<'scratch' | 'chat' | 'draft' | null>(null);
   
   // AI Draft form fields
   const [formGoal, setFormGoal] = useState('');
@@ -34,10 +35,13 @@ export function FormCreationModal({ isOpen, onClose }: FormCreationModalProps) {
     setFormLength('');
     setAdditionalNotes('');
     setIsCreating(false);
+    setCreatingOption(null);
     onClose();
   };
 
   const createBlankForm = async (aiChatMode: 'collapsed' | 'expanded') => {
+    const option = aiChatMode === 'collapsed' ? 'scratch' : 'chat';
+    setCreatingOption(option);
     setIsCreating(true);
     try {
       // Create blank form with timestamp name
@@ -86,6 +90,7 @@ export function FormCreationModal({ isOpen, onClose }: FormCreationModalProps) {
       return;
     }
     
+    setCreatingOption('draft');
     setIsCreating(true);
     try {
       // Create a blank form first with temporary name
@@ -138,7 +143,7 @@ Please create the form now with appropriate fields and a descriptive title.`;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto">
         {step === 'select' ? (
           <>
             <DialogHeader>
@@ -171,7 +176,7 @@ Please create the form now with appropriate fields and a descriptive title.`;
                     className="group-hover:bg-[#c4dfc4]/10 px-6 py-2 text-sm flex-shrink-0"
                     disabled={isCreating}
                   >
-                    {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Start Building'}
+                    {creatingOption === 'scratch' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Start Building'}
                   </Button>
                 </div>
               </Card>
@@ -196,7 +201,7 @@ Please create the form now with appropriate fields and a descriptive title.`;
                     className="group-hover:bg-[#c8e0f5]/10 px-6 py-2 text-sm flex-shrink-0"
                     disabled={isCreating}
                   >
-                    {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Start Chatting'}
+                    {creatingOption === 'chat' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Start Chatting'}
                   </Button>
                 </div>
               </Card>
