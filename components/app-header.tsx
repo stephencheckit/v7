@@ -205,7 +205,11 @@ export function AppHeader() {
   return (
     <>
       <header 
-        className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm px-6 transition-all duration-300"
+        className={`sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-6 transition-all duration-300 ${
+          isFormBuilderPage 
+            ? (isChatOpen ? 'mr-[400px]' : 'mr-16')
+            : 'mr-6'
+        }`}
       >
         {/* Mobile: Logo on LEFT */}
         <Link href="/" className="flex md:hidden items-center gap-2 shrink-0">
