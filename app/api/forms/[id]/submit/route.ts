@@ -30,7 +30,7 @@ export async function POST(
     // Verify form exists
     const { data: form, error: formError } = await supabase
       .from('simple_forms')
-      .select('id')
+      .select('id, schema')
       .eq('id', formId)
       .single();
 

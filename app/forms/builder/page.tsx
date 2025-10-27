@@ -1579,12 +1579,16 @@ function FormsPageContent() {
                   </div>
 
                   {/* Middle Panel - Settings Content */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
+                  <div 
+                    className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                      isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                  >
                     {/* Settings Sub-Header */}
                     <div 
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                       style={{ 
-                        width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                        width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
                         paddingRight: isChatOpen ? '64px' : '80px'
                       }}
                     >
@@ -1879,12 +1883,16 @@ function FormsPageContent() {
                   </div>
 
                   {/* Middle Panel - Publish Content */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
+                  <div 
+                    className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                      isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                  >
                     {/* Publish Sub-Header */}
                     <div 
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                       style={{ 
-                        width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                        width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
                         paddingRight: isChatOpen ? '64px' : '80px'
                       }}
                     >
@@ -2060,12 +2068,16 @@ function FormsPageContent() {
                   </div>
 
                   {/* Middle Panel - Report Content */}
-                  <div className="flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col">
+                  <div 
+                    className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                      isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                  >
                     {/* Report Sub-Header */}
                     <div 
                       className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
                       style={{ 
-                        width: `calc(100vw - 320px - ${isChatOpen ? '384px' : '48px'})`,
+                        width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
                         paddingRight: isChatOpen ? '64px' : '80px'
                       }}
                     >

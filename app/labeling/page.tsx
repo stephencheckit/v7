@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Tag, Clock, Loader2, RefreshCw, Plus, Search, Beaker, Upload, FileText, Mic, History, TrendingUp, ChevronDown, LayoutGrid, List, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Tag, Clock, Loader2, Plus, Search, Beaker, Upload, FileText, Mic, History, TrendingUp, ChevronDown, LayoutGrid, List, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -213,33 +213,6 @@ export default function PrepLabelsPage() {
     }
 
     return addedCount;
-  };
-
-  // Utility: Deduplicate entire library
-  const deduplicateLibrary = () => {
-    const seen = new Map<string, FoodLibraryItem>();
-    let duplicatesFound = 0;
-
-    foodLibrary.forEach(item => {
-      const normalized = normalizeItemName(item.name) + '-' + item.type;
-      const existing = seen.get(normalized);
-
-      if (existing) {
-        // Merge this duplicate into the existing one
-        const merged = mergeDuplicateItem(existing, item);
-        seen.set(normalized, merged);
-        duplicatesFound++;
-      } else {
-        seen.set(normalized, item);
-      }
-    });
-
-    if (duplicatesFound > 0) {
-      setFoodLibrary(Array.from(seen.values()));
-      toast.success(`Removed ${duplicatesFound} duplicates from library!`);
-    } else {
-      toast.info('No duplicates found - library is clean! ✨');
-    }
   };
 
   // Handle file upload
@@ -647,14 +620,6 @@ export default function PrepLabelsPage() {
 
   const filteredItems = getFilteredAndSortedItems();
 
-  // Stats
-  const stats = {
-    total: foodLibrary.length,
-    foodItems: foodLibrary.filter(i => i.type === 'food_item').length,
-    ingredients: foodLibrary.filter(i => i.type === 'ingredient').length,
-    totalPrints: foodLibrary.reduce((sum, i) => sum + i.printCount, 0),
-  };
-
   return (
     <div className="w-full h-full overflow-auto">
       <div className="p-4 md:p-8">
@@ -697,19 +662,6 @@ export default function PrepLabelsPage() {
                   onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
                 />
                 
-                {/* Clean Duplicates Button (show when library has items) */}
-                {foodLibrary.length > 0 && (
-                  <Button 
-                    onClick={deduplicateLibrary}
-                    size="sm"
-                    variant="outline"
-                    className="bg-white/5 hover:bg-white/10 border-white/10"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    <span className="hidden md:inline">Clean Duplicates</span>
-                  </Button>
-                )}
-                
                 {/* Add Item Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -740,28 +692,6 @@ export default function PrepLabelsPage() {
                 </DropdownMenu>
               </div>
             </div>
-
-            {/* Stats Cards */}
-            {foodLibrary.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Card className="p-3 bg-white/5 border-white/10">
-                  <div className="text-xs text-gray-400 mb-1">Total Items</div>
-                  <div className="text-2xl font-bold text-white">{stats.total}</div>
-                </Card>
-                <Card className="p-3 bg-white/5 border-white/10">
-                  <div className="text-xs text-gray-400 mb-1">Food Items</div>
-                  <div className="text-2xl font-bold text-[#c4dfc4]">{stats.foodItems}</div>
-                </Card>
-                <Card className="p-3 bg-white/5 border-white/10">
-                  <div className="text-xs text-gray-400 mb-1">Ingredients</div>
-                  <div className="text-2xl font-bold text-[#c8e0f5]">{stats.ingredients}</div>
-                </Card>
-                <Card className="p-3 bg-white/5 border-white/10">
-                  <div className="text-xs text-gray-400 mb-1">Total Prints</div>
-                  <div className="text-2xl font-bold text-white">{stats.totalPrints}</div>
-                </Card>
-              </div>
-            )}
 
             {/* Search & Filters */}
             {foodLibrary.length > 0 && (
