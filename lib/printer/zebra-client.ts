@@ -94,36 +94,71 @@ export class ZebraPrintClient {
   }
 
   /**
-   * Send raw ZPL to printer via V7 Print Bridge
-   * Requires customer to have V7 Print Bridge installed and running
+   * Send raw ZPL to printer
+   * Tries Browser Print first, falls back to Cloud Bridge
    */
   async sendZPL(zpl: string): Promise<void> {
     try {
-      console.log('Sending ZPL via V7 Print Bridge...');
       console.log('ZPL preview:', zpl.substring(0, 100) + '...');
 
-      const response = await fetch('/api/print-bridge', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          action: 'submit',
-          zpl 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Print failed');
+      // Try Browser Print first (direct local printing)
+      const browserPrintAvailable = await this.isAvailable();
+      if (browserPrintAvailable) {
+        console.log('Using Browser Print (local)...');
+        await this.sendViaBrowserPrint(zpl);
+        return;
       }
 
-      console.log('✅ Label sent to printer successfully');
+      // Fall back to Cloud Bridge (for SaaS/multi-client)
+      console.log('Browser Print not available, using Cloud Bridge...');
+      await this.sendViaCloudBridge(zpl);
     } catch (error) {
       console.error('Print error:', error);
       throw error;
     }
+  }
+
+  /**
+   * Send via Browser Print (local workstation)
+   */
+  private async sendViaBrowserPrint(zpl: string): Promise<void> {
+    const printers = await this.getAvailablePrinters();
+    if (printers.length === 0) {
+      throw new Error('No printer found');
+    }
+
+    const printer = printers[0];
+    console.log('Using printer:', printer.name);
+
+    const response = await fetch('http://localhost:9100/write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ device: printer, data: zpl }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Print failed: ${response.statusText}`);
+    }
+
+    console.log('✅ Printed via Browser Print');
+  }
+
+  /**
+   * Send via Cloud Bridge (SaaS multi-client)
+   */
+  private async sendViaCloudBridge(zpl: string): Promise<void> {
+    const response = await fetch('/api/print-bridge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'submit', zpl }),
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Print failed');
+    }
+
+    console.log('✅ Printed via Cloud Bridge');
   }
 
   /**
@@ -133,6 +168,8 @@ export class ZebraPrintClient {
   async printInspectionLabel(data: InspectionLabelData): Promise<void> {
     const zpl = `
 ^XA
+^MMT
+^MNN
 ^PW457
 ^LL254
 ^FO10,10^A0N,25,25^FD${data.formName}^FS
@@ -155,6 +192,8 @@ ${data.location ? `^FO10,145^A0N,18,18^FD${data.location}^FS` : ''}
   async printTemperatureLabel(data: TemperatureLabelData): Promise<void> {
     const zpl = `
 ^XA
+^MMT
+^MNN
 ^PW457
 ^LL254
 ^FO10,10^A0N,22,22^FDTEMP LOG^FS
@@ -185,20 +224,22 @@ ${data.location ? `^FO10,210^A0N,16,16^FD${data.location}^FS` : ''}
 
     const zpl = `
 ^XA
+^MMT
+^MNN
 ^PW457
 ^LL254
-^FO10,10^A0N,28,28^FD${name}^FS
-^FO10,42^GB437,1,1^FS
-^FO10,50^A0N,20,20^FDPrep: ${data.prepDate}^FS
-^FO10,75^A0N,20,20^FDEXP: ${data.expirationDate}^FS
-^FO10,105^GB437,1,1^FS
+^FO20,10^A0N,28,28^FD${name}^FS
+^FO20,42^GB417,1,1^FS
+^FO20,50^A0N,20,20^FDPrep: ${data.prepDate}^FS
+^FO20,75^A0N,20,20^FDEXP: ${data.expirationDate}^FS
+^FO20,105^GB417,1,1^FS
 ${data.ingredients && data.ingredients.length > 0 
-  ? `^FO10,115^A0N,16,16^FD${data.ingredients.slice(0, 3).join(', ').substring(0, 40)}^FS` 
+  ? `^FO20,115^A0N,16,16^FD${data.ingredients.slice(0, 3).join(', ').substring(0, 38)}^FS` 
   : ''}
-^FO10,140^A0N,16,16^FDAllergens: ${allergenText}^FS
-^FO10,165^GB437,1,1^FS
-^FO10,175^A0N,14,14^FDV7 Form Builder^FS
-^FO300,175^A0N,14,14^FD${new Date().toLocaleDateString()}^FS
+^FO20,140^A0N,16,16^FDAllergens: ${allergenText}^FS
+^FO20,165^GB417,1,1^FS
+^FO20,175^A0N,14,14^FDV7 Form Builder^FS
+^FO290,175^A0N,14,14^FD${new Date().toLocaleDateString()}^FS
 ^XZ
     `.trim();
 
@@ -212,6 +253,8 @@ ${data.ingredients && data.ingredients.length > 0
   async testPrint(): Promise<void> {
     const zpl = `
 ^XA
+^MMT
+^MNN
 ^PW457
 ^LL254
 ^FO10,10^A0N,35,35^FDTEST PRINT^FS

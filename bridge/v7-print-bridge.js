@@ -24,6 +24,11 @@ const API_URL = process.env.V7_API_URL || 'http://localhost:3000';
 const API_KEY = process.env.V7_API_KEY || 'demo';
 const POLL_INTERVAL = 2000; // Poll every 2 seconds
 
+console.log('\n📋 Configuration:');
+console.log(`   API URL: ${API_URL}`);
+console.log(`   API Key: ${API_KEY.substring(0, 4)}...`);
+console.log(`   Poll Interval: ${POLL_INTERVAL}ms\n`);
+
 class V7PrintBridge {
   constructor() {
     this.printerName = null;
