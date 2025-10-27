@@ -1398,94 +1398,93 @@ function FormsPageContent() {
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex h-[calc(100vh-4rem)] relative w-full">
-            {/* Main Content Area */}
-            <div className="flex flex-1 overflow-hidden w-full">
+            <div className="flex flex-col h-[calc(100vh-4rem)] relative w-full">
               {activeTab === "builder" ? (
                 <>
-                  {/* Left Panel - Widget Navigation - GRADIENT BLACK */}
-                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                    <div className="p-3 space-y-3">
-                      <div className="border-b border-white/10 pb-2">
-                        <h2 className="text-sm font-semibold text-gray-100">Form Widgets</h2>
-                        <p className="text-xs text-gray-400">
-                          Drag to add
-                        </p>
-                      </div>
-
-              {widgetTypes.map((group, idx) => (
-                <div key={idx} className="space-y-1.5">
-                  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">
-                    {group.category}
-                  </h3>
-                  <div className="space-y-1.5">
-                    {group.items.map((widget) => (
-                      <DraggableWidget key={widget.id} widget={widget} onAddToTop={handleAddWidgetToTop} />
-                    ))}
-                  </div>
-                  {idx < widgetTypes.length - 1 && <Separator className="my-3 bg-white/10" />}
-                </div>
-              ))}
-            </div>
-          </div>
-
-              {/* Middle Panel - Form Editor - GRADIENT BLACK */}
-              <div 
-                className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
-                  isChatOpen ? 'mr-[400px]' : 'mr-16'
-                }`}
-              >
-                {/* Form Sub-Header - Only for Middle Panel */}
-                <div 
-                  className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                  style={{ 
-                    width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
-                    paddingRight: isChatOpen ? '64px' : '80px'
-                  }}
-                >
-                  <div className="flex items-center justify-between gap-4 pl-6 py-2">
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <div className="text-white font-medium truncate max-w-xs">
-                        {formName || "Untitled Form"}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
-                        <TabsList className="bg-[#1a1a1a]">
-                          <TabsTrigger value="builder">Builder</TabsTrigger>
-                          <TabsTrigger value="settings">Settings</TabsTrigger>
-                          <TabsTrigger value="publish">Publish</TabsTrigger>
-                          <TabsTrigger value="report">Report</TabsTrigger>
-                        </TabsList>
-                      </Tabs>
-                    </div>
-                    <div className="flex items-center gap-3 justify-end flex-1">
-                      {/* Auto-save indicator */}
-                      {saving && (
-                        <div className="flex items-center gap-2 text-xs text-gray-400">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          <span>Saving...</span>
+                  {/* Form Sub-Header - Extends full width from left edge */}
+                  <div 
+                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
+                      isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="text-white font-medium truncate max-w-xs">
+                          {formName || "Untitled Form"}
                         </div>
-                      )}
-                      {!saving && lastSaveTime && (
-                        <div className="text-xs text-gray-500">
-                          Saved {formatTimeSince(lastSaveTime)}
-                        </div>
-                      )}
-                      
-                      {/* Preview button */}
-                      <Button 
-                        size="sm" 
-                        className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                        onClick={handlePreview}
-                        disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                          <TabsList className="bg-[#1a1a1a]">
+                            <TabsTrigger value="builder">Builder</TabsTrigger>
+                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                            <TabsTrigger value="publish">Publish</TabsTrigger>
+                            <TabsTrigger value="report">Report</TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </div>
+                      <div className="flex items-center gap-3 justify-end flex-1">
+                        {/* Auto-save indicator */}
+                        {saving && (
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Saving...</span>
+                          </div>
+                        )}
+                        {!saving && lastSaveTime && (
+                          <div className="text-xs text-gray-500">
+                            Saved {formatTimeSince(lastSaveTime)}
+                          </div>
+                        )}
+                        
+                        {/* Preview button */}
+                        <Button 
+                          size="sm" 
+                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                          onClick={handlePreview}
+                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  {/* Main Content Area - Below Sub-Header */}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Left Panel - Widget Navigation - GRADIENT BLACK */}
+                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                      <div className="p-3 space-y-3">
+                        <div className="border-b border-white/10 pb-2">
+                          <h2 className="text-sm font-semibold text-gray-100">Form Widgets</h2>
+                          <p className="text-xs text-gray-400">
+                            Drag to add
+                          </p>
+                        </div>
+
+                        {widgetTypes.map((group, idx) => (
+                          <div key={idx} className="space-y-1.5">
+                            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">
+                              {group.category}
+                            </h3>
+                            <div className="space-y-1.5">
+                              {group.items.map((widget) => (
+                                <DraggableWidget key={widget.id} widget={widget} onAddToTop={handleAddWidgetToTop} />
+                              ))}
+                            </div>
+                            {idx < widgetTypes.length - 1 && <Separator className="my-3 bg-white/10" />}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Middle Panel - Form Editor - GRADIENT BLACK */}
+                    <div 
+                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                        isChatOpen ? 'mr-[400px]' : 'mr-16'
+                      }`}
+                    >
                 
                 {/* Editor Content */}
                 <div className="flex-1 overflow-y-auto">
@@ -1592,93 +1591,93 @@ function FormsPageContent() {
                 </>
               ) : activeTab === "settings" ? (
                 <>
-                  {/* Settings View */}
-                  {/* Left Panel - Settings Navigation */}
-                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                    <div className="p-3 space-y-1">
-                      <button
-                        onClick={() => setActiveSettingsSection("general")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          activeSettingsSection === "general"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                        }`}
-                      >
-                        <div className="text-sm">General</div>
-                        <div className="text-xs text-gray-500">Name, status, description</div>
-                      </button>
-                      
-                      <button
-                        onClick={() => setActiveSettingsSection("thankyou")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          activeSettingsSection === "thankyou"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                        }`}
-                      >
-                        <div className="text-sm">Thank You Page</div>
-                        <div className="text-xs text-gray-500">Post-submission experience</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Middle Panel - Settings Content */}
+                  {/* Settings Sub-Header - Extends full width from left edge */}
                   <div 
-                    className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
                       isChatOpen ? 'mr-[400px]' : 'mr-16'
                     }`}
                   >
-                    {/* Settings Sub-Header */}
-                    <div 
-                      className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                      style={{ 
-                        width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
-                        paddingRight: isChatOpen ? '64px' : '80px'
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-4 pl-6 py-2">
-                        <div className="flex items-center gap-4 min-w-0 flex-1">
-                          <div className="text-white font-medium truncate max-w-xs">
-                            {formName || "Untitled Form"}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-center">
-                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
-                            <TabsList className="bg-[#1a1a1a]">
-                              <TabsTrigger value="builder">Builder</TabsTrigger>
-                              <TabsTrigger value="settings">Settings</TabsTrigger>
-                              <TabsTrigger value="publish">Publish</TabsTrigger>
-                              <TabsTrigger value="report">Report</TabsTrigger>
-                            </TabsList>
-                          </Tabs>
-                        </div>
-                        <div className="flex items-center gap-3 justify-end flex-1">
-                          {/* Auto-save indicator */}
-                          {saving && (
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Saving...</span>
-                            </div>
-                          )}
-                          {!saving && lastSaveTime && (
-                            <div className="text-xs text-gray-500">
-                              Saved {formatTimeSince(lastSaveTime)}
-                            </div>
-                          )}
-                          
-                          {/* Preview button */}
-                          <Button 
-                            size="sm" 
-                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                            onClick={handlePreview}
-                            disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Preview
-                          </Button>
+                    <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="text-white font-medium truncate max-w-xs">
+                          {formName || "Untitled Form"}
                         </div>
                       </div>
+                      <div className="flex items-center justify-center">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                          <TabsList className="bg-[#1a1a1a]">
+                            <TabsTrigger value="builder">Builder</TabsTrigger>
+                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                            <TabsTrigger value="publish">Publish</TabsTrigger>
+                            <TabsTrigger value="report">Report</TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </div>
+                      <div className="flex items-center gap-3 justify-end flex-1">
+                        {/* Auto-save indicator */}
+                        {saving && (
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Saving...</span>
+                          </div>
+                        )}
+                        {!saving && lastSaveTime && (
+                          <div className="text-xs text-gray-500">
+                            Saved {formatTimeSince(lastSaveTime)}
+                          </div>
+                        )}
+                        
+                        {/* Preview button */}
+                        <Button 
+                          size="sm" 
+                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                          onClick={handlePreview}
+                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Main Content Area - Below Sub-Header */}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Left Panel - Settings Navigation */}
+                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                      <div className="p-3 space-y-1">
+                        <button
+                          onClick={() => setActiveSettingsSection("general")}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeSettingsSection === "general"
+                              ? "bg-[#c4dfc4]/20 text-white font-medium"
+                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                        >
+                          <div className="text-sm">General</div>
+                          <div className="text-xs text-gray-500">Name, status, description</div>
+                        </button>
+                        
+                        <button
+                          onClick={() => setActiveSettingsSection("thankyou")}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeSettingsSection === "thankyou"
+                              ? "bg-[#c4dfc4]/20 text-white font-medium"
+                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                        >
+                          <div className="text-sm">Thank You Page</div>
+                          <div className="text-xs text-gray-500">Post-submission experience</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Middle Panel - Settings Content */}
+                    <div 
+                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                        isChatOpen ? 'mr-[400px]' : 'mr-16'
+                      }`}
+                    >
 
                     {/* Settings Content */}
                     <div className="flex-1 overflow-y-auto">
@@ -1908,93 +1907,93 @@ function FormsPageContent() {
                 </>
               ) : activeTab === "publish" ? (
                 <>
-                  {/* Publish View */}
-                  {/* Left Panel - Publish Navigation */}
-                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                    <div className="p-3 space-y-1">
-                      <button
-                        onClick={() => setActivePublishSection("share")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          activePublishSection === "share"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                        }`}
-                      >
-                        <div className="text-sm">Share</div>
-                        <div className="text-xs text-gray-500">Links and sharing options</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Middle Panel - Publish Content */}
+                  {/* Publish Sub-Header - Extends full width from left edge */}
                   <div 
-                    className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
                       isChatOpen ? 'mr-[400px]' : 'mr-16'
                     }`}
                   >
-                    {/* Publish Sub-Header */}
-                    <div 
-                      className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                      style={{ 
-                        width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
-                        paddingRight: isChatOpen ? '64px' : '80px'
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-4 pl-6 py-2">
-                        <div className="flex items-center gap-4 min-w-0 flex-1">
-                          <div className="text-white font-medium truncate max-w-xs">
-                            {formName || "Untitled Form"}
+                    <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="text-white font-medium truncate max-w-xs">
+                          {formName || "Untitled Form"}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                          <TabsList className="bg-[#1a1a1a]">
+                            <TabsTrigger value="builder">Builder</TabsTrigger>
+                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                            <TabsTrigger value="publish">Publish</TabsTrigger>
+                            <TabsTrigger value="report">Report</TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </div>
+                      <div className="flex items-center gap-3 justify-end flex-1">
+                        {/* Auto-save indicator */}
+                        {saving && (
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Saving...</span>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-center">
-                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
-                            <TabsList className="bg-[#1a1a1a]">
-                              <TabsTrigger value="builder">Builder</TabsTrigger>
-                              <TabsTrigger value="settings">Settings</TabsTrigger>
-                              <TabsTrigger value="publish">Publish</TabsTrigger>
-                              <TabsTrigger value="report">Report</TabsTrigger>
-                            </TabsList>
-                          </Tabs>
-                        </div>
-                        <div className="flex items-center gap-3 justify-end flex-1">
-                          {/* Auto-save indicator */}
-                          {saving && (
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Saving...</span>
-                            </div>
-                          )}
-                          {!saving && lastSaveTime && (
-                            <div className="text-xs text-gray-500">
-                              Saved {formatTimeSince(lastSaveTime)}
-                            </div>
-                          )}
-                          
-                          {/* Preview button */}
+                        )}
+                        {!saving && lastSaveTime && (
+                          <div className="text-xs text-gray-500">
+                            Saved {formatTimeSince(lastSaveTime)}
+                          </div>
+                        )}
+                        
+                        {/* Preview button */}
+                        <Button 
+                          size="sm" 
+                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                          onClick={handlePreview}
+                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview
+                        </Button>
+                        
+                        {/* Live Link button - only when published */}
+                        {formStatus === "published" && shareUrl && (
                           <Button 
                             size="sm" 
                             className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                            onClick={handlePreview}
-                            disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                            onClick={() => window.open(shareUrl, '_blank')}
                           >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Preview
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Live Link
                           </Button>
-                          
-                          {/* Live Link button - only when published */}
-                          {formStatus === "published" && shareUrl && (
-                            <Button 
-                              size="sm" 
-                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                              onClick={() => window.open(shareUrl, '_blank')}
-                            >
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              Live Link
-                            </Button>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Main Content Area - Below Sub-Header */}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Left Panel - Publish Navigation */}
+                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                      <div className="p-3 space-y-1">
+                        <button
+                          onClick={() => setActivePublishSection("share")}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activePublishSection === "share"
+                              ? "bg-[#c4dfc4]/20 text-white font-medium"
+                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                        >
+                          <div className="text-sm">Share</div>
+                          <div className="text-xs text-gray-500">Links and sharing options</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Middle Panel - Publish Content */}
+                    <div 
+                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                        isChatOpen ? 'mr-[400px]' : 'mr-16'
+                      }`}
+                    >
 
                     {/* Publish Content */}
                     <div className="flex-1 overflow-y-auto">
@@ -2071,119 +2070,119 @@ function FormsPageContent() {
                 </>
               ) : (
                 <>
-                  {/* Report View */}
-                  {/* Left Panel - Responses List */}
-                  <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                    <div className="p-3 space-y-1">
-                      {/* All Responses (Summary View) */}
-                      <button
-                        onClick={() => setSelectedResponseId("all")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          selectedResponseId === "all"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                        }`}
-                      >
-                        <div className="text-sm">All Responses</div>
-                        <div className="text-xs text-gray-500">{submissions.length} total submissions</div>
-                      </button>
-
-                      {/* Individual Responses */}
-                      {loadingSubmissions ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
-                        </div>
-                      ) : submissions.length > 0 ? (
-                        <>
-                          <Separator className="my-3 bg-white/10" />
-                          <div className="space-y-1">
-                            {submissions.map((submission: any) => {
-                              const submittedDate = new Date(submission.submitted_at).toLocaleString();
-                              const identifier = submission.data?.email || 
-                                                submission.data?.name || 
-                                                `Response ${submission.id.toString().slice(0, 8)}`;
-                              
-                              return (
-                                <button
-                                  key={submission.id}
-                                  onClick={() => setSelectedResponseId(submission.id)}
-                                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                                    selectedResponseId === submission.id
-                                      ? "bg-[#c4dfc4]/20 text-white font-medium"
-                                      : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                                  }`}
-                                >
-                                  <div className="text-sm truncate">{identifier}</div>
-                                  <div className="text-xs text-gray-500">{submittedDate}</div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                          No responses yet
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Middle Panel - Report Content */}
+                  {/* Report Sub-Header - Extends full width from left edge */}
                   <div 
-                    className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
                       isChatOpen ? 'mr-[400px]' : 'mr-16'
                     }`}
                   >
-                    {/* Report Sub-Header */}
-                    <div 
-                      className="sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300"
-                      style={{ 
-                        width: `calc(100vw - 320px - ${isChatOpen ? '400px' : '64px'})`,
-                        paddingRight: isChatOpen ? '64px' : '80px'
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-4 pl-6 py-2">
-                        <div className="flex items-center gap-4 min-w-0 flex-1">
-                          <div className="text-white font-medium truncate max-w-xs">
-                            {formName || "Untitled Form"}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-center">
-                          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
-                            <TabsList className="bg-[#1a1a1a]">
-                              <TabsTrigger value="builder">Builder</TabsTrigger>
-                              <TabsTrigger value="settings">Settings</TabsTrigger>
-                              <TabsTrigger value="publish">Publish</TabsTrigger>
-                              <TabsTrigger value="report">Report</TabsTrigger>
-                            </TabsList>
-                          </Tabs>
-                        </div>
-                        <div className="flex items-center gap-3 justify-end flex-1">
-                          {/* Auto-save indicator */}
-                          {saving && (
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Saving...</span>
-                            </div>
-                          )}
-                          {!saving && lastSaveTime && (
-                            <div className="text-xs text-gray-500">
-                              Saved {formatTimeSince(lastSaveTime)}
-                            </div>
-                          )}
-                          
-                          <Button 
-                            size="sm" 
-                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                            onClick={handlePreview}
-                            disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Preview
-                          </Button>
+                    <div className="flex items-center justify-between gap-4 px-6 py-2">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="text-white font-medium truncate max-w-xs">
+                          {formName || "Untitled Form"}
                         </div>
                       </div>
+                      <div className="flex items-center justify-center">
+                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
+                          <TabsList className="bg-[#1a1a1a]">
+                            <TabsTrigger value="builder">Builder</TabsTrigger>
+                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                            <TabsTrigger value="publish">Publish</TabsTrigger>
+                            <TabsTrigger value="report">Report</TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </div>
+                      <div className="flex items-center gap-3 justify-end flex-1">
+                        {/* Auto-save indicator */}
+                        {saving && (
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Saving...</span>
+                          </div>
+                        )}
+                        {!saving && lastSaveTime && (
+                          <div className="text-xs text-gray-500">
+                            Saved {formatTimeSince(lastSaveTime)}
+                          </div>
+                        )}
+                        
+                        <Button 
+                          size="sm" 
+                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                          onClick={handlePreview}
+                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Main Content Area - Below Sub-Header */}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Left Panel - Responses List */}
+                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
+                      <div className="p-3 space-y-1">
+                        {/* All Responses (Summary View) */}
+                        <button
+                          onClick={() => setSelectedResponseId("all")}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            selectedResponseId === "all"
+                              ? "bg-[#c4dfc4]/20 text-white font-medium"
+                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                        >
+                          <div className="text-sm">All Responses</div>
+                          <div className="text-xs text-gray-500">{submissions.length} total submissions</div>
+                        </button>
+
+                        {/* Individual Responses */}
+                        {loadingSubmissions ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
+                          </div>
+                        ) : submissions.length > 0 ? (
+                          <>
+                            <Separator className="my-3 bg-white/10" />
+                            <div className="space-y-1">
+                              {submissions.map((submission: any) => {
+                                const submittedDate = new Date(submission.submitted_at).toLocaleString();
+                                const identifier = submission.data?.email || 
+                                                  submission.data?.name || 
+                                                  `Response ${submission.id.toString().slice(0, 8)}`;
+                                
+                                return (
+                                  <button
+                                    key={submission.id}
+                                    onClick={() => setSelectedResponseId(submission.id)}
+                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                                      selectedResponseId === submission.id
+                                        ? "bg-[#c4dfc4]/20 text-white font-medium"
+                                        : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                                    }`}
+                                  >
+                                    <div className="text-sm truncate">{identifier}</div>
+                                    <div className="text-xs text-gray-500">{submittedDate}</div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                            No responses yet
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Middle Panel - Report Content */}
+                    <div 
+                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
+                        isChatOpen ? 'mr-[400px]' : 'mr-16'
+                      }`}
+                    >
 
                     {/* Report Content */}
                     <div className="flex-1 overflow-y-auto">
