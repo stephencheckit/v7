@@ -41,8 +41,10 @@ import {
   ExternalLink,
   Table,
   PenTool,
+  ChevronLeft,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import {
@@ -1446,6 +1448,14 @@ function FormsPageContent() {
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <Link 
+                          href="/forms"
+                          className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors flex items-center gap-1.5 shrink-0"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          All Forms
+                        </Link>
+                        <div className="text-gray-600">/</div>
                         {isEditingFormName ? (
                           <Input
                             ref={formNameInputRef}
