@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 import {
   DndContext,
   DragEndEvent,
@@ -924,6 +925,8 @@ function FormsPageContent() {
   const [redirectDelay, setRedirectDelay] = useState(0);
   const [isEditingSubmitButton, setIsEditingSubmitButton] = useState(false);
   const submitButtonInputRef = React.useRef<HTMLInputElement>(null);
+  const [isEditingFormName, setIsEditingFormName] = useState(false);
+  const formNameInputRef = React.useRef<HTMLInputElement>(null);
   
   // Fix hydration issues with DnD library
   React_useEffect(() => {
@@ -946,10 +949,8 @@ function FormsPageContent() {
   
   const [formName, setFormName] = useState("Untitled Form");
   const [formDescription, setFormDescription] = useState("Add a description for your form");
-  const [isEditingFormName, setIsEditingFormName] = useState(false);
   const [isEditingFormDescription, setIsEditingFormDescription] = useState(false);
   const [showFormDescription, setShowFormDescription] = useState(true);
-  const formNameInputRef = React.useRef<HTMLInputElement>(null);
   const formDescriptionInputRef = React.useRef<HTMLInputElement>(null);
   
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -1095,12 +1096,41 @@ function FormsPageContent() {
     }
   }, [isEditingSubmitButton]);
 
+  // Auto-focus form name input when editing
   React_useEffect(() => {
     if (isEditingFormName && formNameInputRef.current) {
       formNameInputRef.current.focus();
       formNameInputRef.current.select();
     }
   }, [isEditingFormName]);
+
+  // Save form name
+  const handleSaveFormName = async () => {
+    setIsEditingFormName(false);
+    
+    // Only save if there's an actual form ID
+    if (!editingFormId && !lastSavedFormId) return;
+    
+    const formId = editingFormId || lastSavedFormId;
+    if (!formId) return;
+
+    try {
+      const response = await fetch(`/api/forms/${formId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formName }),
+      });
+
+      if (response.ok) {
+        toast.success("Form name updated");
+      } else {
+        toast.error("Failed to save form name");
+      }
+    } catch (error) {
+      console.error("Error saving form name:", error);
+      toast.error("Failed to save form name");
+    }
+  };
 
   React_useEffect(() => {
     if (isEditingFormDescription && formDescriptionInputRef.current) {
@@ -1409,9 +1439,27 @@ function FormsPageContent() {
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="text-white font-medium truncate max-w-xs">
-                          {formName || "Untitled Form"}
-                        </div>
+                        {isEditingFormName ? (
+                          <Input
+                            ref={formNameInputRef}
+                            value={formName}
+                            onChange={(e) => setFormName(e.target.value)}
+                            onBlur={handleSaveFormName}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveFormName();
+                              }
+                            }}
+                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => setIsEditingFormName(true)}
+                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                          >
+                            {formName || "Untitled Form"}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-center">
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
@@ -1600,9 +1648,27 @@ function FormsPageContent() {
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="text-white font-medium truncate max-w-xs">
-                          {formName || "Untitled Form"}
-                        </div>
+                        {isEditingFormName ? (
+                          <Input
+                            ref={formNameInputRef}
+                            value={formName}
+                            onChange={(e) => setFormName(e.target.value)}
+                            onBlur={handleSaveFormName}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveFormName();
+                              }
+                            }}
+                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => setIsEditingFormName(true)}
+                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                          >
+                            {formName || "Untitled Form"}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-center">
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
@@ -1917,9 +1983,27 @@ function FormsPageContent() {
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="text-white font-medium truncate max-w-xs">
-                          {formName || "Untitled Form"}
-                        </div>
+                        {isEditingFormName ? (
+                          <Input
+                            ref={formNameInputRef}
+                            value={formName}
+                            onChange={(e) => setFormName(e.target.value)}
+                            onBlur={handleSaveFormName}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveFormName();
+                              }
+                            }}
+                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => setIsEditingFormName(true)}
+                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                          >
+                            {formName || "Untitled Form"}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-center">
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
@@ -2081,9 +2165,27 @@ function FormsPageContent() {
                   >
                     <div className="flex items-center justify-between gap-4 px-6 py-2">
                       <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="text-white font-medium truncate max-w-xs">
-                          {formName || "Untitled Form"}
-                        </div>
+                        {isEditingFormName ? (
+                          <Input
+                            ref={formNameInputRef}
+                            value={formName}
+                            onChange={(e) => setFormName(e.target.value)}
+                            onBlur={handleSaveFormName}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveFormName();
+                              }
+                            }}
+                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => setIsEditingFormName(true)}
+                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                          >
+                            {formName || "Untitled Form"}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-center">
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "publish" | "report")} className="w-auto">
