@@ -113,6 +113,57 @@ export async function PUT(
 }
 
 /**
+ * PATCH /api/forms/[id] - Partially update a form (for quick updates like title)
+ */
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+
+    // Build update object with only provided fields
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    // Add any provided fields
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.schema !== undefined) updateData.schema = body.schema;
+    if (body.status !== undefined) updateData.status = body.status;
+    if (body.thank_you_settings !== undefined) updateData.thank_you_settings = body.thank_you_settings;
+
+    const { data, error } = await supabase
+      .from('simple_forms')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: 'Failed to update form' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      form: data,
+    });
+  } catch (error: any) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/forms/[id] - Delete a form
  */
 export async function DELETE(
