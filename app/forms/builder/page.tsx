@@ -1552,7 +1552,7 @@ function FormsPageContent() {
                     >
                 
                 {/* Editor Content */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto pb-20">
                   {loadingForm ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
@@ -1561,7 +1561,7 @@ function FormsPageContent() {
                       </div>
                     </div>
                   ) : (
-                  <ScrollArea className="h-full p-8">
+                  <ScrollArea className="h-full p-8 pb-24">
               <Card className="max-w-2xl mx-auto p-8 bg-[#0f0f0f] border-border/50">
                 <SortableContext
                   items={formFields.map((f) => f.id)}
@@ -1764,8 +1764,8 @@ function FormsPageContent() {
                     >
 
                     {/* Settings Content */}
-                    <div className="flex-1 overflow-y-auto">
-                      <ScrollArea className="h-full p-8">
+                    <div className="flex-1 overflow-y-auto pb-20">
+                      <ScrollArea className="h-full p-8 pb-24">
                         <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
                           {activeSettingsSection === "general" && (
                           <div className="space-y-8">
@@ -2109,8 +2109,8 @@ function FormsPageContent() {
                     >
 
                     {/* Publish Content */}
-                    <div className="flex-1 overflow-y-auto">
-                      <ScrollArea className="h-full p-8">
+                    <div className="flex-1 overflow-y-auto pb-20">
+                      <ScrollArea className="h-full p-8 pb-24">
                         <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
                           {activePublishSection === "share" && (
                           <div className="space-y-8">
@@ -2336,8 +2336,8 @@ function FormsPageContent() {
                     >
 
                     {/* Report Content */}
-                    <div className="flex-1 overflow-y-auto">
-                      <ScrollArea className="h-full p-8">
+                    <div className="flex-1 overflow-y-auto pb-20">
+                      <ScrollArea className="h-full p-8 pb-24">
                         {submissions.length === 0 ? (
                           <Card className="max-w-2xl mx-auto p-12 bg-[#1a1a1a] border-border/50 text-center">
                             <h3 className="text-xl font-semibold text-white mb-2">No Responses Yet</h3>
@@ -2864,8 +2864,13 @@ function FormsPageContent() {
         </div>
       )}
 
-      {/* Sticky Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-[#0a0a0a] to-[#000000] border-t border-white/10 shadow-lg">
+      {/* Sticky Bottom Navigation - Between left panel and AI chat */}
+      <div 
+        className={`fixed bottom-0 z-40 bg-gradient-to-r from-[#0a0a0a] to-[#000000] border-t border-white/10 shadow-lg transition-all duration-300 ${
+          isChatOpen ? 'right-[400px]' : 'right-16'
+        }`}
+        style={{ left: '320px' }}
+      >
         <div className="flex items-center justify-between px-6 py-3">
           {/* Left side - Draft/Published Toggle */}
           <div className="flex items-center gap-3">
