@@ -9,6 +9,7 @@ import {
 import { Thermometer, AlertTriangle, Activity, CheckCircle2 } from "lucide-react";
 import type { Sensor } from "@/app/sensors/page";
 import { convertTemp } from "@/lib/sensors/temperature-utils";
+import { DemoIndicator } from "@/components/demo-indicator";
 
 interface SensorStatsProps {
   sensors: Sensor[];
@@ -50,7 +51,10 @@ export function SensorStats({ sensors, tempUnit }: SensorStatsProps) {
             <Thermometer className="h-5 w-5 text-[#0a0a0a]/50" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Total Sensors</div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="text-[10px] font-medium text-[#0a0a0a]/70">Total Sensors</div>
+              <DemoIndicator tooltip="Demo sensor stats from Charlie's Kitchen" size="sm" />
+            </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold text-[#0a0a0a] leading-none">{totalSensors}</span>
               <span className="text-[9px] text-[#0a0a0a]/60">{onlineSensors.length} online</span>
@@ -74,7 +78,10 @@ export function SensorStats({ sensors, tempUnit }: SensorStatsProps) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Active Alerts</div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="text-[10px] font-medium text-[#0a0a0a]/70">Active Alerts</div>
+              <DemoIndicator tooltip="Demo sensor stats from Charlie's Kitchen" size="sm" />
+            </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold text-[#0a0a0a] leading-none">{activeAlerts}</span>
               <span className="text-[9px] text-[#0a0a0a]/60">
@@ -92,7 +99,10 @@ export function SensorStats({ sensors, tempUnit }: SensorStatsProps) {
             <Activity className="h-5 w-5 text-[#0a0a0a]/50" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Avg Temperature</div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="text-[10px] font-medium text-[#0a0a0a]/70">Avg Temperature</div>
+              <DemoIndicator tooltip="Demo sensor stats from Charlie's Kitchen" size="sm" />
+            </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold text-[#0a0a0a] leading-none">
                 {sensorsWithReadings.length > 0 ? `${avgTemp.toFixed(1)}°${tempUnit}` : "—"}
@@ -110,7 +120,10 @@ export function SensorStats({ sensors, tempUnit }: SensorStatsProps) {
             <Activity className="h-5 w-5 text-[#0a0a0a]/50" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-medium text-[#0a0a0a]/70 mb-0.5">Uptime</div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="text-[10px] font-medium text-[#0a0a0a]/70">Uptime</div>
+              <DemoIndicator tooltip="Demo sensor stats from Charlie's Kitchen" size="sm" />
+            </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-2xl font-bold text-[#0a0a0a] leading-none">{uptimePercent.toFixed(0)}%</span>
               <span className="text-[9px] text-[#0a0a0a]/60">Last 10 min</span>

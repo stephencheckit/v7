@@ -27,6 +27,7 @@ import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Thermometer, Use
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { DemoIndicator } from "@/components/demo-indicator";
 
 // Food Safety Data
 const complianceData = [
@@ -152,9 +153,12 @@ export default function DashboardPage() {
 
               <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-                    Compliance Score
-                  </CardTitle>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-sm font-medium text-[#0a0a0a]">
+                      Compliance Score
+                    </CardTitle>
+                    <DemoIndicator tooltip="Demo compliance data" size="sm" />
+                  </div>
                   <CheckCircle2 className="h-4 w-4 text-[#0a0a0a]" />
                 </CardHeader>
                 <CardContent>
@@ -168,9 +172,12 @@ export default function DashboardPage() {
 
               <Card className="bg-gradient-to-br from-[#f5edc8] to-[#f5edc8]/80 border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-                    Temperature Violations
-                  </CardTitle>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-sm font-medium text-[#0a0a0a]">
+                      Temperature Violations
+                    </CardTitle>
+                    <DemoIndicator tooltip="Demo violation data" size="sm" />
+                  </div>
                   <Thermometer className="h-4 w-4 text-[#0a0a0a]" />
                 </CardHeader>
                 <CardContent>
@@ -184,9 +191,12 @@ export default function DashboardPage() {
 
               <Card className="bg-gradient-to-br from-[#c8e0f5] to-[#c8e0f5]/80 border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-[#0a0a0a]">
-                    Checklists Completed
-                  </CardTitle>
+                  <div className="flex items-center gap-1.5">
+                    <CardTitle className="text-sm font-medium text-[#0a0a0a]">
+                      Checklists Completed
+                    </CardTitle>
+                    <DemoIndicator tooltip="Demo checklist data" size="sm" />
+                  </div>
                   <Badge className="bg-[#0a0a0a] text-[#c8e0f5]">Today</Badge>
                 </CardHeader>
                 <CardContent>
@@ -203,7 +213,10 @@ export default function DashboardPage() {
               {/* Compliance Distribution Pie Chart */}
               <Card className="shadow-lg border-gray-200">
                 <CardHeader>
-                  <CardTitle>Compliance Distribution</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle>Compliance Distribution</CardTitle>
+                    <DemoIndicator tooltip="Demo compliance chart data" />
+                  </div>
                   <CardDescription>
                     Overall compliance status across all locations
                   </CardDescription>
@@ -234,7 +247,10 @@ export default function DashboardPage() {
               {/* Temperature Monitoring */}
               <Card className="shadow-lg border-gray-200">
                 <CardHeader>
-                  <CardTitle>Temperature Monitoring</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle>Temperature Monitoring</CardTitle>
+                    <DemoIndicator tooltip="Demo temperature chart data" />
+                  </div>
                   <CardDescription>
                     Cold storage & hot holding temps (°F) - Last 7 days
                   </CardDescription>
@@ -269,7 +285,10 @@ export default function DashboardPage() {
               {/* Violation Trends */}
               <Card className="shadow-lg border-gray-200">
                 <CardHeader>
-                  <CardTitle>Violation Trends</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle>Violation Trends</CardTitle>
+                    <DemoIndicator tooltip="Demo violation trends data" />
+                  </div>
                   <CardDescription>
                     Monthly violations vs. resolutions - Trending down
                   </CardDescription>
@@ -292,7 +311,10 @@ export default function DashboardPage() {
               {/* Inspection Scores */}
               <Card className="shadow-lg border-gray-200">
                 <CardHeader>
-                  <CardTitle>Location Inspection Scores</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle>Location Inspection Scores</CardTitle>
+                    <DemoIndicator tooltip="Demo inspection scores data" />
+                  </div>
                   <CardDescription>
                     Latest audit scores by location - All above 90%
                   </CardDescription>
@@ -320,6 +342,7 @@ export default function DashboardPage() {
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                   </span>
                   Live Activity Feed
+                  <DemoIndicator tooltip="Demo activity feed" />
                 </CardTitle>
                 <CardDescription>
                   Real-time updates from all locations

@@ -18,14 +18,16 @@ import {
 } from "@/lib/sensors/temperature-utils";
 import { formatDistanceToNow } from "date-fns";
 import { MiniChart } from "./mini-chart";
+import { DemoIndicator } from "@/components/demo-indicator";
 
 interface SensorCardProps {
   sensor: Sensor;
   tempUnit: "C" | "F";
   onClick: () => void;
+  isDemo?: boolean;
 }
 
-export function SensorCard({ sensor, tempUnit, onClick }: SensorCardProps) {
+export function SensorCard({ sensor, tempUnit, onClick, isDemo = false }: SensorCardProps) {
   const latestReading = sensor.latest_reading;
 
   if (!latestReading) {
@@ -90,7 +92,10 @@ export function SensorCard({ sensor, tempUnit, onClick }: SensorCardProps) {
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <CardTitle className="text-white">{sensor.name}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-white">{sensor.name}</CardTitle>
+              {isDemo && <DemoIndicator tooltip="Demo sensor data from Charlie's Kitchen" />}
+            </div>
             <CardDescription className="flex items-center gap-1 mt-1">
               <MapPin className="h-3 w-3" />
               {sensor.location}
