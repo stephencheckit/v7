@@ -5,7 +5,76 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **👁️ AI Vision Toggle Setting - October 27, 2025 (Latest)**
+### **🎥 AI Vision Assistant UX Overhaul - October 27, 2025 (Latest)**
+**Status:** ✅ DEPLOYED
+**Commit:** `605b79c`
+**Deployed:** October 27, 2025
+
+**What Was Fixed:**
+
+**1. Removed Jarring Loading Screen**
+   - ✅ Removed full-screen overlay that blocked video during analysis
+   - ✅ Now shows subtle "Analyzing" indicator in top-right corner
+   - ✅ Video feed remains visible at all times
+
+**2. Mobile Camera Flip**
+   - ✅ Added "Flip" button to switch between front/back cameras
+   - ✅ Uses MediaStream facingMode API ('user' vs 'environment')
+   - ✅ Graceful fallback if camera switch fails
+   - ✅ Updated `use-video-recording` hook to support facingMode parameter
+
+**3. Real-Time Progress Tracking**
+   - ✅ Shows "X of Y questions answered" in top-right corner
+   - ✅ Color-coded progress:
+     - Gray: < 50% answered
+     - Yellow: 50-79% answered  
+     - Green: 80%+ answered
+   - ✅ Updates live as fields get populated
+
+**4. Photo Upload Functionality**
+   - ✅ Added "Upload Photo" button (alongside "Start AI Vision")
+   - ✅ Works even while camera is active
+   - ✅ Analyzes uploaded photos just like video snapshots
+   - ✅ Hidden file input with proper event handling
+
+**5. Redesigned Layout**
+   - ✅ Video feed moved to top of screen (was corner overlay)
+   - ✅ Takes up 20-30% of viewport height (max 300px)
+   - ✅ Full-width design matching form width
+   - ✅ Professional gradient border and styling
+
+**6. Collapse/Expand Functionality**
+   - ✅ Collapse button (ChevronUp) minimizes video to thin bar
+   - ✅ Collapsed state shows:
+     - Recording indicator (pulsing red dot)
+     - Progress: "X / Y answered"
+     - Timer
+     - "Analyzing..." status when active
+   - ✅ Expand button (ChevronDown) restores full video
+   - ✅ Stop button accessible in both states
+
+**7. Improved Camera Controls**
+   - ✅ All controls overlay on video (don't block content)
+   - ✅ Semi-transparent backgrounds for readability
+   - ✅ Buttons: Flip Camera, Upload Photo, Collapse, Stop
+   - ✅ Recording indicator in top-left
+   - ✅ Progress indicator in top-right
+
+**8. Enhanced Stats Display**
+   - ✅ Stats bar below video shows:
+     - Snapshot count
+     - Elapsed time
+     - "AI is watching and filling fields automatically" message
+   - ✅ Clean, professional typography
+
+**Technical Changes:**
+- Updated `components/ai-vision-assistant.tsx` - Complete redesign
+- Updated `hooks/use-video-recording.ts` - Added facingMode support
+- Updated `app/f/[id]/page.tsx` - Removed redundant instruction banner
+
+---
+
+### **👁️ AI Vision Toggle Setting - October 27, 2025**
 **Status:** ✅ DEPLOYED
 **Commit:** `b81b2e6`
 **Deployed:** October 27, 2025
