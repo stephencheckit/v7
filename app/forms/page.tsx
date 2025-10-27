@@ -405,7 +405,7 @@ export default function FormsPage() {
               <div className="flex gap-2 mb-6">
                 <input
                   type="text"
-                  value={selectedFormUrl}
+                  value={selectedFormUrl || ''}
                   readOnly
                   className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-mono text-sm"
                 />
