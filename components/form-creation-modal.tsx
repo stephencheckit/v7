@@ -150,25 +150,25 @@ Please create the form now with appropriate fields and a descriptive title.`;
               </p>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10 px-4">
+            <div className="flex flex-col gap-6 mt-10 px-4">
               {/* Option 1: Build from Scratch */}
               <Card 
-                className="p-10 cursor-pointer hover:border-[#c4dfc4] hover:shadow-2xl transition-all group"
+                className="p-8 cursor-pointer hover:border-[#c4dfc4] hover:shadow-2xl transition-all group"
                 onClick={() => createBlankForm('collapsed')}
               >
-                <div className="flex flex-col items-center text-center space-y-6">
-                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#c4dfc4] to-[#b5d0b5] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Pencil className="h-12 w-12 text-[#0a0a0a]" />
+                <div className="flex items-center gap-6">
+                  <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#c4dfc4] to-[#b5d0b5] flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Pencil className="h-10 w-10 text-[#0a0a0a]" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-2xl mb-3">Build from Scratch</h3>
-                    <p className="text-base text-muted-foreground leading-relaxed">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-2xl mb-2">Build from Scratch</h3>
+                    <p className="text-base text-muted-foreground">
                       Start with a blank canvas and add fields manually
                     </p>
                   </div>
                   <Button 
                     variant="ghost" 
-                    className="w-full group-hover:bg-[#c4dfc4]/10 mt-4 py-6 text-base"
+                    className="group-hover:bg-[#c4dfc4]/10 px-8 py-6 text-base flex-shrink-0"
                     disabled={isCreating}
                   >
                     {isCreating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Start Building'}
@@ -178,22 +178,22 @@ Please create the form now with appropriate fields and a descriptive title.`;
 
               {/* Option 2: Build with Conversational AI */}
               <Card 
-                className="p-10 cursor-pointer hover:border-[#c8e0f5] hover:shadow-2xl transition-all group"
+                className="p-8 cursor-pointer hover:border-[#c8e0f5] hover:shadow-2xl transition-all group"
                 onClick={() => createBlankForm('expanded')}
               >
-                <div className="flex flex-col items-center text-center space-y-6">
-                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#c8e0f5] to-[#b5d0e5] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <MessageSquare className="h-12 w-12 text-[#0a0a0a]" />
+                <div className="flex items-center gap-6">
+                  <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#c8e0f5] to-[#b5d0e5] flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                    <MessageSquare className="h-10 w-10 text-[#0a0a0a]" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-2xl mb-3">Build with AI Chat</h3>
-                    <p className="text-base text-muted-foreground leading-relaxed">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-2xl mb-2">Build with AI Chat</h3>
+                    <p className="text-base text-muted-foreground">
                       Chat with AI to build your form step-by-step
                     </p>
                   </div>
                   <Button 
                     variant="ghost" 
-                    className="w-full group-hover:bg-[#c8e0f5]/10 mt-4 py-6 text-base"
+                    className="group-hover:bg-[#c8e0f5]/10 px-8 py-6 text-base flex-shrink-0"
                     disabled={isCreating}
                   >
                     {isCreating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Start Chatting'}
@@ -203,22 +203,22 @@ Please create the form now with appropriate fields and a descriptive title.`;
 
               {/* Option 3: Let AI Build First Draft */}
               <Card 
-                className="p-10 cursor-pointer hover:border-[#ddc8f5] hover:shadow-2xl transition-all group"
+                className="p-8 cursor-pointer hover:border-[#ddc8f5] hover:shadow-2xl transition-all group"
                 onClick={() => setStep('ai-draft')}
               >
-                <div className="flex flex-col items-center text-center space-y-6">
-                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#ddc8f5] to-[#cdb8e5] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Wand2 className="h-12 w-12 text-[#0a0a0a]" />
+                <div className="flex items-center gap-6">
+                  <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#ddc8f5] to-[#cdb8e5] flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Wand2 className="h-10 w-10 text-[#0a0a0a]" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-2xl mb-3">Let AI Build Draft</h3>
-                    <p className="text-base text-muted-foreground leading-relaxed">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-2xl mb-2">Let AI Build Draft</h3>
+                    <p className="text-base text-muted-foreground">
                       Describe your needs and AI creates the form
                     </p>
                   </div>
                   <Button 
                     variant="ghost" 
-                    className="w-full group-hover:bg-[#ddc8f5]/10 mt-4 py-6 text-base"
+                    className="group-hover:bg-[#ddc8f5]/10 px-8 py-6 text-base flex-shrink-0"
                   >
                     Describe Form
                   </Button>
