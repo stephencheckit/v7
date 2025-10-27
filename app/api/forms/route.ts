@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { title, description, schema, status, thank_you_settings } = body;
+    const { title, description, schema, status, ai_vision_enabled, thank_you_settings } = body;
 
     if (!title || !schema) {
       return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
       title,
       description: description || '',
       schema,
+      ai_vision_enabled: ai_vision_enabled ?? false,
     };
 
     // Only set status if provided and valid

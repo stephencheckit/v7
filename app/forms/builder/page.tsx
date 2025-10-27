@@ -915,6 +915,9 @@ function FormsPageContent() {
   const [formStatus, setFormStatus] = useState<"published" | "draft">("draft");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   
+  // AI Vision Settings
+  const [aiVisionEnabled, setAiVisionEnabled] = useState(false);
+  
   // Thank You Page Settings
   const [thankYouMessage, setThankYouMessage] = useState("Thank you for your submission!");
   const [allowAnotherSubmission, setAllowAnotherSubmission] = useState(true);
@@ -993,6 +996,9 @@ function FormsPageContent() {
       setFormFields(form.schema.fields || []);
       setFormStatus(form.status || 'published');
       
+      // Load AI Vision setting
+      setAiVisionEnabled(form.ai_vision_enabled ?? false);
+      
       // Load thank you settings
       if (form.thank_you_settings) {
         setThankYouMessage(form.thank_you_settings.message || "Thank you for your submission!");
@@ -1042,7 +1048,7 @@ function FormsPageContent() {
         clearTimeout(autoSaveTimeout.current);
       }
     };
-  }, [formFields, formName, formDescription, formStatus, thankYouMessage, allowAnotherSubmission, showResponseSummary, showCloseButton, allowSocialShare, redirectUrl, redirectDelay, loadingForm]);
+  }, [formFields, formName, formDescription, formStatus, aiVisionEnabled, thankYouMessage, allowAnotherSubmission, showResponseSummary, showCloseButton, allowSocialShare, redirectUrl, redirectDelay, loadingForm]);
 
   // Auto-save when AI creates a form (immediate)
   React.useEffect(() => {
@@ -1342,6 +1348,7 @@ function FormsPageContent() {
           description: formDescription,
           schema,
           status: formStatus,
+          ai_vision_enabled: aiVisionEnabled,
           thank_you_settings: {
             message: thankYouMessage,
             allowAnotherSubmission,
@@ -1790,6 +1797,27 @@ function FormsPageContent() {
                                 placeholder="Add a description for your form..."
                               />
                               <p className="text-xs text-gray-400 italic">This description helps users understand the purpose of your form</p>
+                            </div>
+
+                            {/* AI Vision Data Collection */}
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
+                                <input
+                                  type="checkbox"
+                                  id="aiVision"
+                                  checked={aiVisionEnabled}
+                                  onChange={(e) => setAiVisionEnabled(e.target.checked)}
+                                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                                />
+                                <div className="flex-1">
+                                  <label htmlFor="aiVision" className="text-sm font-medium text-gray-200 cursor-pointer">
+                                    Enable AI Vision Data Collection
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Allow users to upload images or videos for AI-powered form filling. The AI will analyze visual content and automatically populate form fields.
+                                  </p>
+                                </div>
+                              </div>
                             </div>
                           </div>
                           )}

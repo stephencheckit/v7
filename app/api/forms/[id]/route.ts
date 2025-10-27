@@ -50,7 +50,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { title, description, schema, status, thank_you_settings } = body;
+    const { title, description, schema, status, ai_vision_enabled, thank_you_settings } = body;
 
     if (!title || !schema) {
       return NextResponse.json(
@@ -66,6 +66,11 @@ export async function PUT(
       schema,
       updated_at: new Date().toISOString(),
     };
+
+    // Update AI Vision setting if provided
+    if (ai_vision_enabled !== undefined) {
+      updateData.ai_vision_enabled = ai_vision_enabled;
+    }
 
     // Only update status if provided and valid
     if (status && (status === 'draft' || status === 'published')) {
@@ -133,6 +138,7 @@ export async function PATCH(
     if (body.description !== undefined) updateData.description = body.description;
     if (body.schema !== undefined) updateData.schema = body.schema;
     if (body.status !== undefined) updateData.status = body.status;
+    if (body.ai_vision_enabled !== undefined) updateData.ai_vision_enabled = body.ai_vision_enabled;
     if (body.thank_you_settings !== undefined) updateData.thank_you_settings = body.thank_you_settings;
 
     const { data, error } = await supabase
