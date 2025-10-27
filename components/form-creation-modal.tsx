@@ -1,0 +1,327 @@
+"use client";
+
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sparkles, Pencil, MessageSquare, Wand2, Loader2, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+interface FormCreationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function FormCreationModal({ isOpen, onClose }: FormCreationModalProps) {
+  const router = useRouter();
+  const [step, setStep] = useState<'select' | 'ai-draft'>('select');
+  const [isCreating, setIsCreating] = useState(false);
+  
+  // AI Draft form fields
+  const [formGoal, setFormGoal] = useState('');
+  const [dataNeeded, setDataNeeded] = useState('');
+  const [formLength, setFormLength] = useState('');
+  const [additionalNotes, setAdditionalNotes] = useState('');
+
+  const handleClose = () => {
+    // Reset state
+    setStep('select');
+    setFormGoal('');
+    setDataNeeded('');
+    setFormLength('');
+    setAdditionalNotes('');
+    setIsCreating(false);
+    onClose();
+  };
+
+  const createBlankForm = async (aiChatMode: 'collapsed' | 'expanded') => {
+    setIsCreating(true);
+    try {
+      // Create blank form with timestamp name
+      const timestamp = new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      const formName = `Form - ${timestamp}`;
+      
+      const response = await fetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formName,
+          description: '',
+          schema: {
+            fields: [],
+            submitButton: { label: 'Submit' }
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to create form');
+      
+      const data = await response.json();
+      const formId = data.form.id;
+      
+      // Navigate to builder with mode param
+      router.push(`/forms/builder?id=${formId}&chatMode=${aiChatMode}`);
+      handleClose();
+    } catch (error) {
+      console.error('Failed to create form:', error);
+      alert('Failed to create form. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleAIDraft = async () => {
+    if (!formGoal.trim()) {
+      alert('Please describe the goal of your form');
+      return;
+    }
+    
+    setIsCreating(true);
+    try {
+      // Create a blank form first with temporary name
+      const tempName = `Form - ${new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      })}`;
+      
+      const response = await fetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: tempName,
+          description: '',
+          schema: {
+            fields: [],
+            submitButton: { label: 'Submit' }
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to create form');
+      
+      const data = await response.json();
+      const formId = data.form.id;
+      
+      // Build AI prompt from requirements
+      const aiPrompt = `Create a form with the following requirements:
+
+**Goal:** ${formGoal}
+${dataNeeded ? `\n**Data Needed:** ${dataNeeded}` : ''}
+${formLength ? `\n**Length:** ${formLength}` : ''}
+${additionalNotes ? `\n**Additional Notes:** ${additionalNotes}` : ''}
+
+Please create the form now with appropriate fields and a descriptive title.`;
+      
+      // Navigate to builder with AI prompt
+      router.push(`/forms/builder?id=${formId}&chatMode=expanded&aiPrompt=${encodeURIComponent(aiPrompt)}`);
+      handleClose();
+    } catch (error) {
+      console.error('Failed to create form:', error);
+      alert('Failed to create form. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+        {step === 'select' ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-3xl font-bold text-center mb-2">
+                What kind of form do you want to build?
+              </DialogTitle>
+              <p className="text-base text-muted-foreground text-center">
+                Choose your starting point
+              </p>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10 px-4">
+              {/* Option 1: Build from Scratch */}
+              <Card 
+                className="p-10 cursor-pointer hover:border-[#c4dfc4] hover:shadow-2xl transition-all group"
+                onClick={() => createBlankForm('collapsed')}
+              >
+                <div className="flex flex-col items-center text-center space-y-6">
+                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#c4dfc4] to-[#b5d0b5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Pencil className="h-12 w-12 text-[#0a0a0a]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-2xl mb-3">Build from Scratch</h3>
+                    <p className="text-base text-muted-foreground leading-relaxed">
+                      Start with a blank canvas and add fields manually
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full group-hover:bg-[#c4dfc4]/10 mt-4 py-6 text-base"
+                    disabled={isCreating}
+                  >
+                    {isCreating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Start Building'}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Option 2: Build with Conversational AI */}
+              <Card 
+                className="p-10 cursor-pointer hover:border-[#c8e0f5] hover:shadow-2xl transition-all group"
+                onClick={() => createBlankForm('expanded')}
+              >
+                <div className="flex flex-col items-center text-center space-y-6">
+                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#c8e0f5] to-[#b5d0e5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <MessageSquare className="h-12 w-12 text-[#0a0a0a]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-2xl mb-3">Build with AI Chat</h3>
+                    <p className="text-base text-muted-foreground leading-relaxed">
+                      Chat with AI to build your form step-by-step
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full group-hover:bg-[#c8e0f5]/10 mt-4 py-6 text-base"
+                    disabled={isCreating}
+                  >
+                    {isCreating ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Start Chatting'}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Option 3: Let AI Build First Draft */}
+              <Card 
+                className="p-10 cursor-pointer hover:border-[#ddc8f5] hover:shadow-2xl transition-all group"
+                onClick={() => setStep('ai-draft')}
+              >
+                <div className="flex flex-col items-center text-center space-y-6">
+                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#ddc8f5] to-[#cdb8e5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Wand2 className="h-12 w-12 text-[#0a0a0a]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-2xl mb-3">Let AI Build Draft</h3>
+                    <p className="text-base text-muted-foreground leading-relaxed">
+                      Describe your needs and AI creates the form
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full group-hover:bg-[#ddc8f5]/10 mt-4 py-6 text-base"
+                  >
+                    Describe Form
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">
+                Describe Your Form
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                Tell us about your form and AI will create a first draft
+              </p>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-4">
+              <div>
+                <Label htmlFor="goal" className="text-sm font-medium">
+                  What is the goal of this form? <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="goal"
+                  placeholder="E.g., Daily kitchen inspection checklist to ensure food safety compliance"
+                  value={formGoal}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormGoal(e.target.value)}
+                  className="mt-1.5 min-h-[80px]"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="data" className="text-sm font-medium">
+                  What data do you need to collect?
+                </Label>
+                <Textarea
+                  id="data"
+                  placeholder="E.g., Temperature readings, cleanliness checks, equipment status, staff signatures"
+                  value={dataNeeded}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDataNeeded(e.target.value)}
+                  className="mt-1.5 min-h-[80px]"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="length" className="text-sm font-medium">
+                  How long should the form be?
+                </Label>
+                <Input
+                  id="length"
+                  placeholder="E.g., 10-15 questions, Quick 5-minute form, Comprehensive 30-field checklist"
+                  value={formLength}
+                  onChange={(e) => setFormLength(e.target.value)}
+                  className="mt-1.5"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  Any other requirements or notes?
+                </Label>
+                <Textarea
+                  id="notes"
+                  placeholder="E.g., Must include photo uploads, needs to follow FDA guidelines, should have section for corrective actions"
+                  value={additionalNotes}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAdditionalNotes(e.target.value)}
+                  className="mt-1.5 min-h-[80px]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setStep('select')}
+                className="flex-1"
+                disabled={isCreating}
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleAIDraft}
+                className="flex-1 bg-[#ddc8f5] hover:bg-[#cdb8e5] text-[#0a0a0a]"
+                disabled={isCreating || !formGoal.trim()}
+              >
+                {isCreating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    Generate Form
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+

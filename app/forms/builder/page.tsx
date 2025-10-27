@@ -268,20 +268,23 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
       
       <div
         ref={setNodeRef}
-        style={style}
-        className={`group relative p-4 rounded-lg border-2 transition-all duration-200 bg-card/30 ${
-          !isDraggingNewWidget ? 'hover:bg-muted/50' : ''
-        } ${
-          isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98]' : 'border-transparent'
+        style={{
+          ...style,
+          backgroundColor: isOver ? undefined : `${field.color}25`, // 25 = ~15% opacity
+        }}
+        className={`group relative p-4 rounded-lg border-2 transition-all duration-200 ${
+          isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98] bg-[#c4dfc4]/10' : 'border-transparent'
         }`}
         onMouseEnter={(e) => {
           if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = field.color;
+            e.currentTarget.style.backgroundColor = `${field.color}35`; // More intense on hover
           }
         }}
         onMouseLeave={(e) => {
           if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = 'transparent';
+            e.currentTarget.style.backgroundColor = `${field.color}25`; // Back to default
           }
         }}
       >
@@ -869,11 +872,20 @@ function FormsPageContent() {
   const searchParams = useSearchParams();
   const editingFormId = searchParams.get('id');
   const isEditMode = !!editingFormId;
+  const chatModeParam = searchParams.get('chatMode'); // 'collapsed' or 'expanded'
+  const aiPromptParam = searchParams.get('aiPrompt'); // Auto-submit prompt if provided
   
   const [isMounted, setIsMounted] = useState(false);
+  const [showChatPointer, setShowChatPointer] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
   
-  // Initialize AI chat state from localStorage
+  // Initialize AI chat state - respect chatMode param or use localStorage
   const getInitialChatState = () => {
+    // If chatMode param is provided (from form creation flow), use it
+    if (chatModeParam) {
+      return chatModeParam === 'expanded';
+    }
+    // Otherwise fall back to localStorage
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('ai-chat-open');
       // Default to true if not set
@@ -899,7 +911,7 @@ function FormsPageContent() {
   const [selectedResponseId, setSelectedResponseId] = useState<string | "all">("all");
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
-  const [formStatus, setFormStatus] = useState<"published" | "draft">("published");
+  const [formStatus, setFormStatus] = useState<"published" | "draft">("draft");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
   
   // Thank You Page Settings
@@ -916,6 +928,20 @@ function FormsPageContent() {
   // Fix hydration issues with DnD library
   React_useEffect(() => {
     setIsMounted(true);
+    
+    // Show chat pointer if user selected "Build with AI Chat" option
+    if (chatModeParam === 'expanded' && !aiPromptParam) {
+      // Show pointer after a brief delay for smooth UX
+      setTimeout(() => setShowChatPointer(true), 800);
+      
+      // Auto-hide after 8 seconds
+      setTimeout(() => setShowChatPointer(false), 8800);
+    }
+    
+    // If AI prompt is provided, show generating state
+    if (aiPromptParam) {
+      setIsAiGenerating(true);
+    }
   }, []);
   
   const [formName, setFormName] = useState("Untitled Form");
@@ -941,6 +967,7 @@ function FormsPageContent() {
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const shouldAutoSave = React.useRef(false);
   const autoSaveTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const hasAutoSubmittedPrompt = React.useRef(false);
   
   // Load form data when in edit mode
   React_useEffect(() => {
@@ -1471,17 +1498,34 @@ function FormsPageContent() {
                     </div>
                   ) : (
                   <ScrollArea className="h-full p-8">
-              <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+              <Card className="max-w-2xl mx-auto p-8 bg-[#0f0f0f] border-border/50">
                 <SortableContext
                   items={formFields.map((f) => f.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <div className="space-y-4">
                     {formFields.length === 0 ? (
-                      <div className="flex items-center justify-center py-24 text-center">
-                        <p className="text-gray-500 text-lg">
-                          Drag widgets onto the builder to start, or chat with AI to generate your form
-                        </p>
+                      <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
+                        {isAiGenerating ? (
+                          <>
+                            <div className="relative">
+                              <Loader2 className="h-16 w-16 text-[#c4dfc4] animate-spin" />
+                              <Sparkles className="h-6 w-6 text-[#c4dfc4] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                            </div>
+                            <div>
+                              <p className="text-[#c4dfc4] text-xl font-semibold mb-2">
+                                AI is building your form...
+                              </p>
+                              <p className="text-gray-500 text-sm">
+                                This will just take a moment
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-gray-500 text-lg">
+                            Drag widgets onto the builder to start, or chat with AI to generate your form
+                          </p>
+                        )}
                       </div>
                     ) : (
                       formFields.map((field, index) => {
@@ -1936,6 +1980,18 @@ function FormsPageContent() {
                             <Eye className="w-4 h-4 mr-2" />
                             Preview
                           </Button>
+                          
+                          {/* Live Link button - only when published */}
+                          {formStatus === "published" && shareUrl && (
+                            <Button 
+                              size="sm" 
+                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                              onClick={() => window.open(shareUrl, '_blank')}
+                            >
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Live Link
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1971,14 +2027,19 @@ function FormsPageContent() {
                                   <Input
                                     value={shareUrl}
                                     readOnly
-                                    className="bg-[#0a0a0a] border-border/50 text-gray-100 font-mono text-sm"
+                                    className={`border-border/50 font-mono text-sm ${
+                                      formStatus === "draft" 
+                                        ? "bg-[#0a0a0a]/50 text-gray-500 opacity-50" 
+                                        : "bg-[#0a0a0a] text-gray-100"
+                                    }`}
                                   />
                                   <Button
                                     onClick={() => {
                                       navigator.clipboard.writeText(shareUrl);
                                       alert('Link copied to clipboard!');
                                     }}
-                                    className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                                    disabled={formStatus === "draft"}
+                                    className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     Copy
                                   </Button>
@@ -2471,10 +2532,17 @@ function FormsPageContent() {
         currentPage="builder"
         currentFields={formFields}
         disabled={activeTab !== "builder"}
+        autoSubmitPrompt={aiPromptParam && !hasAutoSubmittedPrompt.current ? aiPromptParam : undefined}
+        onPromptSubmitted={() => { hasAutoSubmittedPrompt.current = true; }}
         onFormUpdate={(fields, formMeta) => {
           setFormFields(fields);
           if (formMeta?.title) setFormName(formMeta.title);
           if (formMeta?.description) setFormDescription(formMeta.description);
+          
+          // Hide AI generating spinner once fields appear
+          if (fields.length > 0 && isAiGenerating) {
+            setIsAiGenerating(false);
+          }
           
           // Mark for auto-save when AI creates a complete form
           if (fields.length > 0 && formMeta?.title && !isEditMode) {
@@ -2482,6 +2550,51 @@ function FormsPageContent() {
           }
         }}
       />
+
+      {/* AI Chat Pointer - Shows when user selects "Build with AI Chat" */}
+      {isMounted && showChatPointer && isChatOpen && (
+        <div 
+          className="fixed right-[400px] top-[50%] -translate-y-1/2 z-[60] pointer-events-none animate-pulse"
+          onClick={() => setShowChatPointer(false)}
+        >
+          <div className="relative">
+            {/* Arrow pointing right */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <svg width="60" height="60" viewBox="0 0 60 60" className="text-[#c4dfc4] drop-shadow-lg">
+                <path 
+                  d="M10 30 L40 30 M40 30 L30 20 M40 30 L30 40" 
+                  stroke="currentColor" 
+                  strokeWidth="4" 
+                  strokeLinecap="round" 
+                  fill="none"
+                  className="animate-bounce-x"
+                />
+              </svg>
+            </div>
+            
+            {/* Tooltip */}
+            <Card className="absolute right-[70px] top-1/2 -translate-y-1/2 p-4 bg-gradient-to-r from-[#c4dfc4] to-[#b5d0b5] border-[#c4dfc4] shadow-xl max-w-[280px] pointer-events-auto cursor-pointer">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-[#0a0a0a] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-[#0a0a0a] mb-1">
+                    💬 Chat with AI to build your form!
+                  </p>
+                  <p className="text-xs text-gray-700">
+                    Describe what fields you need and I'll add them for you.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setShowChatPointer(false)}
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
 
       <DragOverlay dropAnimation={null} modifiers={modifiers}>
           {activeWidget ? (

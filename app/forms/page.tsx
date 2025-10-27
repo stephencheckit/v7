@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { FormCreationModal } from "@/components/form-creation-modal";
 
 interface SimpleForm {
   id: string;
@@ -36,6 +37,7 @@ export default function FormsPage() {
   const [forms, setForms] = useState<SimpleForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showCreationModal, setShowCreationModal] = useState(false);
   const [selectedFormUrl, setSelectedFormUrl] = useState<string>("");
   const [sortColumn, setSortColumn] = useState<SortColumn>('created');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -72,7 +74,7 @@ export default function FormsPage() {
   };
 
   const handleCreateNew = () => {
-    router.push("/forms/builder");
+    setShowCreationModal(true);
   };
 
   const handleViewForm = (formId: string) => {
@@ -435,6 +437,12 @@ export default function FormsPage() {
           </Card>
         </div>
       )}
+
+      {/* Form Creation Modal */}
+      <FormCreationModal 
+        isOpen={showCreationModal}
+        onClose={() => setShowCreationModal(false)}
+      />
     </>
   );
 }

@@ -31,6 +31,8 @@ interface AIChatPanelProps {
   onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
   currentFields?: FrontendFormField[];
   disabled?: boolean;  // Show as disabled with overlay (for Settings/Publish tabs)
+  autoSubmitPrompt?: string;  // Auto-submit this prompt on mount
+  onPromptSubmitted?: () => void;  // Callback when auto-submit completes
 }
 
 export function AIChatPanel({ 
@@ -40,7 +42,9 @@ export function AIChatPanel({
   currentPage = 'builder',
   onFormUpdate, 
   currentFields = [],
-  disabled = false
+  disabled = false,
+  autoSubmitPrompt,
+  onPromptSubmitted
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,11 +60,26 @@ export function AIChatPanel({
   const [aiMode, setAiMode] = useState<AIMode | 'auto'>('auto'); // auto, strategy, or execution
   const [detectedMode, setDetectedMode] = useState<AIMode>('strategy');
   const previousFormIdRef = useRef<string | null | undefined>(undefined);
+  const hasAutoSubmitted = useRef(false);
   
   // Ensure client-only rendering to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  // Auto-submit prompt if provided (for "Let AI Build Draft" flow)
+  useEffect(() => {
+    if (autoSubmitPrompt && isMounted && !hasAutoSubmitted.current && !isLoading) {
+      console.log('🤖 Auto-submitting AI prompt:', autoSubmitPrompt);
+      hasAutoSubmitted.current = true;
+      
+      // Wait a moment for the component to fully render
+      setTimeout(() => {
+        handleSubmit(null, autoSubmitPrompt);
+        onPromptSubmitted?.();
+      }, 500);
+    }
+  }, [autoSubmitPrompt, isMounted, isLoading]);
   
   // Load conversation history when form ID changes
   useEffect(() => {
