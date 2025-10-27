@@ -67,7 +67,10 @@ JOIN workspaces w ON w.id = wm.workspace_id;
 - ✅ Backfilled 2 existing users with workspaces
 - ✅ charlie@checkit.net → "Charlie's Kitchen" (owner)
 - ✅ stephen.p.newman@gmail.com → "Stephen's Workspace" (owner)
+- ✅ Applied missing `ai_vision_enabled` column migration
 - ✅ Form creation now working for all users
+
+**Note:** Also applied `20251027000000_add_ai_vision_setting.sql` migration that was in repo but not yet run on live database.
 
 ---
 
