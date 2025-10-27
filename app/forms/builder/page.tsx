@@ -41,6 +41,8 @@ import {
   ExternalLink,
   Table,
   PenTool,
+  FileText,
+  ListChecks,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -2076,17 +2078,6 @@ function FormsPageContent() {
                           Preview
                         </Button>
                         
-                        {/* Live Link button - only when published */}
-                        {formStatus === "published" && shareUrl && (
-                          <Button 
-                            size="sm" 
-                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                            onClick={() => window.open(shareUrl, '_blank')}
-                          >
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Live Link
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -2123,21 +2114,40 @@ function FormsPageContent() {
                         <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
                           {activePublishSection === "share" && (
                           <div className="space-y-8">
-                            {/* Form Status */}
+                            {/* Form Status - Synced with bottom nav */}
                             <div className="space-y-3">
                               <label className="text-sm font-medium text-gray-300">Form Status</label>
-                              <select
-                                value={formStatus}
-                                onChange={(e) => setFormStatus(e.target.value as "published" | "draft")}
-                                className="w-full rounded-lg border-2 border-border/50 bg-[#0a0a0a] px-4 py-3 text-base text-gray-100 focus:border-[#c4dfc4] focus:outline-none transition-colors"
-                              >
-                                <option value="published">Published - Can receive responses</option>
-                                <option value="draft">Draft - Preview mode only</option>
-                              </select>
-                              <p className="text-xs text-gray-400 italic">
-                                {formStatus === "published" 
-                                  ? "This form is live and can collect responses from users."
-                                  : "This form is a draft and will only work in preview mode."}
+                              <div className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {formStatus === "published" ? (
+                                      <CheckCircle2 className="w-5 h-5 text-[#c4dfc4]" />
+                                    ) : (
+                                      <FileText className="w-5 h-5 text-gray-400" />
+                                    )}
+                                    <span className={`font-semibold ${formStatus === "published" ? "text-[#c4dfc4]" : "text-gray-400"}`}>
+                                      {formStatus === "published" ? "Published" : "Draft"}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-400 italic">
+                                    {formStatus === "published" 
+                                      ? "✓ This form is live and can collect responses from users."
+                                      : "This form is a draft and will only work in preview mode."}
+                                  </p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setFormStatus(formStatus === "draft" ? "published" : "draft")}
+                                  className={formStatus === "published" 
+                                    ? "bg-white/10 hover:bg-white/20 text-gray-300" 
+                                    : "bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                                  }
+                                >
+                                  {formStatus === "published" ? "Unpublish" : "Publish"}
+                                </Button>
+                              </div>
+                              <p className="text-xs text-gray-500 italic">
+                                Toggle also available in the bottom navigation bar
                               </p>
                             </div>
                             
@@ -2853,6 +2863,72 @@ function FormsPageContent() {
           </Card>
         </div>
       )}
+
+      {/* Sticky Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-[#0a0a0a] to-[#000000] border-t border-white/10 shadow-lg">
+        <div className="flex items-center justify-between px-6 py-3">
+          {/* Left side - Draft/Published Toggle */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFormStatus(formStatus === "draft" ? "published" : "draft")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                formStatus === "published"
+                  ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                  : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200"
+              }`}
+            >
+              {formStatus === "published" ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Published
+                </>
+              ) : (
+                <>
+                  <FileText className="w-4 h-4" />
+                  Draft
+                </>
+              )}
+            </button>
+            {formStatus === "draft" && (
+              <span className="text-xs text-gray-500">Preview mode only</span>
+            )}
+            {formStatus === "published" && shareUrl && (
+              <span className="text-xs text-[#c4dfc4]">✓ Live and collecting responses</span>
+            )}
+          </div>
+
+          {/* Right side - Question count and Publish/View link */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-gray-400">
+              <ListChecks className="w-4 h-4" />
+              <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+            </div>
+            
+            {formStatus === "published" && shareUrl ? (
+              <Button
+                size="sm"
+                onClick={() => window.open(shareUrl, '_blank')}
+                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Live Form
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setFormStatus("published");
+                  toast.success("Form published! Click again to view.");
+                }}
+                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Publish Form
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
