@@ -7,11 +7,10 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { CalendarEvent, FormInstance, InstanceStatus } from "@/lib/types/cadence";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon, Filter, RefreshCw } from "lucide-react";
+import { Calendar as CalendarIcon, RefreshCw, BarChart3 } from "lucide-react";
 import { InstanceDetailModal } from "@/components/cadences/instance-detail-modal";
-import { SummariesView } from "@/components/summaries/summaries-view";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const localizer = momentLocalizer(moment);
 
@@ -225,170 +224,158 @@ export default function CadencesPage() {
               Cadences
             </h1>
             <p className="text-gray-400 mt-1">
-              Manage your form schedules and summaries
+              Schedule and track recurring form completions
             </p>
           </div>
+          
+          <Link href="/reports">
+            <Button variant="outline" className="border-gray-700">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              View Reports
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Content */}
       <div className="max-w-7xl mx-auto">
-        <Tabs defaultValue="calendar" className="w-full">
-          <TabsList className="bg-[#1a1a1a] border border-gray-700 mb-6">
-            <TabsTrigger value="calendar" className="data-[state=active]:bg-[#2a2a2a]">
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="summaries" className="data-[state=active]:bg-[#2a2a2a]">
-              Summaries
-            </TabsTrigger>
-          </TabsList>
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-gray-400 text-sm">
+              Viewing in {timezone} timezone
+            </p>
+            
+            <div className="flex items-center gap-3">
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="ready">Ready</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="missed">Missed</option>
+                <option value="skipped">Skipped</option>
+              </select>
 
-          {/* Calendar Tab */}
-          <TabsContent value="calendar" className="mt-0">
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-gray-400 text-sm">
-                  Viewing in {timezone} timezone
-                </p>
-                
-                <div className="flex items-center gap-3">
-                  {/* Status Filter */}
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white"
-                  >
-                    <option value="all">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="ready">Ready</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="missed">Missed</option>
-                    <option value="skipped">Skipped</option>
-                  </select>
-
-                  {/* Refresh Button */}
-                  <Button
-                    onClick={fetchInstances}
-                    variant="outline"
-                    className="border-gray-700"
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh
-                  </Button>
-                </div>
-              </div>
-
-              {/* Legend */}
-              <div className="flex flex-wrap gap-4 p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
-                {Object.entries(STATUS_COLORS).map(([status, color]) => (
-                  <div key={status} className="flex items-center gap-2">
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="text-sm text-gray-300 capitalize">
-                      {status.replace('_', ' ')}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {/* Refresh Button */}
+              <Button
+                onClick={fetchInstances}
+                variant="outline"
+                className="border-gray-700"
+                disabled={loading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
             </div>
+          </div>
 
-            {/* Calendar */}
-            <div className="bg-white rounded-lg p-6">
-        <style jsx global>{`
-          .rbc-calendar {
-            font-family: inherit;
-          }
-          .rbc-calendar * {
-            color: #111827;
-          }
-          .rbc-header {
-            padding: 10px 3px;
-            font-weight: 700 !important;
-            font-size: 1rem !important;
-            color: #000000 !important;
-            border-bottom: 2px solid #e5e7eb;
-          }
-          .rbc-header span {
-            color: #000000 !important;
-          }
-          .rbc-date-cell {
-            padding: 8px;
-            text-align: right;
-          }
-          .rbc-date-cell a,
-          .rbc-date-cell button,
-          .rbc-button-link {
-            color: #000000 !important;
-            font-weight: 700 !important;
-            font-size: 1.1rem !important;
-          }
-          .rbc-off-range-bg {
-            background: #f9fafb;
-          }
-          .rbc-off-range .rbc-date-cell a,
-          .rbc-off-range .rbc-button-link {
-            color: #9ca3af !important;
-          }
-          .rbc-today {
-            background-color: #dbeafe !important;
-          }
-          .rbc-event {
-            padding: 3px 6px;
-            font-size: 0.85rem;
-            color: white !important;
-          }
-          .rbc-toolbar {
-            margin-bottom: 20px;
-          }
-          .rbc-toolbar-label {
-            font-weight: 700 !important;
-            font-size: 1.5rem !important;
-            color: #000000 !important;
-          }
-          .rbc-toolbar button {
-            color: #000000 !important;
-            border: 1px solid #d1d5db;
-            padding: 8px 16px;
-            font-weight: 600 !important;
-            background: white;
-          }
-          .rbc-toolbar button:hover {
-            background-color: #f3f4f6;
-          }
-          .rbc-toolbar button.rbc-active {
-            background-color: #3b82f6;
-            color: white !important;
-            border-color: #3b82f6;
-          }
-        `}</style>
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: 700 }}
-          view={view}
-          onView={setView}
-          date={date}
-          onNavigate={setDate}
-          onSelectEvent={handleSelectEvent}
-          eventPropGetter={eventStyleGetter}
-          views={['month', 'week', 'day', 'agenda']}
-          popup
-          tooltipAccessor={(event) => `${event.title} - ${event.status}`}
-        />
-            </div>
-          </TabsContent>
+          {/* Legend */}
+          <div className="flex flex-wrap gap-4 p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
+            {Object.entries(STATUS_COLORS).map(([status, color]) => (
+              <div key={status} className="flex items-center gap-2">
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-sm text-gray-300 capitalize">
+                  {status.replace('_', ' ')}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-          {/* Summaries Tab */}
-          <TabsContent value="summaries" className="mt-0">
-            {workspaceId && <SummariesView workspaceId={workspaceId} />}
-          </TabsContent>
-        </Tabs>
+        {/* Calendar */}
+        <div className="bg-white rounded-lg p-6">
+          <style jsx global>{`
+            .rbc-calendar {
+              font-family: inherit;
+            }
+            .rbc-calendar * {
+              color: #111827;
+            }
+            .rbc-header {
+              padding: 10px 3px;
+              font-weight: 700 !important;
+              font-size: 1rem !important;
+              color: #000000 !important;
+              border-bottom: 2px solid #e5e7eb;
+            }
+            .rbc-header span {
+              color: #000000 !important;
+            }
+            .rbc-date-cell {
+              padding: 8px;
+              text-align: right;
+            }
+            .rbc-date-cell a,
+            .rbc-date-cell button,
+            .rbc-button-link {
+              color: #000000 !important;
+              font-weight: 700 !important;
+              font-size: 1.1rem !important;
+            }
+            .rbc-off-range-bg {
+              background: #f9fafb;
+            }
+            .rbc-off-range .rbc-date-cell a,
+            .rbc-off-range .rbc-button-link {
+              color: #9ca3af !important;
+            }
+            .rbc-today {
+              background-color: #dbeafe !important;
+            }
+            .rbc-event {
+              padding: 3px 6px;
+              font-size: 0.85rem;
+              color: white !important;
+            }
+            .rbc-toolbar {
+              margin-bottom: 20px;
+            }
+            .rbc-toolbar-label {
+              font-weight: 700 !important;
+              font-size: 1.5rem !important;
+              color: #000000 !important;
+            }
+            .rbc-toolbar button {
+              color: #000000 !important;
+              border: 1px solid #d1d5db;
+              padding: 8px 16px;
+              font-weight: 600 !important;
+              background: white;
+            }
+            .rbc-toolbar button:hover {
+              background-color: #f3f4f6;
+            }
+            .rbc-toolbar button.rbc-active {
+              background-color: #3b82f6;
+              color: white !important;
+              border-color: #3b82f6;
+            }
+          `}</style>
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: 700 }}
+            view={view}
+            onView={setView}
+            date={date}
+            onNavigate={setDate}
+            onSelectEvent={handleSelectEvent}
+            eventPropGetter={eventStyleGetter}
+            views={['month', 'week', 'day', 'agenda']}
+            popup
+            tooltipAccessor={(event) => `${event.title} - ${event.status}`}
+          />
+        </div>
       </div>
 
       {/* Instance Detail Modal */}
