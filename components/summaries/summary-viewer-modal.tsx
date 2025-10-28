@@ -190,9 +190,10 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                 // Parse AI content if it's a string
                 let aiContent = summary.ai_content;
                 if (typeof aiContent === 'string') {
+                  const originalString: string = aiContent;
                   try {
                     // Strip markdown code fences if present
-                    let cleanedText = aiContent.trim();
+                    let cleanedText = originalString.trim();
                     if (cleanedText.startsWith('```')) {
                       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '');
                       cleanedText = cleanedText.replace(/\n?```$/, '');
@@ -202,7 +203,7 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                     console.error('Failed to parse AI content:', e);
                     // If parsing fails, display as-is
                     aiContent = {
-                      executive_summary: aiContent,
+                      executive_summary: originalString,
                       insights: [],
                       recommendations: []
                     };
@@ -405,9 +406,10 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                 // Parse AI content if it's a string
                 let aiContent = summary.ai_content;
                 if (typeof aiContent === 'string') {
+                  const originalString: string = aiContent;
                   try {
                     // Strip markdown code fences if present
-                    let cleanedText = aiContent.trim();
+                    let cleanedText = originalString.trim();
                     if (cleanedText.startsWith('```')) {
                       cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '');
                       cleanedText = cleanedText.replace(/\n?```$/, '');

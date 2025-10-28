@@ -100,17 +100,28 @@ export async function DELETE(
       .eq('id', id)
       .single();
 
-    if (summary) {
+    if (summary && summary.cadence_ids) {
       // Remove from cadences' included_in_summaries
       for (const cadenceId of (summary.cadence_ids as string[])) {
-        await supabase
+        // Fetch current cadence
+        const { data: cadence } = await supabase
           .from('form_cadences')
-          .update({
-            included_in_summaries: supabase.raw(`
-              included_in_summaries - '"${id}"'::text
-            `)
-          })
-          .eq('id', cadenceId);
+          .select('included_in_summaries')
+          .eq('id', cadenceId)
+          .single();
+        
+        if (cadence && cadence.included_in_summaries) {
+          // Remove this summary ID from the array
+          const updatedSummaries = (cadence.included_in_summaries as string[]).filter(
+            summaryId => summaryId !== id
+          );
+          
+          // Update with the new array
+          await supabase
+            .from('form_cadences')
+            .update({ included_in_summaries: updatedSummaries })
+            .eq('id', cadenceId);
+        }
       }
     }
 

@@ -81,7 +81,8 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
   const fetchCadences = async () => {
     try {
       const supabase = createClient();
-      const { data } = await supabase
+      // Cast to any to avoid TypeScript errors with form_cadences table
+      const { data } = await (supabase as any)
         .from('form_cadences')
         .select('id, name, form:simple_forms(title)')
         .eq('workspace_id', workspaceId)

@@ -72,8 +72,17 @@ export default function CadencesPage() {
     setLoading(true);
     try {
       // Get date range for current view
-      const startDate = moment(date).startOf(view).toISOString();
-      const endDate = moment(date).endOf(view).toISOString();
+      // Map calendar view to moment units
+      const viewToMomentUnit: Record<View, moment.unitOfTime.StartOf> = {
+        month: 'month',
+        week: 'week',
+        work_week: 'week',
+        day: 'day',
+        agenda: 'month'
+      };
+      const momentUnit = viewToMomentUnit[view];
+      const startDate = moment(date).startOf(momentUnit).toISOString();
+      const endDate = moment(date).endOf(momentUnit).toISOString();
 
       // Build query params
       const params = new URLSearchParams({
@@ -167,7 +176,8 @@ export default function CadencesPage() {
   const handleSelectEvent = async (event: CalendarEvent) => {
     const supabase = createClient();
     
-    const { data: instance } = await supabase
+    // Type cast to avoid "excessively deep" TypeScript error with complex nested query
+    const result: any = await (supabase as any)
       .from('form_instances')
       .select(`
         *,
@@ -177,6 +187,8 @@ export default function CadencesPage() {
       `)
       .eq('id', event.instanceId)
       .single();
+    
+    const instance = result.data as FormInstance | null;
 
     if (instance) {
       setSelectedInstance(instance);
