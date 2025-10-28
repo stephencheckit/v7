@@ -147,17 +147,9 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
   };
 
   const fetchWorkspaceMembers = async () => {
-    try {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('workspace_members')
-        .select('user_id, users(email, raw_user_meta_data)')
-        .eq('workspace_id', workspaceId);
-      
-      setWorkspaceMembers(data || []);
-    } catch (error) {
-      console.error('Error fetching members:', error);
-    }
+    // Simplified: For now, recipients will be entered manually
+    // TODO: Create server-side API endpoint to fetch workspace member emails
+    setWorkspaceMembers([]);
   };
 
   const handleSubmit = async () => {
@@ -500,40 +492,32 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
               
               <div>
                 <Label>Recipients</Label>
-                <p className="text-sm text-gray-400 mb-2">Select who should receive this summary</p>
+                <p className="text-sm text-gray-400 mb-2">Enter email addresses (comma-separated)</p>
                 
-                {workspaceMembers.length === 0 ? (
-                  <div className="p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
-                    <p className="text-gray-400 text-sm">No workspace members found</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {workspaceMembers.map((member: any) => (
+                <Textarea
+                  placeholder="manager@company.com, director@company.com"
+                  value={formData.recipients.join(', ')}
+                  onChange={(e) => {
+                    const emails = e.target.value
+                      .split(',')
+                      .map(email => email.trim())
+                      .filter(email => email.length > 0);
+                    setFormData({
+                      ...formData,
+                      recipients: emails
+                    });
+                  }}
+                  className="bg-[#1a1a1a] border-gray-700 min-h-[100px]"
+                />
+                
+                {formData.recipients.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {formData.recipients.map((email, index) => (
                       <div
-                        key={member.user_id}
-                        className="flex items-center space-x-3 p-2 bg-[#1a1a1a] rounded-lg border border-gray-700"
+                        key={index}
+                        className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-sm border border-blue-500/30"
                       >
-                        <Checkbox
-                          id={member.user_id}
-                          checked={formData.recipients.includes(member.users?.email)}
-                          onCheckedChange={(checked) => {
-                            const email = member.users?.email;
-                            if (checked && email) {
-                              setFormData({
-                                ...formData,
-                                recipients: [...formData.recipients, email]
-                              });
-                            } else if (email) {
-                              setFormData({
-                                ...formData,
-                                recipients: formData.recipients.filter(e => e !== email)
-                              });
-                            }
-                          }}
-                        />
-                        <label htmlFor={member.user_id} className="flex-1 cursor-pointer">
-                          <div className="text-sm">{member.users?.email}</div>
-                        </label>
+                        {email}
                       </div>
                     ))}
                   </div>
