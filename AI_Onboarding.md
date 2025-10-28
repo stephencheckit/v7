@@ -5,7 +5,32 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🏗️ Reports Section: Standalone Feature - October 28, 2025 (Latest)**
+### **🎨 Renamed Reports to Summaries - October 28, 2025 (Latest)**
+**Status:** ✅ DEPLOYED
+**Deployed:** October 28, 2025
+
+**Change:** Renamed "Reports" section to "Summaries" with new branding
+
+**Updates:**
+- **Name:** Reports → Summaries
+- **URL:** `/reports` → `/summaries`
+- **Icon:** BarChart3 → FileCheck (✅ checkmark document icon)
+- **Button text:** "View Reports" → "View Summaries"
+
+**Rationale:**
+- More accurate naming - the feature generates AI summaries, not full reports
+- FileCheck icon better represents compliance summaries with checkmark
+- Clearer for users - "Summaries" is more specific than "Reports"
+- Maintains consistency with existing "SummariesView" component naming
+
+**Files Changed:**
+- `app/reports/` → `app/summaries/` (directory rename)
+- `components/app-sidebar.tsx` - Menu item and icon updated
+- `app/cadences/page.tsx` - Link updated to `/summaries`
+
+---
+
+### **🏗️ Summaries Section: Standalone Feature - October 28, 2025**
 **Status:** ✅ DEPLOYED
 **Deployed:** October 28, 2025
 
