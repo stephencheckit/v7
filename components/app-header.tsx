@@ -312,10 +312,10 @@ export function AppHeader() {
         </div>
 
         {/* Mobile: Hamburger on RIGHT */}
-        <div className="md:hidden shrink-0 ml-2">
+        <div className="md:hidden shrink-0 ml-2 flex items-center">
           <SidebarTrigger>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-white/10">
+              <Menu className="h-6 w-6 text-white" />
             </Button>
           </SidebarTrigger>
         </div>
