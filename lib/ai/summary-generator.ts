@@ -119,20 +119,40 @@ export async function generateSummary(
       messages: [
         {
           role: 'system',
-          content: `You are a compliance analyst assistant. Analyze form completion data and provide actionable insights. 
-          Return your response as a valid JSON object with the following structure:
-          {
-            "executive_summary": "2-3 paragraph overview",
-            "insights": [
-              {
-                "category": "compliance" | "quality" | "timing" | "trends",
-                "title": "Short title",
-                "description": "Detailed description",
-                "severity": "low" | "medium" | "high"
-              }
-            ],
-            "recommendations": ["Recommendation 1", "Recommendation 2", ...]
-          }`
+          content: `You are a senior compliance analyst preparing reports for executive leadership, board members, and investors. Your reports are authoritative, data-driven, and action-oriented.
+
+CRITICAL RULES:
+- Write for C-suite executives, board members, and investors (external stakeholders)
+- Focus ONLY on findings, implications, and actions - never discuss the report itself
+- Use confident, declarative language - avoid phrases like "this report suggests" or "future reports could"
+- Be specific with numbers, percentages, and concrete examples
+- Provide actionable insights that drive business decisions
+- Never include meta-commentary about the report, data limitations, or analysis frameworks
+
+BAD EXAMPLES (Never write like this):
+❌ "Given the user commentary, it is essential to consider this report as a framework..."
+❌ "Future reports could benefit from more detailed data..."
+❌ "This analysis provides a starting point..."
+❌ "Based on the available information..."
+
+GOOD EXAMPLES (Write like this):
+✅ "Compliance rates demonstrate strong operational discipline at 95%."
+✅ "Three critical areas require immediate attention to mitigate risk."
+✅ "Implementation of recommended protocols will reduce incidents by an estimated 40%."
+
+Return your response as a valid JSON object with this structure:
+{
+  "executive_summary": "2-3 authoritative paragraphs focusing on key findings and business impact",
+  "insights": [
+    {
+      "category": "compliance" | "quality" | "timing" | "trends",
+      "title": "Clear, specific finding",
+      "description": "Data-driven insight with business implications",
+      "severity": "low" | "medium" | "high"
+    }
+  ],
+  "recommendations": ["Specific, actionable directive with expected outcome", ...]
+}`
         },
         {
           role: 'user',
@@ -292,10 +312,10 @@ function buildPrompt(
   const cadenceNames = cadences.map(c => c.name).join(', ');
   const dateRange = `${new Date(dateStart).toLocaleDateString()} to ${new Date(dateEnd).toLocaleDateString()}`;
 
-  let prompt = `Analyze the following compliance data for the period ${dateRange}.\n\n`;
+  let prompt = `You are preparing an executive compliance report for the period ${dateRange}. This report will be presented to senior leadership, board members, and investors. Provide authoritative analysis with actionable insights.\n\n`;
   
   if (userCommentary) {
-    prompt += `**User Commentary/Focus**: ${userCommentary}\n\n`;
+    prompt += `**Executive Focus Areas**: ${userCommentary}\n\n`;
   }
 
   prompt += `**Cadences**: ${cadenceNames}\n\n`;
@@ -326,13 +346,20 @@ function buildPrompt(
     });
   }
 
-  prompt += `\n**Instructions**:\n`;
-  prompt += `1. Provide an executive summary highlighting compliance rates, trends, and concerns.\n`;
-  prompt += `2. Generate 3-5 actionable insights categorized by: compliance, quality, timing, or trends.\n`;
-  prompt += `3. Provide 3-5 specific recommendations to improve compliance and quality.\n`;
-  prompt += `4. If user commentary is provided, ensure your analysis addresses their specific concerns.\n`;
-  prompt += `5. For images, note their presence but state you cannot analyze visual content.\n`;
-  prompt += `6. Return response as valid JSON matching the specified schema.\n`;
+  prompt += `\n**Analysis Requirements**:\n`;
+  prompt += `1. Write an executive summary that presents key findings, business impact, and critical actions. Focus on what the data reveals about operational performance and risk.\n`;
+  prompt += `2. Identify 3-5 data-driven insights with clear business implications. Each insight should:\n`;
+  prompt += `   - State a specific finding with supporting data\n`;
+  prompt += `   - Explain the business impact or risk\n`;
+  prompt += `   - Be actionable by leadership\n`;
+  prompt += `3. Provide 3-5 specific, implementable recommendations that:\n`;
+  prompt += `   - Address identified issues or opportunities\n`;
+  prompt += `   - Include expected business outcomes\n`;
+  prompt += `   - Can be acted upon immediately\n`;
+  prompt += `4. Use authoritative, confident language suitable for board presentations.\n`;
+  prompt += `5. Never discuss the report itself, data limitations, or suggest future analyses.\n`;
+  prompt += `6. If user commentary is provided, incorporate those concerns directly into your analysis.\n`;
+  prompt += `7. For images: acknowledge their presence but note visual content analysis is not available.\n`;
 
   return prompt;
 }
