@@ -7,7 +7,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { CalendarEvent, FormInstance, InstanceStatus } from "@/lib/types/cadence";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, RefreshCw, FileCheck } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Calendar as CalendarIcon, RefreshCw, FileCheck, Clock, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
 import { InstanceDetailModal } from "@/components/cadences/instance-detail-modal";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -213,6 +214,19 @@ export default function CadencesPage() {
     };
   };
 
+  // Calculate stats
+  const totalInstances = events.length;
+  const completedToday = events.filter(e => 
+    e.status === 'completed' && 
+    moment(e.end).isSame(moment(), 'day')
+  ).length;
+  const pendingTasks = events.filter(e => 
+    e.status === 'ready' || e.status === 'pending'
+  ).length;
+  const missedTasks = events.filter(e => 
+    e.status === 'missed'
+  ).length;
+
   return (
     <div className="w-full h-full overflow-auto">
       <div className="p-4 md:p-8">
@@ -237,61 +251,112 @@ export default function CadencesPage() {
             </Link>
           </div>
 
-          {/* Content */}
-          <div>
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-gray-400 text-sm">
-              Viewing in {timezone} timezone
-            </p>
-            
-            <div className="flex items-center gap-3">
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white"
-              >
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="ready">Ready</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="missed">Missed</option>
-                <option value="skipped">Skipped</option>
-              </select>
+          {/* Stats Cards */}
+          <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
+            <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
+              <div className="flex items-center gap-3">
+                <CalendarIcon className="h-8 w-8 text-[#0a0a0a]" />
+                <div>
+                  <p className="text-sm text-[#0a0a0a]/70">Total Tasks</p>
+                  <p className="text-2xl font-bold text-[#0a0a0a]">{totalInstances}</p>
+                </div>
+              </div>
+            </Card>
 
-              {/* Refresh Button */}
-              <Button
-                onClick={fetchInstances}
-                variant="outline"
-                className="border-gray-700"
-                disabled={loading}
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
+            <Card className="bg-gradient-to-br from-[#c8e0f5] to-[#c8e0f5]/80 border-0 p-4">
+              <div className="flex items-center gap-3">
+                <Clock className="h-8 w-8 text-[#0a0a0a]" />
+                <div>
+                  <p className="text-sm text-[#0a0a0a]/70">Pending</p>
+                  <p className="text-2xl font-bold text-[#0a0a0a]">{pendingTasks}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-8 w-8 text-[#0a0a0a]" />
+                <div>
+                  <p className="text-sm text-[#0a0a0a]/70">Completed Today</p>
+                  <p className="text-2xl font-bold text-[#0a0a0a]">{completedToday}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className={`border-0 p-4 ${
+              missedTasks > 0
+                ? 'bg-gradient-to-br from-[#ff6b6b] to-[#ff6b6b]/80'
+                : 'bg-gradient-to-br from-[#f5edc8] to-[#f5edc8]/80'
+            }`}>
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-8 w-8 text-[#0a0a0a]" />
+                <div>
+                  <p className="text-sm text-[#0a0a0a]/70">Missed</p>
+                  <p className="text-2xl font-bold text-[#0a0a0a]">{missedTasks}</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Content */}
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+              <p className="text-gray-400 text-sm">
+                Viewing in {timezone} timezone
+              </p>
+              
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Status Filter */}
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white text-sm"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="ready">Ready</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="missed">Missed</option>
+                  <option value="skipped">Skipped</option>
+                </select>
+
+                {/* Refresh Button */}
+                <Button
+                  onClick={fetchInstances}
+                  variant="outline"
+                  className="border-gray-700"
+                  disabled={loading}
+                  size="sm"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap gap-4 p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
+              {Object.entries(STATUS_COLORS).map(([status, color]) => (
+                <div key={status} className="flex items-center gap-2">
+                  <div
+                    className="w-4 h-4 rounded"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="text-sm text-gray-300 capitalize">
+                    {status.replace('_', ' ')}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="flex flex-wrap gap-4 p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
-            {Object.entries(STATUS_COLORS).map(([status, color]) => (
-              <div key={status} className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-sm text-gray-300 capitalize">
-                  {status.replace('_', ' ')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Calendar */}
-        <div className="bg-white rounded-lg p-6">
+          {/* Calendar */}
+          <Card className="shadow-lg border-gray-200">
+            <div className="p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">Schedule Calendar</h2>
+              <div className="w-full overflow-x-auto">
+                <div className="bg-white rounded-lg p-4 md:p-6 min-w-[800px]">
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
@@ -375,8 +440,10 @@ export default function CadencesPage() {
             popup
             tooltipAccessor={(event) => `${event.title} - ${event.status}`}
           />
-        </div>
-      </div>
+                </div>
+              </div>
+            </div>
+          </Card>
 
       {/* Instance Detail Modal */}
       {selectedInstance && (

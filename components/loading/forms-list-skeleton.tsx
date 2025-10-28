@@ -1,4 +1,3 @@
-import { FileText } from "lucide-react";
 import { SkeletonCard, SkeletonText } from "./skeleton-card";
 
 export function FormsListSkeleton() {
@@ -11,7 +10,7 @@ export function FormsListSkeleton() {
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <FileText className="h-10 w-10 text-[#c4dfc4]" />
+                  <SkeletonCard className="h-10 w-10 rounded-lg" />
                   <SkeletonText className="h-8 w-32" />
                 </div>
                 <SkeletonText className="h-4 w-64" />
