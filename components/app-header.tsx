@@ -205,10 +205,10 @@ export function AppHeader() {
   return (
     <>
       <header 
-        className={`sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-6 transition-all duration-300 ${
+        className={`sticky top-0 z-40 flex h-16 items-center gap-2 md:gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-3 md:pl-6 pr-3 md:pr-0 transition-all duration-300 ${
           isFormBuilderPage 
             ? (isChatOpen ? 'mr-[400px]' : 'mr-16')
-            : 'mr-6'
+            : 'md:mr-6'
         }`}
       >
         {/* Mobile: Logo on LEFT */}
@@ -229,7 +229,7 @@ export function AppHeader() {
           </SidebarTrigger>
         </div>
 
-        <div className="flex flex-1 items-center gap-4 min-w-0">
+        <div className="flex flex-1 items-center gap-4 min-w-0 overflow-hidden">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
@@ -245,7 +245,7 @@ export function AppHeader() {
         </div>
 
         {/* Desktop: User Menu */}
-        <div className="hidden md:flex items-center justify-end ml-auto">
+        <div className="hidden md:flex items-center justify-end ml-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 gap-2 px-3 hover:bg-white/10" disabled={isSigningOut}>
@@ -312,9 +312,11 @@ export function AppHeader() {
         </div>
 
         {/* Mobile: Hamburger on RIGHT */}
-        <div className="md:hidden shrink-0">
+        <div className="md:hidden shrink-0 ml-2">
           <SidebarTrigger>
-            <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Menu className="h-5 w-5" />
+            </Button>
           </SidebarTrigger>
         </div>
       </header>
