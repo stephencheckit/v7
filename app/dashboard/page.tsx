@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { DemoIndicator } from "@/components/demo-indicator";
+import { CenteredSpinner } from "@/components/loading";
 
 // Food Safety Data
 const complianceData = [
@@ -65,6 +66,7 @@ const inspectionScores = [
 
 export default function DashboardPage() {
   const [sensorAlerts, setSensorAlerts] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   // Extract first name from user metadata or email
@@ -99,11 +101,17 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching sensor alerts:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchSensorAlerts();
   }, []);
+
+  if (loading) {
+    return <CenteredSpinner message="Loading dashboard..." />;
+  }
 
   return (
     <div className="w-full h-full overflow-auto">

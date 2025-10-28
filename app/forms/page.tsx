@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormCreationModal } from "@/components/form-creation-modal";
+import { FormsListSkeleton } from "@/components/loading";
 
 interface SimpleForm {
   id: string;
@@ -166,6 +167,10 @@ export default function FormsPage() {
     ? Math.round(forms.reduce((sum, form) => sum + (form.schema?.fields?.length || 0), 0) / forms.length)
     : 0;
 
+  if (loading) {
+    return <FormsListSkeleton />;
+  }
+
   return (
     <>
       <div className="w-full h-full overflow-auto overflow-x-hidden">
@@ -195,13 +200,7 @@ export default function FormsPage() {
             </div>
 
             {/* Stats Cards */}
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 text-[#c4dfc4] animate-spin" />
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
                   <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
                     <div className="flex items-center gap-3">
                       <FileText className="h-8 w-8 text-[#0a0a0a]" />
@@ -247,7 +246,7 @@ export default function FormsPage() {
                       </div>
                     </div>
                   </Card>
-                </div>
+            </div>
 
             {/* Forms Table */}
             <Card className="shadow-lg border-gray-200">
@@ -416,8 +415,6 @@ export default function FormsPage() {
                 </div>
               </div>
             </Card>
-          </>
-            )}
           </div>
         </div>
       </div>
