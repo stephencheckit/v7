@@ -355,8 +355,7 @@ export default function CadencesPage() {
           <Card className="shadow-lg border-gray-200">
             <div className="p-4 md:p-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">Schedule Calendar</h2>
-              <div className="w-full overflow-x-auto">
-                <div className="bg-white rounded-lg p-4 md:p-6 min-w-[800px]">
+              <div className="bg-white rounded-lg p-3 md:p-6 overflow-x-auto">
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
@@ -429,7 +428,7 @@ export default function CadencesPage() {
             events={events}
             startAccessor="start"
             endAccessor="end"
-            style={{ height: 700 }}
+            style={{ height: 700, minWidth: '600px' }}
             view={view}
             onView={setView}
             date={date}
@@ -440,7 +439,6 @@ export default function CadencesPage() {
             popup
             tooltipAccessor={(event) => `${event.title} - ${event.status}`}
           />
-                </div>
               </div>
             </div>
           </Card>
