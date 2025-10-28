@@ -28,7 +28,7 @@ export function FormsListSkeleton() {
           </div>
 
           {/* Table Skeleton */}
-          <SkeletonCard className="p-4 md:p-6 space-y-4">
+          <div className="bg-white/5 rounded-lg p-4 md:p-6 space-y-4">
             {/* Table Header */}
             <SkeletonText className="h-6 w-32" />
             
@@ -45,7 +45,7 @@ export function FormsListSkeleton() {
                 </div>
               ))}
             </div>
-          </SkeletonCard>
+          </div>
         </div>
       </div>
     </div>

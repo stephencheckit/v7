@@ -173,7 +173,7 @@ export default function FormsPage() {
 
   return (
     <>
-      <div className="w-full h-full overflow-auto overflow-x-hidden">
+      <div className="w-full overflow-auto">
         <div className="p-4 md:p-8">
           <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             {/* Header */}
@@ -252,11 +252,11 @@ export default function FormsPage() {
             <Card className="shadow-lg border-gray-200">
               <div className="p-4 md:p-6">
                 <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">All Forms</h2>
-                <div className="overflow-x-auto -mx-4 md:mx-0">
-                <Table>
+                <div className="overflow-x-auto -mx-4 md:mx-0 scrollbar-thin">
+                <Table className="min-w-full">
                   <TableHeader>
                     <TableRow className="border-gray-700 hover:bg-transparent">
-                      <TableHead className="text-gray-400">
+                      <TableHead className="text-gray-400 min-w-[200px]">
                         <button
                           onClick={() => handleSort('name')}
                           className="flex items-center gap-1 hover:text-white transition-colors"
@@ -269,7 +269,7 @@ export default function FormsPage() {
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-gray-400">
+                      <TableHead className="text-gray-400 hidden lg:table-cell">
                         <button
                           onClick={() => handleSort('questions')}
                           className="flex items-center gap-1 hover:text-white transition-colors"
@@ -282,7 +282,7 @@ export default function FormsPage() {
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-gray-400">
+                      <TableHead className="text-gray-400 hidden md:table-cell">
                         <button
                           onClick={() => handleSort('responses')}
                           className="flex items-center gap-1 hover:text-white transition-colors"
@@ -308,7 +308,7 @@ export default function FormsPage() {
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-gray-400">
+                      <TableHead className="text-gray-400 hidden lg:table-cell">
                         <button
                           onClick={() => handleSort('created')}
                           className="flex items-center gap-1 hover:text-white transition-colors"
@@ -321,7 +321,7 @@ export default function FormsPage() {
                           )}
                         </button>
                       </TableHead>
-                      <TableHead className="text-right text-gray-400">Actions</TableHead>
+                      <TableHead className="text-right text-gray-400 min-w-[120px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -346,33 +346,41 @@ export default function FormsPage() {
                           >
                             <TableCell className="font-medium text-white">
                               <div>
-                                <div>{form.title}</div>
+                                <div className="text-sm md:text-base">{form.title}</div>
                                 {form.description && (
-                                  <div className="text-xs text-gray-400 mt-1">{form.description}</div>
+                                  <div className="text-xs text-gray-400 mt-1 line-clamp-1">{form.description}</div>
                                 )}
+                                {/* Mobile-only: show questions and responses inline */}
+                                <div className="flex gap-3 mt-2 lg:hidden text-xs text-gray-400">
+                                  <span className="flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    {fieldCount} Q
+                                  </span>
+                                  <span className="md:hidden">{responseCount} responses</span>
+                                </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-gray-300">
+                            <TableCell className="text-gray-300 hidden lg:table-cell">
                               <div className="flex items-center gap-2">
                                 <FileText className="h-4 w-4 text-gray-400" />
                                 {fieldCount}
                               </div>
                             </TableCell>
-                            <TableCell className="text-gray-300">
+                            <TableCell className="text-gray-300 hidden md:table-cell">
                               {responseCount.toLocaleString()}
                             </TableCell>
                             <TableCell className="text-gray-300">
                               <Badge 
                                 variant={form.status === 'published' ? 'default' : 'secondary'}
                                 className={form.status === 'published' 
-                                  ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-[#c4dfc4]/30' 
-                                  : 'bg-gray-700/50 text-gray-400 border-gray-600/50'
+                                  ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-[#c4dfc4]/30 text-xs' 
+                                  : 'bg-gray-700/50 text-gray-400 border-gray-600/50 text-xs'
                                 }
                               >
                                 {form.status === 'published' ? 'Published' : 'Draft'}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-gray-300">
+                            <TableCell className="text-gray-300 hidden lg:table-cell">
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-gray-400" />
                                 {createdDate}
