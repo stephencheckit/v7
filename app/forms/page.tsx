@@ -344,7 +344,7 @@ export default function FormsPage() {
                             className="border-gray-700 hover:bg-gray-800/50 cursor-pointer transition-colors"
                             onClick={() => handleViewForm(form.id)}
                           >
-                            <TableCell className="font-medium text-white">
+                            <TableCell className="font-medium text-white whitespace-normal md:whitespace-nowrap">
                               <div>
                                 <div className="text-sm md:text-base">{form.title}</div>
                                 {form.description && (
