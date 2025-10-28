@@ -85,18 +85,7 @@ export function SummariesView({ workspaceId }: SummariesViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
-        <Button
-          onClick={() => setCreateModalOpen(true)}
-          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-black"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Summary
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -108,6 +97,14 @@ export function SummariesView({ workspaceId }: SummariesViewProps) {
           <option value="scheduled">Scheduled</option>
           <option value="failed">Failed</option>
         </select>
+        
+        <Button
+          onClick={() => setCreateModalOpen(true)}
+          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-black"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create Summary
+        </Button>
       </div>
 
       {/* Summaries Grid */}
