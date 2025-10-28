@@ -50,7 +50,7 @@ export function FilterRegenerateModal({ open, onClose, summary, onSuccess }: Fil
       const supabase = createClient();
       const { data } = await supabase
         .from('form_cadences')
-        .select('id, name, form:forms(title)')
+        .select('id, name, form:simple_forms(title)')
         .in('id', summary.cadence_ids || []);
       
       setCadences(data || []);
