@@ -910,6 +910,7 @@ function FormsPageContent() {
   };
   
   const [activeTab, setActiveTab] = useState<"builder" | "settings" | "report">("builder");
+  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
   const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou" | "publish">("general");
   const [selectedResponseId, setSelectedResponseId] = useState<string | "all">("all");
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -1579,16 +1580,35 @@ function FormsPageContent() {
                   {/* Main Content Area - Below Sub-Header */}
                   <div className="flex flex-1 overflow-hidden">
                     {/* Left Panel - Widget Navigation - GRADIENT BLACK */}
-                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                      <div className="p-3 space-y-3">
+                    <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${
+                      isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+                    }`}>
+                      <div className={`p-3 space-y-3 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
                         <div className="border-b border-white/10 pb-2">
-                          <h2 className="text-sm font-semibold text-gray-100">Form Widgets</h2>
-                          <p className="text-xs text-gray-400">
-                            Drag to add
-                          </p>
+                          <div className="flex items-center justify-between">
+                            {!isLeftSidebarCollapsed && (
+                              <div>
+                                <h2 className="text-sm font-semibold text-gray-100">Form Widgets</h2>
+                                <p className="text-xs text-gray-400">Drag to add</p>
+                              </div>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                              className={`hover:bg-white/10 ${isLeftSidebarCollapsed ? 'w-full' : ''}`}
+                              title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                            >
+                              {isLeftSidebarCollapsed ? (
+                                <PanelRightOpen className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <PanelRightClose className="h-4 w-4 text-gray-400" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
 
-                        {widgetTypes.map((group, idx) => (
+                        {!isLeftSidebarCollapsed && widgetTypes.map((group, idx) => (
                           <div key={idx} className="space-y-1.5">
                             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">
                               {group.category}
@@ -1846,8 +1866,26 @@ function FormsPageContent() {
                   {/* Main Content Area - Below Sub-Header */}
                   <div className="flex flex-1 overflow-hidden">
                     {/* Left Panel - Settings Navigation */}
-                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                      <div className="p-3 space-y-1">
+                    <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${
+                      isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+                    }`}>
+                      <div className={`p-3 space-y-1 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
+                        <div className="border-b border-white/10 pb-2 mb-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                            className="w-full hover:bg-white/10"
+                            title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                          >
+                            {isLeftSidebarCollapsed ? (
+                              <PanelRightOpen className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <PanelRightClose className="h-4 w-4 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
+                        {!isLeftSidebarCollapsed && (
                         <button
                           onClick={() => setActiveSettingsSection("general")}
                           className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
@@ -1859,7 +1897,9 @@ function FormsPageContent() {
                           <div className="text-sm">General</div>
                           <div className="text-xs text-gray-500">Name, status, description</div>
                         </button>
+                        )}
                         
+                        {!isLeftSidebarCollapsed && (
                         <button
                           onClick={() => setActiveSettingsSection("thankyou")}
                           className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
@@ -1871,7 +1911,9 @@ function FormsPageContent() {
                           <div className="text-sm">Thank You Page</div>
                           <div className="text-xs text-gray-500">Post-submission experience</div>
                         </button>
+                        )}
                         
+                        {!isLeftSidebarCollapsed && (
                         <button
                           onClick={() => setActiveSettingsSection("publish")}
                           className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
@@ -1883,6 +1925,7 @@ function FormsPageContent() {
                           <div className="text-sm">Publish & Share</div>
                           <div className="text-xs text-gray-500">Form status and URL</div>
                         </button>
+                        )}
                       </div>
                     </div>
 
@@ -2357,9 +2400,27 @@ function FormsPageContent() {
                   {/* Main Content Area - Below Sub-Header */}
                   <div className="flex flex-1 overflow-hidden">
                     {/* Left Panel - Responses List */}
-                    <div className="w-80 border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm">
-                      <div className="p-3 space-y-1">
+                    <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${
+                      isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+                    }`}>
+                      <div className={`p-3 space-y-1 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
+                        <div className="border-b border-white/10 pb-2 mb-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                            className="w-full hover:bg-white/10"
+                            title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                          >
+                            {isLeftSidebarCollapsed ? (
+                              <PanelRightOpen className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <PanelRightClose className="h-4 w-4 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
                         {/* All Responses (Summary View) */}
+                        {!isLeftSidebarCollapsed && (
                         <button
                           onClick={() => setSelectedResponseId("all")}
                           className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
@@ -2371,9 +2432,11 @@ function FormsPageContent() {
                           <div className="text-sm">All Responses</div>
                           <div className="text-xs text-gray-500">{submissions.length} total submissions</div>
                         </button>
+                        )}
 
                         {/* Individual Responses */}
-                        {loadingSubmissions ? (
+                        {!isLeftSidebarCollapsed && (
+                        loadingSubmissions ? (
                           <div className="flex items-center justify-center py-8">
                             <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
                           </div>
@@ -2408,7 +2471,7 @@ function FormsPageContent() {
                           <div className="px-4 py-8 text-center text-gray-500 text-sm">
                             No responses yet
                           </div>
-                        )}
+                        ))}
                       </div>
                     </div>
 
