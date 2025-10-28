@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Filter, MessageSquarePlus, Share, FileDown, Loader2, AlertTriangle } from "lucide-react";
+import { Filter, MessageSquarePlus, Share, FileDown, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { SummaryReport, SummaryWithCadences } from "@/lib/types/summary";
 import { FilterRegenerateModal } from "./filter-regenerate-modal";
 import { AddCommentaryModal } from "./add-commentary-modal";
@@ -21,6 +21,7 @@ interface SummaryViewerModalProps {
 export function SummaryViewerModal({ summary, open, onClose, onUpdate }: SummaryViewerModalProps) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [commentaryModalOpen, setCommentaryModalOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
@@ -42,6 +43,33 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
     const url = `${window.location.origin}/cadences?tab=summaries&view=${summary.id}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard");
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch(`/api/summaries/${summary.id}/regenerate`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh summary');
+      }
+
+      toast.success('Summary is being regenerated with updated formatting');
+      onUpdate(); // Refresh the parent list
+      
+      // Optionally close and reopen after a delay to show loading state
+      setTimeout(() => {
+        onUpdate();
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error refreshing summary:', error);
+      toast.error('Failed to refresh summary');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
@@ -68,6 +96,17 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
 
               {/* Action Toolbar */}
               <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  className="border-gray-700"
+                  disabled={summary.status !== 'completed' || isRefreshing}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+                
                 <Button
                   variant="outline"
                   size="sm"

@@ -3,6 +3,55 @@ import { createClient } from '@/lib/supabase/server';
 import { generateSummary } from '@/lib/ai/summary-generator';
 import { DerivativeSummaryRequest } from '@/lib/types/summary';
 
+// PATCH /api/summaries/[id]/regenerate - Regenerate existing summary (in-place refresh)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get existing summary
+    const { data: summary, error: fetchError } = await supabase
+      .from('summary_reports')
+      .select('*')
+      .eq('id', params.id)
+      .single();
+
+    if (fetchError || !summary) {
+      return NextResponse.json({ error: 'Summary not found' }, { status: 404 });
+    }
+
+    // Set status to generating
+    await supabase
+      .from('summary_reports')
+      .update({ status: 'generating' })
+      .eq('id', params.id);
+
+    // Regenerate with existing config
+    generateSummary(
+      summary.id, 
+      summary.cadence_ids || [], 
+      summary.form_ids || [], 
+      summary.filter_config || {},
+      summary.user_commentary
+    ).catch(error => console.error('Error regenerating summary:', error));
+
+    return NextResponse.json({ 
+      message: 'Regeneration started',
+      summary: { ...summary, status: 'generating' }
+    }, { status: 200 });
+  } catch (error: any) {
+    console.error('Error in PATCH /api/summaries/[id]/regenerate:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  }
+}
+
 // POST /api/summaries/[id]/regenerate - Create derivative summary
 export async function POST(
   req: NextRequest,
