@@ -352,7 +352,9 @@ export default function CadencesPage() {
           </div>
 
           {/* Calendar */}
-          <div className="w-full max-w-full overflow-hidden bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <div className="w-full max-w-full bg-white rounded-lg shadow-lg p-4 md:p-6">
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[700px]">
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
@@ -420,22 +422,24 @@ export default function CadencesPage() {
               border-color: #3b82f6;
             }
           `}</style>
-            <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              style={{ height: 600 }}
-              view={view}
-              onView={setView}
-              date={date}
-              onNavigate={setDate}
-              onSelectEvent={handleSelectEvent}
-              eventPropGetter={eventStyleGetter}
-              views={['month', 'week', 'day', 'agenda']}
-              popup
-              tooltipAccessor={(event) => `${event.title} - ${event.status}`}
-            />
+              <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 600 }}
+                view={view}
+                onView={setView}
+                date={date}
+                onNavigate={setDate}
+                onSelectEvent={handleSelectEvent}
+                eventPropGetter={eventStyleGetter}
+                views={['month', 'week', 'day', 'agenda']}
+                popup
+                tooltipAccessor={(event) => `${event.title} - ${event.status}`}
+              />
+              </div>
+            </div>
           </div>
 
       {/* Instance Detail Modal */}
