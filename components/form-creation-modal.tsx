@@ -143,25 +143,26 @@ Please create the form now with appropriate fields and a descriptive title.`;
 
   return (
     <Dialog open={isOpen} onOpenChange={isCreating ? undefined : handleClose}>
-      <DialogContent className="max-w-[90vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto relative">
-        {/* Loading Overlay */}
-        {isCreating && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
-            <div className="text-center space-y-4">
-              <Loader2 className="w-12 h-12 animate-spin text-[#c4dfc4] mx-auto" />
-              <div className="space-y-2">
-                <p className="text-white font-semibold text-lg">
-                  {creatingOption === 'scratch' && 'Creating blank form...'}
-                  {creatingOption === 'chat' && 'Setting up AI chat...'}
-                  {creatingOption === 'draft' && 'Generating form with AI...'}
-                </p>
-                <p className="text-gray-400 text-sm">
-                  This will only take a moment
-                </p>
+      <DialogContent className="max-w-[90vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto">
+        <div className="relative">
+          {/* Loading Overlay */}
+          {isCreating && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <Loader2 className="w-12 h-12 animate-spin text-[#c4dfc4] mx-auto" />
+                <div className="space-y-2">
+                  <p className="text-white font-semibold text-lg">
+                    {creatingOption === 'scratch' && 'Creating blank form...'}
+                    {creatingOption === 'chat' && 'Setting up AI chat...'}
+                    {creatingOption === 'draft' && 'Generating form with AI...'}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    This will only take a moment
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {step === 'select' ? (
           <>
@@ -350,6 +351,7 @@ Please create the form now with appropriate fields and a descriptive title.`;
             </div>
           </>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
