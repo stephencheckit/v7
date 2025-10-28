@@ -1422,15 +1422,77 @@ function FormsPageContent() {
     }
   };
 
+  // Show loading skeleton when mounting or loading form
+  if (!isMounted || loadingForm) {
+    return (
+      <div className="flex h-screen bg-[#0a0a0a]">
+        <div className="flex flex-col h-full w-full">
+          {/* Header Skeleton */}
+          <div className="sticky top-0 z-30 border-b border-border/50 bg-gradient-to-r from-[#000000] to-[#0a0a0a] px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-6 w-32 bg-white/5 rounded animate-pulse" />
+                <div className="h-6 w-px bg-border/50" />
+                <div className="h-8 w-48 bg-white/5 rounded animate-pulse" />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-32 bg-white/5 rounded-lg animate-pulse" />
+                <div className="h-10 w-32 bg-white/5 rounded-lg animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          {/* Content Skeleton */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left Sidebar Skeleton */}
+            <div className="w-64 border-r border-border/50 bg-[#0a0a0a] p-4 space-y-3">
+              <div className="h-4 w-24 bg-white/5 rounded animate-pulse mb-4" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-16 bg-white/5 rounded-lg animate-pulse" />
+              ))}
+            </div>
+
+            {/* Main Content Skeleton */}
+            <div className="flex-1 p-8 space-y-6 overflow-auto">
+              <div className="max-w-3xl mx-auto space-y-6">
+                {/* Form Title Skeleton */}
+                <div className="h-12 w-full bg-white/5 rounded-lg animate-pulse" />
+                
+                {/* Form Fields Skeleton */}
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-6 bg-white/5 rounded-lg border border-border/50 animate-pulse space-y-3">
+                    <div className="h-6 w-48 bg-white/10 rounded" />
+                    <div className="h-10 w-full bg-white/10 rounded" />
+                  </div>
+                ))}
+
+                {/* Loading Message */}
+                <div className="flex items-center justify-center py-12">
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
+                    <span className="text-sm">
+                      {loadingForm ? 'Loading form...' : 'Setting up builder...'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Sidebar Skeleton */}
+            <div className="w-16 border-l border-border/50 bg-[#0a0a0a] flex flex-col items-center py-4 gap-3">
+              <div className="w-10 h-10 bg-white/5 rounded-lg animate-pulse" />
+              <div className="w-10 h-10 bg-white/5 rounded-lg animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen">
       
-        {!isMounted ? (
-          <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-            <div className="text-muted-foreground">Loading...</div>
-          </div>
-        ) : (
-          <DndContext
+        <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={handleDragStart}
@@ -2794,7 +2856,6 @@ function FormsPageContent() {
               )}
             </div>
           </DndContext>
-        )}
       
 
       {/* Right Panel - AI Chat - Dynamic with Real API - Always visible but disabled on Settings/Publish */}
