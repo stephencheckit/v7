@@ -97,27 +97,52 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
   const fetchForms = async () => {
     try {
       const supabase = createClient();
-      const { data } = await supabase
+      
+      // Try with workspace_id first
+      let query = supabase
         .from('forms')
-        .select('id, title, created_at')
-        .eq('workspace_id', workspaceId)
-        .order('title');
+        .select('id, title, created_at, workspace_id');
+      
+      if (workspaceId) {
+        query = query.eq('workspace_id', workspaceId);
+      }
+      
+      const { data, error } = await query.order('title');
+      
+      if (error) {
+        console.error('Error fetching forms:', error);
+        toast.error('Failed to load forms');
+        return;
+      }
+      
+      console.log('Fetched forms:', data?.length || 0, 'forms');
       
       // Get submission counts for each form
       if (data && data.length > 0) {
         const formsWithCounts = await Promise.all(
           data.map(async (form) => {
-            const { count } = await supabase
+            const { count, error: countError } = await supabase
               .from('form_submissions')
               .select('*', { count: 'exact', head: true })
               .eq('form_id', form.id);
+            
+            if (countError) {
+              console.error('Error counting submissions for form', form.id, countError);
+            }
+            
             return { ...form, submission_count: count || 0 };
           })
         );
+        
+        console.log('Forms with counts:', formsWithCounts);
         setForms(formsWithCounts);
+      } else {
+        console.log('No forms found for workspace:', workspaceId);
+        setForms([]);
       }
     } catch (error) {
-      console.error('Error fetching forms:', error);
+      console.error('Error in fetchForms:', error);
+      toast.error('Failed to load forms');
     }
   };
 
