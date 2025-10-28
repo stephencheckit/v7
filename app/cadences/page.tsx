@@ -214,31 +214,31 @@ export default function CadencesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              <CalendarIcon className="w-8 h-8" />
-              Cadences
-            </h1>
-            <p className="text-gray-400 mt-1">
-              Schedule and track recurring form completions
-            </p>
+    <div className="w-full h-full overflow-auto">
+      <div className="p-4 md:p-8">
+        <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+                <CalendarIcon className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+                Cadences
+              </h1>
+              <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+                Schedule and track recurring form completions
+              </p>
+            </div>
+            
+            <Link href="/reports">
+              <Button variant="outline" className="border-gray-700 shrink-0">
+                <BarChart3 className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">View Reports</span>
+              </Button>
+            </Link>
           </div>
-          
-          <Link href="/reports">
-            <Button variant="outline" className="border-gray-700">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              View Reports
-            </Button>
-          </Link>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto">
+          {/* Content */}
+          <div>
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <p className="text-gray-400 text-sm">
@@ -376,9 +376,9 @@ export default function CadencesPage() {
             tooltipAccessor={(event) => `${event.title} - ${event.status}`}
           />
         </div>
-      </div>
+        </div>
 
-      {/* Instance Detail Modal */}
+        {/* Instance Detail Modal */}
       {selectedInstance && (
         <InstanceDetailModal
           instance={selectedInstance}
@@ -390,6 +390,7 @@ export default function CadencesPage() {
           onUpdate={fetchInstances}
         />
       )}
+      </div>
     </div>
   );
 }

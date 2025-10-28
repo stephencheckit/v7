@@ -58,25 +58,23 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="w-full h-full overflow-auto">
+      <div className="p-4 md:p-8">
+        <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
+          {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              <BarChart3 className="w-8 h-8" />
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+              <BarChart3 className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
               Reports
             </h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
               AI-generated compliance summaries and executive reports
             </p>
           </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto">
-        <SummariesView workspaceId={workspaceId} />
+          {/* Content */}
+          <SummariesView workspaceId={workspaceId} />
+        </div>
       </div>
     </div>
   );
