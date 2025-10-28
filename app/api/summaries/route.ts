@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       workspace_id = cadence.workspace_id;
     } else {
       const { data: form } = await supabase
-        .from('forms')
+        .from('simple_forms')
         .select('workspace_id')
         .eq('id', form_ids![0])
         .single();
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     // Update forms with summary inclusion
     for (const formId of (form_ids || [])) {
       await supabase
-        .from('forms')
+        .from('simple_forms')
         .update({
           included_in_summaries: supabase.raw(`
             CASE 

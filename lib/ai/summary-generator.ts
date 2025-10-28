@@ -65,14 +65,14 @@ export async function generateSummary(
     let formSubmissions: any[] = [];
     if (formIds && formIds.length > 0) {
       const { data: forms } = await supabase
-        .from('forms')
+        .from('simple_forms')
         .select('id, title')
         .in('id', formIds);
 
       if (forms) {
         for (const form of forms) {
           const { data: submissions } = await supabase
-            .from('form_submissions')
+            .from('simple_form_submissions')
             .select('*')
             .eq('form_id', form.id)
             .gte('submitted_at', summary.date_range_start)

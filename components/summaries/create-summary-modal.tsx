@@ -98,9 +98,9 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
     try {
       const supabase = createClient();
       
-      // Try with workspace_id first
+      // Use simple_forms table (actual table name)
       let query = supabase
-        .from('forms')
+        .from('simple_forms')
         .select('id, title, created_at, workspace_id');
       
       if (workspaceId) {
@@ -122,7 +122,7 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
         const formsWithCounts = await Promise.all(
           data.map(async (form) => {
             const { count, error: countError } = await supabase
-              .from('form_submissions')
+              .from('simple_form_submissions')
               .select('*', { count: 'exact', head: true })
               .eq('form_id', form.id);
             
