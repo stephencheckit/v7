@@ -37,7 +37,7 @@ export async function generateSummary(
     if (cadenceIds && cadenceIds.length > 0) {
       const { data: cadenceData } = await supabase
         .from('form_cadences')
-        .select('*, form:forms(*)')
+        .select('*, form:simple_forms(*)')
         .in('id', cadenceIds);
       cadences = cadenceData || [];
 
@@ -49,7 +49,7 @@ export async function generateSummary(
         .select(`
           *,
           cadence:form_cadences(id, name),
-          form:forms(title),
+          form:simple_forms(title),
           content:content(*)
         `)
         .in('cadence_id', cadenceIds)

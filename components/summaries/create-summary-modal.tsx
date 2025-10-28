@@ -83,7 +83,7 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
       const supabase = createClient();
       const { data } = await supabase
         .from('form_cadences')
-        .select('id, name, form:forms(title)')
+        .select('id, name, form:simple_forms(title)')
         .eq('workspace_id', workspaceId)
         .eq('is_active', true)
         .order('name');
