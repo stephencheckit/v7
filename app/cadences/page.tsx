@@ -352,23 +352,35 @@ export default function CadencesPage() {
           </div>
 
           {/* Calendar */}
-          <Card className="shadow-lg border-gray-200">
+          <Card className="shadow-lg border-gray-200 overflow-hidden">
             <div className="p-4 md:p-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">Schedule Calendar</h2>
-              <div className="bg-white rounded-lg p-3 md:p-6 overflow-x-auto">
+              <div className="bg-white rounded-lg p-3 md:p-6">
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
+              width: 100% !important;
+              max-width: 100%;
             }
             .rbc-calendar * {
               color: #111827;
+              box-sizing: border-box;
+            }
+            .rbc-month-view {
+              overflow: hidden;
             }
             .rbc-header {
-              padding: 10px 3px;
+              padding: 8px 2px;
               font-weight: 700 !important;
-              font-size: 1rem !important;
+              font-size: 0.75rem !important;
               color: #000000 !important;
               border-bottom: 2px solid #e5e7eb;
+            }
+            @media (min-width: 768px) {
+              .rbc-header {
+                padding: 10px 3px;
+                font-size: 1rem !important;
+              }
             }
             .rbc-header span {
               color: #000000 !important;
@@ -382,7 +394,14 @@ export default function CadencesPage() {
             .rbc-button-link {
               color: #000000 !important;
               font-weight: 700 !important;
-              font-size: 1.1rem !important;
+              font-size: 0.875rem !important;
+            }
+            @media (min-width: 768px) {
+              .rbc-date-cell a,
+              .rbc-date-cell button,
+              .rbc-button-link {
+                font-size: 1.1rem !important;
+              }
             }
             .rbc-off-range-bg {
               background: #f9fafb;
@@ -401,18 +420,33 @@ export default function CadencesPage() {
             }
             .rbc-toolbar {
               margin-bottom: 20px;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
             }
             .rbc-toolbar-label {
               font-weight: 700 !important;
-              font-size: 1.5rem !important;
+              font-size: 1.25rem !important;
               color: #000000 !important;
+            }
+            @media (min-width: 768px) {
+              .rbc-toolbar-label {
+                font-size: 1.5rem !important;
+              }
             }
             .rbc-toolbar button {
               color: #000000 !important;
               border: 1px solid #d1d5db;
-              padding: 8px 16px;
+              padding: 6px 12px;
               font-weight: 600 !important;
               background: white;
+              font-size: 0.875rem;
+            }
+            @media (min-width: 768px) {
+              .rbc-toolbar button {
+                padding: 8px 16px;
+                font-size: 1rem;
+              }
             }
             .rbc-toolbar button:hover {
               background-color: #f3f4f6;
@@ -423,22 +457,24 @@ export default function CadencesPage() {
               border-color: #3b82f6;
             }
           `}</style>
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: 700, minWidth: '600px' }}
-            view={view}
-            onView={setView}
-            date={date}
-            onNavigate={setDate}
-            onSelectEvent={handleSelectEvent}
-            eventPropGetter={eventStyleGetter}
-            views={['month', 'week', 'day', 'agenda']}
-            popup
-            tooltipAccessor={(event) => `${event.title} - ${event.status}`}
-          />
+          <div className="w-full">
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: 600 }}
+              view={view}
+              onView={setView}
+              date={date}
+              onNavigate={setDate}
+              onSelectEvent={handleSelectEvent}
+              eventPropGetter={eventStyleGetter}
+              views={['month', 'week', 'day', 'agenda']}
+              popup
+              tooltipAccessor={(event) => `${event.title} - ${event.status}`}
+            />
+          </div>
               </div>
             </div>
           </Card>
