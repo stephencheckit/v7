@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
       date_range_start,
       date_range_end,
       cadence_ids,
+      form_ids,
       filter_config,
       schedule_type,
       schedule_config,
@@ -72,25 +73,42 @@ export async function POST(req: NextRequest) {
       generate_now
     } = body;
 
-    // Validation
-    if (!name || !date_range_start || !date_range_end || !cadence_ids || cadence_ids.length === 0) {
+    // Validation - require at least one source
+    if (!name || !date_range_start || !date_range_end) {
       return NextResponse.json({ 
-        error: 'Missing required fields: name, date_range_start, date_range_end, cadence_ids' 
+        error: 'Missing required fields: name, date_range_start, date_range_end' 
       }, { status: 400 });
     }
 
-    // Get workspace_id from first cadence
-    const { data: cadence } = await supabase
-      .from('form_cadences')
-      .select('workspace_id')
-      .eq('id', cadence_ids[0])
-      .single();
-
-    if (!cadence) {
-      return NextResponse.json({ error: 'Cadence not found' }, { status: 404 });
+    if ((!cadence_ids || cadence_ids.length === 0) && (!form_ids || form_ids.length === 0)) {
+      return NextResponse.json({ 
+        error: 'Must select at least one form or cadence' 
+      }, { status: 400 });
     }
 
-    const workspace_id = cadence.workspace_id;
+    // Get workspace_id from first available source
+    let workspace_id: string;
+    if (cadence_ids && cadence_ids.length > 0) {
+      const { data: cadence } = await supabase
+        .from('form_cadences')
+        .select('workspace_id')
+        .eq('id', cadence_ids[0])
+        .single();
+      if (!cadence) {
+        return NextResponse.json({ error: 'Cadence not found' }, { status: 404 });
+      }
+      workspace_id = cadence.workspace_id;
+    } else {
+      const { data: form } = await supabase
+        .from('forms')
+        .select('workspace_id')
+        .eq('id', form_ids![0])
+        .single();
+      if (!form) {
+        return NextResponse.json({ error: 'Form not found' }, { status: 404 });
+      }
+      workspace_id = form.workspace_id;
+    }
 
     // Calculate next_run_at for scheduled summaries
     let next_run_at = null;
@@ -110,7 +128,8 @@ export async function POST(req: NextRequest) {
         description,
         date_range_start,
         date_range_end,
-        cadence_ids,
+        cadence_ids: cadence_ids || [],
+        form_ids: form_ids || [],
         filter_config: filter_config || {},
         schedule_type,
         schedule_config: schedule_config || null,
@@ -129,7 +148,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Update cadences with summary inclusion
-    for (const cadenceId of cadence_ids) {
+    for (const cadenceId of (cadence_ids || [])) {
       const { error: updateError } = await supabase.rpc('array_append_unique', {
         table_name: 'form_cadences',
         id: cadenceId,
@@ -154,10 +173,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Update forms with summary inclusion
+    for (const formId of (form_ids || [])) {
+      await supabase
+        .from('forms')
+        .update({
+          included_in_summaries: supabase.raw(`
+            CASE 
+              WHEN included_in_summaries @> '"${summary.id}"'::jsonb 
+              THEN included_in_summaries
+              ELSE included_in_summaries || '"${summary.id}"'::jsonb
+            END
+          `)
+        })
+        .eq('id', formId);
+    }
+
     // If generate_now, trigger AI generation
     if (generate_now) {
       // Run in background - don't await
-      generateSummary(summary.id, cadence_ids, filter_config || {})
+      generateSummary(summary.id, cadence_ids || [], form_ids || [], filter_config || {})
         .catch(error => console.error('Error generating summary:', error));
     }
 

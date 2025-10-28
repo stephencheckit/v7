@@ -8,6 +8,7 @@ export interface SummaryReport {
   date_range_start: string;
   date_range_end: string;
   cadence_ids: string[];
+  form_ids: string[]; // Regular form submissions
   filter_config: FilterConfig;
   schedule_type: 'manual' | 'one_time' | 'recurring';
   schedule_config?: ScheduleConfig;
@@ -50,8 +51,10 @@ export interface SummaryMetrics {
 }
 
 export interface CadenceMetric {
-  cadence_id: string;
-  cadence_name: string;
+  cadence_id?: string; // Optional for regular forms
+  form_id?: string; // For regular forms
+  cadence_name?: string;
+  form_name?: string; // For regular forms
   total: number;
   completed: number;
   missed: number;
@@ -98,7 +101,9 @@ export interface CreateSummaryFormData {
   description?: string;
   date_range_start: string;
   date_range_end: string;
+  source_type: 'cadences' | 'forms' | 'both'; // New field
   cadence_ids: string[];
+  form_ids: string[]; // New field
   filter_config: FilterConfig;
   schedule_type: 'manual' | 'one_time' | 'recurring';
   schedule_config?: ScheduleConfig;

@@ -78,7 +78,8 @@ export async function POST(
     }
 
     // Trigger AI generation with commentary context
-    generateSummary(newSummary.id, cadenceIds, mergedFilterConfig, user_commentary)
+    const newFormIds = filter_config?.form_filter || parentSummary.form_ids || [];
+    generateSummary(newSummary.id, cadenceIds, newFormIds, mergedFilterConfig, user_commentary)
       .catch(error => console.error('Error generating derivative summary:', error));
 
     return NextResponse.json({ summary: newSummary }, { status: 201 });

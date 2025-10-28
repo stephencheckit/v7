@@ -6,6 +6,7 @@ import { FilterConfig, SummaryMetrics, AIContent, CadenceMetric, Insight } from 
 export async function generateSummary(
   summaryId: string,
   cadenceIds: string[],
+  formIds: string[],
   filterConfig: FilterConfig,
   userCommentary?: string
 ): Promise<void> {
@@ -29,52 +30,87 @@ export async function generateSummary(
       throw new Error('Summary not found');
     }
 
-    // Fetch cadences with form details
-    const { data: cadences } = await supabase
-      .from('form_cadences')
-      .select('*, form:forms(*)')
-      .in('id', cadenceIds);
-
-    if (!cadences || cadences.length === 0) {
-      throw new Error('No cadences found');
-    }
-
-    // Fetch form instances within date range
-    const statusFilter = filterConfig.status_filter || ['completed', 'missed', 'ready', 'in_progress', 'pending'];
+    // Fetch cadences with form details (if any)
+    let cadences = [];
+    let instances: any[] = [];
     
-    const { data: instances } = await supabase
-      .from('form_instances')
-      .select(`
-        *,
-        cadence:form_cadences(id, name),
-        form:forms(title),
-        content:content(*)
-      `)
-      .in('cadence_id', cadenceIds)
-      .gte('scheduled_for', summary.date_range_start)
-      .lte('scheduled_for', summary.date_range_end)
-      .in('status', statusFilter)
-      .order('scheduled_for', { ascending: true });
+    if (cadenceIds && cadenceIds.length > 0) {
+      const { data: cadenceData } = await supabase
+        .from('form_cadences')
+        .select('*, form:forms(*)')
+        .in('id', cadenceIds);
+      cadences = cadenceData || [];
 
-    if (!instances) {
-      throw new Error('Failed to fetch instances');
+      // Fetch form instances within date range
+      const statusFilter = filterConfig.status_filter || ['completed', 'missed', 'ready', 'in_progress', 'pending'];
+      
+      const { data: instanceData } = await supabase
+        .from('form_instances')
+        .select(`
+          *,
+          cadence:form_cadences(id, name),
+          form:forms(title),
+          content:content(*)
+        `)
+        .in('cadence_id', cadenceIds)
+        .gte('scheduled_for', summary.date_range_start)
+        .lte('scheduled_for', summary.date_range_end)
+        .in('status', statusFilter)
+        .order('scheduled_for', { ascending: true });
+
+      instances = instanceData || [];
     }
 
-    // Calculate metrics
-    const metrics = calculateMetrics(instances, cadences);
+    // Fetch regular form submissions (if any)
+    let formSubmissions: any[] = [];
+    if (formIds && formIds.length > 0) {
+      const { data: forms } = await supabase
+        .from('forms')
+        .select('id, title')
+        .in('id', formIds);
 
-    // Aggregate form responses
-    const responses = await aggregateResponses(instances, supabase);
+      if (forms) {
+        for (const form of forms) {
+          const { data: submissions } = await supabase
+            .from('form_submissions')
+            .select('*')
+            .eq('form_id', form.id)
+            .gte('submitted_at', summary.date_range_start)
+            .lte('submitted_at', summary.date_range_end)
+            .order('submitted_at', { ascending: true });
 
-    // Build AI prompt
+          if (submissions) {
+            formSubmissions.push(...submissions.map(s => ({
+              ...s,
+              form: { title: form.title },
+              form_name: form.title,
+              form_id: form.id,
+              status: 'completed'
+            })));
+          }
+        }
+      }
+    }
+
+    // Combine both data sources
+    const allData = [...instances, ...formSubmissions];
+
+    // Calculate metrics from combined data
+    const metrics = calculateMetrics(allData, cadences, formIds || []);
+
+    // Aggregate form responses from all data
+    const responses = await aggregateResponses(allData, supabase);
+
+    // Build AI prompt with all data
     const prompt = buildPrompt(
       cadences,
-      instances,
+      allData,
       metrics,
       responses,
       summary.date_range_start,
       summary.date_range_end,
-      userCommentary
+      userCommentary,
+      formIds || []
     );
 
     // Call OpenAI
@@ -154,7 +190,8 @@ export async function generateSummary(
   }
 }
 
-function calculateMetrics(instances: any[], cadences: any[]): SummaryMetrics {
+function calculateMetrics(allData: any[], cadences: any[], formIds: string[]): SummaryMetrics {
+  const instances = allData;
   const total = instances.length;
   const completed = instances.filter(i => i.status === 'completed').length;
   const missed = instances.filter(i => i.status === 'missed').length;
@@ -238,7 +275,8 @@ function buildPrompt(
   responses: any,
   dateStart: string,
   dateEnd: string,
-  userCommentary?: string
+  userCommentary?: string,
+  formIds?: string[]
 ): string {
   const cadenceNames = cadences.map(c => c.name).join(', ');
   const dateRange = `${new Date(dateStart).toLocaleDateString()} to ${new Date(dateEnd).toLocaleDateString()}`;

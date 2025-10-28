@@ -32,6 +32,7 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [cadences, setCadences] = useState<Cadence[]>([]);
+  const [forms, setForms] = useState<any[]>([]);
   const [workspaceMembers, setWorkspaceMembers] = useState<any[]>([]);
 
   // Form data
@@ -40,7 +41,9 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
     description: "",
     date_range_start: "",
     date_range_end: "",
+    source_type: "forms", // Default to forms since more likely to have data
     cadence_ids: [],
+    form_ids: [],
     filter_config: {},
     schedule_type: "manual",
     recipients: [],
@@ -48,19 +51,28 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
     generate_now: true
   });
 
-  // Load cadences and workspace members
+  // Load cadences, forms and workspace members
   useEffect(() => {
     if (open) {
       fetchCadences();
+      fetchForms();
       fetchWorkspaceMembers();
       // Reset form
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       setFormData({
-        ...formData,
+        name: `Weekly Summary - ${new Date().toLocaleDateString()}`,
+        description: "",
         date_range_start: weekAgo.toISOString().split('T')[0],
         date_range_end: new Date().toISOString().split('T')[0],
-        name: `Weekly Summary - ${new Date().toLocaleDateString()}`
+        source_type: "forms",
+        cadence_ids: [],
+        form_ids: [],
+        filter_config: {},
+        schedule_type: "manual",
+        recipients: [],
+        notify_users: true,
+        generate_now: true
       });
       setStep(1);
     }
@@ -79,6 +91,33 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
       setCadences(data || []);
     } catch (error) {
       console.error('Error fetching cadences:', error);
+    }
+  };
+
+  const fetchForms = async () => {
+    try {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('forms')
+        .select('id, title, created_at')
+        .eq('workspace_id', workspaceId)
+        .order('title');
+      
+      // Get submission counts for each form
+      if (data && data.length > 0) {
+        const formsWithCounts = await Promise.all(
+          data.map(async (form) => {
+            const { count } = await supabase
+              .from('form_submissions')
+              .select('*', { count: 'exact', head: true })
+              .eq('form_id', form.id);
+            return { ...form, submission_count: count || 0 };
+          })
+        );
+        setForms(formsWithCounts);
+      }
+    } catch (error) {
+      console.error('Error fetching forms:', error);
     }
   };
 
@@ -134,7 +173,13 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
       case 1:
         return formData.name && formData.date_range_start && formData.date_range_end;
       case 2:
-        return formData.cadence_ids.length > 0;
+        if (formData.source_type === 'forms') {
+          return formData.form_ids.length > 0;
+        } else if (formData.source_type === 'cadences') {
+          return formData.cadence_ids.length > 0;
+        } else { // both
+          return formData.form_ids.length > 0 || formData.cadence_ids.length > 0;
+        }
       case 3:
         return true;
       case 4:
@@ -213,48 +258,129 @@ export function CreateSummaryModal({ open, onClose, workspaceId, onSuccess }: Cr
             </div>
           )}
 
-          {/* Step 2: Select Cadences */}
+          {/* Step 2: Select Data Source */}
           {step === 2 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Cadences</h3>
+              <h3 className="text-lg font-semibold">Select Data Source</h3>
               <p className="text-sm text-gray-400">
-                Choose which form cadences to include in this summary
+                Choose what data to analyze in this summary
               </p>
 
-              {cadences.length === 0 ? (
-                <div className="p-8 bg-[#1a1a1a] rounded-lg border border-gray-700 text-center">
-                  <p className="text-gray-400">No active cadences found</p>
+              {/* Source Type Selector */}
+              <RadioGroup
+                value={formData.source_type}
+                onValueChange={(value: any) => setFormData({ ...formData, source_type: value })}
+              >
+                <div className="flex items-center space-x-2 p-3 bg-[#1a1a1a] rounded-lg border border-gray-700">
+                  <RadioGroupItem value="forms" id="forms" />
+                  <Label htmlFor="forms" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Forms (Regular Submissions)</div>
+                    <div className="text-sm text-gray-400">Analyze all submissions for selected forms</div>
+                  </Label>
                 </div>
-              ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {cadences.map((cadence) => (
-                    <div
-                      key={cadence.id}
-                      className="flex items-center space-x-3 p-3 bg-[#1a1a1a] rounded-lg border border-gray-700 hover:border-gray-600"
-                    >
-                      <Checkbox
-                        id={cadence.id}
-                        checked={formData.cadence_ids.includes(cadence.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setFormData({
-                              ...formData,
-                              cadence_ids: [...formData.cadence_ids, cadence.id]
-                            });
-                          } else {
-                            setFormData({
-                              ...formData,
-                              cadence_ids: formData.cadence_ids.filter(id => id !== cadence.id)
-                            });
-                          }
-                        }}
-                      />
-                      <label htmlFor={cadence.id} className="flex-1 cursor-pointer">
-                        <div className="font-medium">{cadence.name}</div>
-                        <div className="text-sm text-gray-400">{cadence.form?.title}</div>
-                      </label>
+
+                <div className="flex items-center space-x-2 p-3 bg-[#1a1a1a] rounded-lg border border-gray-700">
+                  <RadioGroupItem value="cadences" id="cadences" />
+                  <Label htmlFor="cadences" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Cadences (Scheduled Forms)</div>
+                    <div className="text-sm text-gray-400">Analyze scheduled form instances</div>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2 p-3 bg-[#1a1a1a] rounded-lg border border-gray-700">
+                  <RadioGroupItem value="both" id="both" />
+                  <Label htmlFor="both" className="flex-1 cursor-pointer">
+                    <div className="font-medium">Both</div>
+                    <div className="text-sm text-gray-400">Include both regular and scheduled submissions</div>
+                  </Label>
+                </div>
+              </RadioGroup>
+
+              {/* Forms Selection */}
+              {(formData.source_type === 'forms' || formData.source_type === 'both') && (
+                <div className="space-y-2">
+                  <Label>Select Forms</Label>
+                  {forms.length === 0 ? (
+                    <div className="p-8 bg-[#1a1a1a] rounded-lg border border-gray-700 text-center">
+                      <p className="text-gray-400">No forms found</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {forms.map((form) => (
+                        <div
+                          key={form.id}
+                          className="flex items-center space-x-3 p-3 bg-[#1a1a1a] rounded-lg border border-gray-700 hover:border-gray-600"
+                        >
+                          <Checkbox
+                            id={`form-${form.id}`}
+                            checked={formData.form_ids.includes(form.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setFormData({
+                                  ...formData,
+                                  form_ids: [...formData.form_ids, form.id]
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  form_ids: formData.form_ids.filter(id => id !== form.id)
+                                });
+                              }
+                            }}
+                          />
+                          <label htmlFor={`form-${form.id}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium">{form.title}</div>
+                            <div className="text-sm text-gray-400">
+                              {form.submission_count} submission{form.submission_count !== 1 ? 's' : ''}
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Cadences Selection */}
+              {(formData.source_type === 'cadences' || formData.source_type === 'both') && (
+                <div className="space-y-2">
+                  <Label>Select Cadences</Label>
+                  {cadences.length === 0 ? (
+                    <div className="p-8 bg-[#1a1a1a] rounded-lg border border-gray-700 text-center">
+                      <p className="text-gray-400">No active cadences found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {cadences.map((cadence) => (
+                        <div
+                          key={cadence.id}
+                          className="flex items-center space-x-3 p-3 bg-[#1a1a1a] rounded-lg border border-gray-700 hover:border-gray-600"
+                        >
+                          <Checkbox
+                            id={`cadence-${cadence.id}`}
+                            checked={formData.cadence_ids.includes(cadence.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setFormData({
+                                  ...formData,
+                                  cadence_ids: [...formData.cadence_ids, cadence.id]
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  cadence_ids: formData.cadence_ids.filter(id => id !== cadence.id)
+                                });
+                              }
+                            }}
+                          />
+                          <label htmlFor={`cadence-${cadence.id}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium">{cadence.name}</div>
+                            <div className="text-sm text-gray-400">{cadence.form?.title}</div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
