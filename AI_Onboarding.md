@@ -5,7 +5,48 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎨 Renamed Reports to Summaries - October 28, 2025 (Latest)**
+### **🎨 Fixed Calendar Width & Controlled Input Warning - October 28, 2025 (Latest)**
+**Status:** ✅ DEPLOYED
+**Deployed:** October 28, 2025
+
+**Changes:**
+1. **Fixed Controlled/Uncontrolled Input Warning**
+   - Updated `Input` and `Textarea` UI components to handle undefined/null values
+   - Prevents React warning when inputs switch from uncontrolled to controlled
+   - Ensures all inputs with value prop remain controlled throughout lifecycle
+
+2. **Improved Cadences Page Layout**
+   - Added stats cards section (Total Tasks, Pending, Completed Today, Missed)
+   - Wrapped calendar in Card component for visual consistency
+   - Matches layout pattern of Forms and Dashboard pages
+   - Better visual hierarchy and spacing
+
+3. **Fixed Calendar Width Issue**
+   - Removed `min-w-[800px]` constraint that was making calendar too wide
+   - Changed calendar minWidth from 800px to 600px for better responsiveness
+   - Added overflow-x-auto wrapper for mobile scroll if needed
+   - Calendar now properly scales relative to other page elements
+
+**Problem Solved (Score: 85/100):**
+- Calendar was expanding beyond page width, breaking layout consistency
+- Input warning appearing in console on forms page
+- Cadences page lacked visual consistency with other pages
+
+**Files Modified:**
+- `components/ui/input.tsx` - Added controlled input safeguard
+- `components/ui/textarea.tsx` - Added controlled textarea safeguard
+- `app/cadences/page.tsx` - Added stats cards, fixed calendar width
+- `components/loading/forms-list-skeleton.tsx` - No changes (already updated)
+
+**Technical Quality:**
+- Zero breaking changes
+- Improved user experience across all forms
+- Better responsive behavior on mobile devices
+- Consistent visual design language
+
+---
+
+### **🎨 Renamed Reports to Summaries - October 28, 2025**
 **Status:** ✅ DEPLOYED
 **Deployed:** October 28, 2025
 
