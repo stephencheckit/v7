@@ -142,8 +142,27 @@ Please create the form now with appropriate fields and a descriptive title.`;
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={isCreating ? undefined : handleClose}>
+      <DialogContent className="max-w-[90vw] lg:max-w-6xl max-h-[90vh] overflow-y-auto relative">
+        {/* Loading Overlay */}
+        {isCreating && (
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+            <div className="text-center space-y-4">
+              <Loader2 className="w-12 h-12 animate-spin text-[#c4dfc4] mx-auto" />
+              <div className="space-y-2">
+                <p className="text-white font-semibold text-lg">
+                  {creatingOption === 'scratch' && 'Creating blank form...'}
+                  {creatingOption === 'chat' && 'Setting up AI chat...'}
+                  {creatingOption === 'draft' && 'Generating form with AI...'}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  This will only take a moment
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {step === 'select' ? (
           <>
             <DialogHeader>
@@ -158,8 +177,10 @@ Please create the form now with appropriate fields and a descriptive title.`;
             <div className="flex flex-col gap-3 mt-6">
               {/* Option 1: Build from Scratch */}
               <Card 
-                className="p-4 cursor-pointer hover:border-[#c4dfc4] hover:shadow-xl transition-all group"
-                onClick={() => createBlankForm('collapsed')}
+                className={`p-4 cursor-pointer hover:border-[#c4dfc4] hover:shadow-xl transition-all group ${
+                  isCreating ? 'opacity-50 pointer-events-none' : ''
+                }`}
+                onClick={() => !isCreating && createBlankForm('collapsed')}
               >
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#c4dfc4] to-[#b5d0b5] flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
@@ -183,8 +204,10 @@ Please create the form now with appropriate fields and a descriptive title.`;
 
               {/* Option 2: Build with Conversational AI */}
               <Card 
-                className="p-4 cursor-pointer hover:border-[#c8e0f5] hover:shadow-xl transition-all group"
-                onClick={() => createBlankForm('expanded')}
+                className={`p-4 cursor-pointer hover:border-[#c8e0f5] hover:shadow-xl transition-all group ${
+                  isCreating ? 'opacity-50 pointer-events-none' : ''
+                }`}
+                onClick={() => !isCreating && createBlankForm('expanded')}
               >
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#c8e0f5] to-[#b5d0e5] flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
@@ -208,8 +231,10 @@ Please create the form now with appropriate fields and a descriptive title.`;
 
               {/* Option 3: Let AI Build First Draft */}
               <Card 
-                className="p-4 cursor-pointer hover:border-[#ddc8f5] hover:shadow-xl transition-all group"
-                onClick={() => setStep('ai-draft')}
+                className={`p-4 cursor-pointer hover:border-[#ddc8f5] hover:shadow-xl transition-all group ${
+                  isCreating ? 'opacity-50 pointer-events-none' : ''
+                }`}
+                onClick={() => !isCreating && setStep('ai-draft')}
               >
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#ddc8f5] to-[#cdb8e5] flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
