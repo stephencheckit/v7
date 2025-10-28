@@ -5,7 +5,94 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🚨 CRITICAL FIX: Workspace Backfill for Form Creation - October 27, 2025 (Latest)**
+### **✨ AI-Powered Summary Reports with Cadence Scheduling - October 28, 2025 (Latest)**
+**Status:** ✅ DEPLOYED
+**Commit:** `299c507`
+**Deployed:** October 28, 2025
+
+**What Was Built:**
+- **Summary Reports System**: AI-powered compliance summaries that aggregate form instance data by cadence
+- **OpenAI Integration**: GPT-4 generates executive summaries, insights, and recommendations from form responses
+- **Multi-Step Creation Wizard**: 5-step modal for creating summaries with date range, cadence selection, scheduling, and recipients
+- **Summary Viewer**: Comprehensive modal with tabs for Overview, Cadence Details, Insights, and Raw Data
+- **Derivative Summaries**: Filter & regenerate existing summaries with commentary to create focused reports
+- **Scheduled Generation**: Vercel cron jobs automatically generate recurring summaries (hourly check)
+- **Visibility Notices**: Yellow banners in form settings and blue banners on submission pages showing inclusion in summaries
+- **Cadences Tab**: Renamed "Cadences Calendar" to "Cadences" with new "Summaries" tab
+- **Schedule → Cadence**: Renamed "Schedule" section to "Cadence" throughout the app for clarity
+
+**Database Changes:**
+- Created `summary_reports` table with AI content, metrics, scheduling, and derivative tracking
+- Added `included_in_summaries` JSONB column to `form_cadences` for visibility tracking
+- Applied RLS policies for workspace isolation
+- Added indexes for performance
+
+**Key Features:**
+1. **Summary Creation**:
+   - Select multiple cadences to analyze
+   - Choose date range for analysis
+   - Filter by status (completed, missed, etc.)
+   - Schedule one-time or recurring generation
+   - Select recipients from workspace members
+
+2. **AI Analysis**:
+   - Calculates compliance metrics (completion rate, missed forms)
+   - Aggregates form responses by cadence
+   - Generates executive summary
+   - Provides actionable insights categorized by compliance, quality, timing, trends
+   - Offers specific recommendations
+
+3. **Derivative Summaries**:
+   - Filter parent summary by cadence or status
+   - Add user commentary to focus AI analysis
+   - Creates new summary with `parent_summary_id` tracking
+
+4. **Visibility & Accountability**:
+   - Form settings show which summaries include the cadence
+   - Form submission pages display banner: "This form is part of [Summary Name]"
+   - Sent to: [Recipients list]
+   - Motivates users knowing their responses are reviewed
+
+**Files Created:**
+- `supabase/migrations/20251028115711_create_summary_reports.sql`
+- `lib/types/summary.ts` - TypeScript types
+- `lib/ai/summary-generator.ts` - OpenAI integration
+- `app/api/summaries/route.ts` - CRUD endpoints
+- `app/api/summaries/[id]/route.ts` - Individual summary operations
+- `app/api/summaries/[id]/regenerate/route.ts` - Derivative summaries
+- `app/api/cron/generate-summaries/route.ts` - Scheduled generation
+- `components/summaries/summaries-view.tsx` - Summary list view
+- `components/summaries/create-summary-modal.tsx` - 5-step wizard
+- `components/summaries/summary-viewer-modal.tsx` - Full summary display
+- `components/summaries/filter-regenerate-modal.tsx` - Derivative workflow
+- `components/summaries/add-commentary-modal.tsx` - Commentary input
+- `components/ui/radio-group.tsx` - Added missing UI component
+
+**Files Modified:**
+- `app/cadences/page.tsx` - Added Summaries tab, renamed to "Cadences"
+- `app/forms/builder/page.tsx` - Renamed schedule → cadence
+- `components/forms/schedule-settings.tsx` - Added visibility notices, renamed to Cadence Settings
+- `app/f/[id]/page.tsx` - Added visibility banner
+- `vercel.json` - Added cron job for summary generation
+- `components/cadences/instance-detail-modal.tsx` - Updated navigation link
+
+**Technical Stack:**
+- OpenAI GPT-4 via Vercel AI SDK
+- Vercel Cron Jobs for automated generation
+- Supabase for data persistence and RLS
+- React Big Calendar for visualization
+- Shadcn UI components
+
+**Future Enhancements (Not Built Yet):**
+- Email notifications (infrastructure needed)
+- PDF export
+- Chart visualizations
+- Historical comparison
+- GPT-4 Vision for image analysis
+
+---
+
+### **🚨 CRITICAL FIX: Workspace Backfill for Form Creation - October 27, 2025**
 **Status:** ✅ FIXED AND APPLIED
 **Commit:** `a9a725a` + `c2f8fa0`
 **Deployed:** October 27, 2025
