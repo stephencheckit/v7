@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.31",
+    "@ai-sdk/openai": "^2.0.56",
     "@ai-sdk/react": "^2.0.75",
     "@anthropic-ai/sdk": "^0.67.0",
     "@dnd-kit/core": "^6.3.1",
@@ -36,7 +37,7 @@
     "@types/signature_pad": "^4.0.0",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.6",
-    "ai": "^5.0.75",
+    "ai": "^5.0.81",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
