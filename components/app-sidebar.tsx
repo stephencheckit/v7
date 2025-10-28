@@ -29,9 +29,9 @@ const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Forms", url: "/forms", icon: FileText },
   { title: "Cadences", url: "/cadences", icon: Calendar },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },
+  { title: "Reports", url: "/reports", icon: BarChart3 },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
