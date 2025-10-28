@@ -32,6 +32,7 @@ export default function CadencesPage() {
   const [loading, setLoading] = useState(true);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<InstanceStatus | "all">("all");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Auto-detect timezone
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -150,6 +151,11 @@ export default function CadencesPage() {
     }
   };
 
+  // Refresh calendar
+  const refreshCalendar = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   // Calculate stats - simplified without moment
   const totalInstances = events.length;
   const today = new Date().toDateString();
@@ -263,7 +269,7 @@ export default function CadencesPage() {
 
                 {/* Refresh Button */}
                 <Button
-                  onClick={fetchInstances}
+                  onClick={refreshCalendar}
                   variant="outline"
                   className="border-gray-700"
                   disabled={loading}
@@ -295,7 +301,7 @@ export default function CadencesPage() {
           <div className="w-full">
             <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
               <FullCalendar
-                key={statusFilter}
+                key={`${statusFilter}-${refreshKey}`}
                 plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 headerToolbar={{
@@ -330,10 +336,7 @@ export default function CadencesPage() {
             setModalOpen(false);
             setSelectedInstance(null);
           }}
-          onUpdate={() => {
-            // Refresh calendar by updating the statusFilter to trigger re-fetch
-            setStatusFilter(statusFilter);
-          }}
+          onUpdate={refreshCalendar}
         />
       )}
         </div>
