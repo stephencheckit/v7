@@ -17,12 +17,7 @@ export async function GET(
 
     const { data: summary, error } = await supabase
       .from('summary_reports')
-      .select(`
-        *,
-        cadences:form_cadences!inner(id, name, form:forms(title)),
-        created_by_user:auth.users!summary_reports_created_by_fkey(email, raw_user_meta_data),
-        parent_summary:summary_reports!summary_reports_parent_summary_id_fkey(id, name)
-      `)
+      .select('*')
       .eq('id', params.id)
       .single();
 

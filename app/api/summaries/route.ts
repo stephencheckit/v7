@@ -23,12 +23,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from('summary_reports')
-      .select(`
-        *,
-        cadences:form_cadences!inner(id, name, form:forms(title)),
-        created_by_user:auth.users!summary_reports_created_by_fkey(email, raw_user_meta_data),
-        parent_summary:summary_reports!summary_reports_parent_summary_id_fkey(id, name)
-      `)
+      .select('*')
       .eq('workspace_id', workspace_id)
       .order('created_at', { ascending: false });
 
@@ -43,7 +38,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch summaries', details: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ summaries });
+    // Return empty array if no summaries found
+    return NextResponse.json({ summaries: summaries || [] });
   } catch (error: any) {
     console.error('Error in GET /api/summaries:', error);
     return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
