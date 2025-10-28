@@ -308,10 +308,10 @@ describe('useVideoRecording Hook Logic', () => {
       expect(video.videoHeight).toBeGreaterThan(0);
     });
 
-    it('should handle play promise rejection', () => {
+    it('should handle play promise rejection', async () => {
       const playResult = Promise.reject(new Error('Play failed'));
 
-      expect(playResult).rejects.toThrow('Play failed');
+      await expect(playResult).rejects.toThrow('Play failed');
     });
   });
 });
