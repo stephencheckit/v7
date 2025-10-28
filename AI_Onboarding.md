@@ -5,9 +5,36 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **✨ AI-Powered Summary Reports with Cadence Scheduling - October 28, 2025 (Latest)**
+### **🎯 Enhanced Summary Reports: Regular Form Support - October 28, 2025 (Latest)**
 **Status:** ✅ DEPLOYED
-**Commit:** `299c507`
+**Commit:** `1a8eb2d`
+**Deployed:** October 28, 2025
+
+**Enhancement:** Added ability to analyze regular form submissions (not just cadence-based instances)
+
+**Problem Solved:** Original feature only worked with scheduled cadences. Users couldn't test or use it with existing form data.
+
+**What Changed:**
+- Added `form_ids` column to `summary_reports` table
+- Updated Create Summary modal with **Source Type Selector**:
+  - ✅ **Forms** (Regular Submissions) - NEW!
+  - ✅ **Cadences** (Scheduled Forms) - Original
+  - ✅ **Both** - Analyze both types together
+- Enhanced AI generator to fetch and analyze regular `form_submissions`
+- Shows submission counts next to each form (e.g., "Morning Checklist (45 submissions)")
+
+**Immediate Benefit:** Feature is now immediately testable with any existing form data! 🚀
+
+**Technical Details:**
+- Migration: `20251028122937_add_form_ids_to_summaries.sql`
+- Updated files: `create-summary-modal.tsx`, `summary-generator.ts`, API routes
+- AI analyzes both data sources seamlessly
+
+---
+
+### **✨ AI-Powered Summary Reports with Cadence Scheduling - October 28, 2025**
+**Status:** ✅ DEPLOYED
+**Commit:** `299c507` + subsequent fixes
 **Deployed:** October 28, 2025
 
 **What Was Built:**
