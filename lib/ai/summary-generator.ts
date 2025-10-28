@@ -143,11 +143,22 @@ export async function generateSummary(
       maxTokens: 2000
     });
 
-    // Parse AI response
+    // Parse AI response - strip markdown code fences if present
     let aiContent: AIContent;
     try {
-      aiContent = JSON.parse(text);
+      // Remove markdown code fences (```json ... ``` or ``` ... ```)
+      let cleanedText = text.trim();
+      if (cleanedText.startsWith('```')) {
+        // Remove opening fence (```json or ```)
+        cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '');
+        // Remove closing fence
+        cleanedText = cleanedText.replace(/\n?```$/, '');
+      }
+      
+      aiContent = JSON.parse(cleanedText.trim());
     } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      console.error('Raw text:', text);
       // Fallback if JSON parsing fails
       aiContent = {
         executive_summary: text,
