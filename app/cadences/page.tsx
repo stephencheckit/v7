@@ -7,7 +7,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { CalendarEvent, FormInstance, InstanceStatus } from "@/lib/types/cadence";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, RefreshCw, BarChart3 } from "lucide-react";
+import { Calendar as CalendarIcon, RefreshCw, FileCheck } from "lucide-react";
 import { InstanceDetailModal } from "@/components/cadences/instance-detail-modal";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -229,10 +229,10 @@ export default function CadencesPage() {
               </p>
             </div>
             
-            <Link href="/reports">
+            <Link href="/summaries">
               <Button variant="outline" className="border-gray-700 shrink-0">
-                <BarChart3 className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">View Reports</span>
+                <FileCheck className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">View Summaries</span>
               </Button>
             </Link>
           </div>

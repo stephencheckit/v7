@@ -10,7 +10,7 @@ import {
   Settings,
   Thermometer,
   Calendar,
-  BarChart3,
+  FileCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,7 +31,7 @@ const menuItems = [
   { title: "Cadences", url: "/cadences", icon: Calendar },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
+  { title: "Summaries", url: "/summaries", icon: FileCheck },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

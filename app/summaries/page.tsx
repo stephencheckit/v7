@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BarChart3, Plus } from "lucide-react";
+import { FileCheck, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { SummariesView } from "@/components/summaries/summaries-view";
 import { Button } from "@/components/ui/button";
@@ -68,8 +68,8 @@ export default function ReportsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-                <BarChart3 className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-                Reports
+                <FileCheck className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+                Summaries
               </h1>
               <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                 AI-generated compliance summaries and executive reports
