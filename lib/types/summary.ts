@@ -65,7 +65,8 @@ export interface CadenceMetric {
 export interface FilterConfig {
   status_filter?: ('completed' | 'missed' | 'pending' | 'in_progress' | 'ready')[];
   specific_days?: string[];
-  cadence_filter?: string[]; // For derivative summaries
+  cadence_filter?: string[]; // For derivative summaries - filter by specific cadences
+  form_filter?: string[]; // For derivative summaries - filter by specific forms
 }
 
 export interface ScheduleConfig {
