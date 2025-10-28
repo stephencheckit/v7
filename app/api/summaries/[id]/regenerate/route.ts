@@ -6,9 +6,10 @@ import { DerivativeSummaryRequest } from '@/lib/types/summary';
 // PATCH /api/summaries/[id]/regenerate - Regenerate existing summary (in-place refresh)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -20,7 +21,7 @@ export async function PATCH(
     const { data: summary, error: fetchError } = await supabase
       .from('summary_reports')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !summary) {
@@ -31,7 +32,7 @@ export async function PATCH(
     await supabase
       .from('summary_reports')
       .update({ status: 'generating' })
-      .eq('id', params.id);
+      .eq('id', id);
 
     // Regenerate with existing config
     generateSummary(
@@ -55,9 +56,10 @@ export async function PATCH(
 // POST /api/summaries/[id]/regenerate - Create derivative summary
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -72,7 +74,7 @@ export async function POST(
     const { data: parentSummary, error: fetchError } = await supabase
       .from('summary_reports')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !parentSummary) {
@@ -97,7 +99,7 @@ export async function POST(
         status: 'generating',
         recipients: parentSummary.recipients,
         notify_users: parentSummary.notify_users,
-        parent_summary_id: params.id,
+        parent_summary_id: id,
         user_commentary,
         created_by: user.id
       })
