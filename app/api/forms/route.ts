@@ -68,9 +68,10 @@ export async function POST(req: NextRequest) {
       description: description || '',
       schema,
       ai_vision_enabled: ai_vision_enabled ?? false,
+      status: 'draft', // Default to draft
     };
 
-    // Only set status if provided and valid
+    // Override status if provided and valid
     if (status && (status === 'draft' || status === 'published')) {
       insertData.status = status;
     }
