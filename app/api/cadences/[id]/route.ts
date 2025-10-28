@@ -119,8 +119,22 @@ export async function PATCH(
       );
     }
 
-    // If schedule changed, might want to regenerate instances
-    // For now, let cron handle it
+    // If cadence was disabled, delete all future instances (keep past ones for history)
+    if (is_active === false) {
+      const now = new Date().toISOString();
+      const { error: deleteError } = await supabase
+        .from('form_instances')
+        .delete()
+        .eq('cadence_id', id)
+        .gt('scheduled_for', now); // Only delete future instances
+
+      if (deleteError) {
+        console.error('Error deleting future instances:', deleteError);
+        // Don't fail the request, just log the error
+      } else {
+        console.log(`🗑️  Deleted future instances for disabled cadence: ${id}`);
+      }
+    }
 
     return NextResponse.json({
       success: true,

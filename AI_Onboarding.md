@@ -5,7 +5,35 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎯 Executive-Grade AI Summaries - October 28, 2025 (Latest)**
+### **🐛 Cadence System Bug Fixes - October 28, 2025 (Latest)**
+**Status:** ✅ DEPLOYED
+**Deployed:** October 28, 2025
+
+**Problem 1:** Disabling a cadence didn't remove future scheduled instances from the calendar
+**Solution:** Added logic to delete all future instances (keeping past ones for historical purposes) when `is_active` is set to `false`
+
+**Problem 2:** Instance generation was limited to 14 days ahead, preventing longer-term scheduling
+**Solution:** Extended lookahead from 336 hours (14 days) to 2400 hours (100 days)
+
+**Files Changed:**
+- `app/api/cadences/[id]/route.ts` - Added future instance deletion when cadence is disabled
+- `lib/cadences/generator.ts` - Updated default lookAheadHours from 336 to 2400
+- `app/api/cadences/route.ts` - Updated initial generation to use 2400 hours
+
+**Technical Details:**
+- Delete query: `gt('scheduled_for', now)` ensures only future instances are removed
+- Past instances preserved for compliance reporting and historical analysis
+- Cron job still runs every hour with 48-hour lookahead for efficiency
+- Manual cadence creation now generates 100 days of instances immediately
+
+**Impact:** 
+- Cadence disable toggle now properly cleans up future calendar events
+- Users can now schedule forms up to 100+ days in advance
+- Historical data remains intact for audit trails
+
+---
+
+### **🎯 Executive-Grade AI Summaries - October 28, 2025**
 **Status:** ✅ DEPLOYED
 **Commit:** `aa79916`
 **Deployed:** October 28, 2025

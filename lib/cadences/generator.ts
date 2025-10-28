@@ -10,7 +10,7 @@ import { toZonedTime, fromZonedTime } from 'date-fns-tz';
  */
 export async function generateInstancesForCadence(
   cadence: FormCadence,
-  lookAheadHours: number = 336 // 14 days by default (2 weeks)
+  lookAheadHours: number = 2400 // 100 days by default
 ): Promise<FormInstance[]> {
   const { schedule_config, workspace_id, form_id, id: cadence_id, name } = cadence;
   

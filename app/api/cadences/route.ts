@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     // generate the first few instances immediately
     try {
       const { generateInstancesForCadence } = await import('@/lib/cadences/generator');
-      await generateInstancesForCadence(cadence as FormCadence, 336); // 14 days
+      await generateInstancesForCadence(cadence as FormCadence, 2400); // 100 days
     } catch (genError: any) {
       console.error('Error generating initial instances:', genError);
       // Don't fail the request if instance generation fails
