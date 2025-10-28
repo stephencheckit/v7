@@ -996,7 +996,7 @@ function FormsPageContent() {
       setFormName(form.title);
       setFormDescription(form.description || 'Add a description for your form');
       setFormFields(form.schema.fields || []);
-      setFormStatus(form.status || 'published');
+      setFormStatus(form.status || 'draft');
       
       // Load AI Vision setting
       setAiVisionEnabled(form.ai_vision_enabled ?? false);
@@ -1663,7 +1663,7 @@ function FormsPageContent() {
                         onClick={() => setFormStatus("draft")}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                           formStatus === "draft"
-                            ? "bg-white/10 text-white font-medium border border-white/20"
+                            ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
                             : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                         }`}
                       >
@@ -2085,27 +2085,27 @@ function FormsPageContent() {
                                     {formStatus === "published" ? (
                                       <CheckCircle2 className="w-5 h-5 text-[#c4dfc4]" />
                                     ) : (
-                                      <FileText className="w-5 h-5 text-gray-400" />
+                                      <FileText className="w-5 h-5 text-amber-400" />
                                     )}
-                                    <span className={`font-semibold ${formStatus === "published" ? "text-[#c4dfc4]" : "text-gray-400"}`}>
+                                    <span className={`font-semibold ${formStatus === "published" ? "text-[#c4dfc4]" : "text-amber-400"}`}>
                                       {formStatus === "published" ? "Published" : "Draft"}
                                     </span>
                                   </div>
                                   <p className="text-xs text-gray-400 italic">
                                     {formStatus === "published" 
                                       ? "✓ This form is live and can collect responses from users."
-                                      : "This form is a draft and will only work in preview mode."}
+                                      : "⚠ This form is a draft and will only work in preview mode."}
                                   </p>
                                 </div>
                                 <Button
                                   size="sm"
                                   onClick={() => setFormStatus(formStatus === "draft" ? "published" : "draft")}
                                   className={formStatus === "published" 
-                                    ? "bg-white/10 hover:bg-white/20 text-gray-300" 
+                                    ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40" 
                                     : "bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                                   }
                                 >
-                                  {formStatus === "published" ? "Unpublish" : "Publish"}
+                                  {formStatus === "published" ? "Set to Draft" : "Publish Now"}
                                 </Button>
                               </div>
                               <p className="text-xs text-gray-500 italic">
@@ -2173,7 +2173,7 @@ function FormsPageContent() {
                             onClick={() => setFormStatus("draft")}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                               formStatus === "draft"
-                                ? "bg-white/10 text-white font-medium border border-white/20"
+                                ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
                                 : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                           >
@@ -2194,7 +2194,7 @@ function FormsPageContent() {
                         </div>
                         <div className="flex items-center gap-4">
                           {formStatus === "draft" && (
-                            <span className="text-xs text-gray-500">Preview mode only</span>
+                            <span className="text-xs text-amber-400">⚠ Preview mode only</span>
                           )}
                           {formStatus === "published" && shareUrl && (
                             <>
@@ -2749,7 +2749,7 @@ function FormsPageContent() {
                             onClick={() => setFormStatus("draft")}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                               formStatus === "draft"
-                                ? "bg-white/10 text-white font-medium border border-white/20"
+                                ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
                                 : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                           >
@@ -2770,7 +2770,7 @@ function FormsPageContent() {
                         </div>
                         <div className="flex items-center gap-4">
                           {formStatus === "draft" && (
-                            <span className="text-xs text-gray-500">Preview mode only</span>
+                            <span className="text-xs text-amber-400">⚠ Preview mode only</span>
                           )}
                           {formStatus === "published" && shareUrl && (
                             <>
