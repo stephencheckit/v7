@@ -159,8 +159,7 @@ Return your response as a valid JSON object with this structure:
           content: prompt
         }
       ],
-      temperature: 0.7,
-      maxTokens: 2000
+      temperature: 0.7
     });
 
     // Parse AI response - strip markdown code fences if present
