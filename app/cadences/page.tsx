@@ -8,12 +8,9 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { CalendarEvent, FormInstance, InstanceStatus } from "@/lib/types/cadence";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar as CalendarIcon, RefreshCw, FileCheck, Clock, CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { InstanceDetailModal } from "@/components/cadences/instance-detail-modal";
 import { toast } from "sonner";
-import Link from "next/link";
 
 // Status color mapping
 const STATUS_COLORS: Record<InstanceStatus, string> = {
@@ -26,16 +23,11 @@ const STATUS_COLORS: Record<InstanceStatus, string> = {
 };
 
 export default function CadencesPage() {
-  const [events, setEvents] = useState<any[]>([]);
   const [selectedInstance, setSelectedInstance] = useState<FormInstance | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<InstanceStatus | "all">("all");
+  const [statusFilter] = useState<InstanceStatus | "all">("all");
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Auto-detect timezone
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   // Fetch workspace ID
   useEffect(() => {
@@ -156,150 +148,60 @@ export default function CadencesPage() {
     setRefreshKey(prev => prev + 1);
   };
 
-  // Calculate stats - simplified without moment
-  const totalInstances = events.length;
-  const today = new Date().toDateString();
-  const completedToday = events.filter(e => {
-    if (!e.extendedProps) return false;
-    return e.extendedProps.status === 'completed' && 
-           new Date(e.end).toDateString() === today;
-  }).length;
-  const pendingTasks = events.filter(e => {
-    if (!e.extendedProps) return false;
-    return e.extendedProps.status === 'ready' || e.extendedProps.status === 'pending';
-  }).length;
-  const missedTasks = events.filter(e => {
-    if (!e.extendedProps) return false;
-    return e.extendedProps.status === 'missed';
-  }).length;
-
   return (
     <div className="w-full h-full overflow-auto">
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-                <CalendarIcon className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-                Cadences
-              </h1>
-              <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-                Schedule and track recurring form completions
-              </p>
-            </div>
-            
-            <Link href="/summaries">
-              <Button variant="outline" className="border-gray-700 shrink-0">
-                <FileCheck className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">View Summaries</span>
-              </Button>
-            </Link>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
-            <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
-              <div className="flex items-center gap-3">
-                <CalendarIcon className="h-8 w-8 text-[#0a0a0a]" />
-                <div>
-                  <p className="text-sm text-[#0a0a0a]/70">Total Tasks</p>
-                  <p className="text-2xl font-bold text-[#0a0a0a]">{totalInstances}</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-[#c8e0f5] to-[#c8e0f5]/80 border-0 p-4">
-              <div className="flex items-center gap-3">
-                <Clock className="h-8 w-8 text-[#0a0a0a]" />
-                <div>
-                  <p className="text-sm text-[#0a0a0a]/70">Pending</p>
-                  <p className="text-2xl font-bold text-[#0a0a0a]">{pendingTasks}</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-8 w-8 text-[#0a0a0a]" />
-                <div>
-                  <p className="text-sm text-[#0a0a0a]/70">Completed Today</p>
-                  <p className="text-2xl font-bold text-[#0a0a0a]">{completedToday}</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className={`border-0 p-4 ${
-              missedTasks > 0
-                ? 'bg-gradient-to-br from-[#ff6b6b] to-[#ff6b6b]/80'
-                : 'bg-gradient-to-br from-[#f5edc8] to-[#f5edc8]/80'
-            }`}>
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-8 w-8 text-[#0a0a0a]" />
-                <div>
-                  <p className="text-sm text-[#0a0a0a]/70">Missed</p>
-                  <p className="text-2xl font-bold text-[#0a0a0a]">{missedTasks}</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Filters and Legend */}
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-              <p className="text-gray-400 text-sm">
-                Viewing in {timezone} timezone
-              </p>
-              
-              <div className="flex items-center gap-3 flex-wrap">
-                {/* Status Filter */}
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white text-sm"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="ready">Ready</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="missed">Missed</option>
-                  <option value="skipped">Skipped</option>
-                </select>
-
-                {/* Refresh Button */}
-                <Button
-                  onClick={refreshCalendar}
-                  variant="outline"
-                  className="border-gray-700"
-                  disabled={loading}
-                  size="sm"
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-              </div>
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-wrap gap-4 p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
-              {Object.entries(STATUS_COLORS).map(([status, color]) => (
-                <div key={status} className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="text-sm text-gray-300 capitalize">
-                    {status.replace('_', ' ')}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+              <CalendarIcon className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+              Cadences
+            </h1>
+            <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+              Schedule and track recurring form completions
+            </p>
           </div>
 
           {/* Calendar Container */}
           <div className="w-full">
             <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+              <style jsx global>{`
+                .fc {
+                  color: #000000;
+                }
+                .fc-toolbar-title {
+                  color: #000000 !important;
+                  font-weight: 700 !important;
+                }
+                .fc-button {
+                  color: #000000 !important;
+                }
+                .fc-col-header-cell-cushion {
+                  color: #000000 !important;
+                  font-weight: 700 !important;
+                }
+                .fc-daygrid-day-number {
+                  color: #000000 !important;
+                  font-weight: 700 !important;
+                }
+                .fc-list-day-cushion {
+                  color: #000000 !important;
+                }
+                .fc-list-event-time {
+                  color: #000000 !important;
+                }
+                .fc-list-event-title {
+                  color: #000000 !important;
+                }
+                .fc-timegrid-slot-label {
+                  color: #000000 !important;
+                }
+                .fc-event-title,
+                .fc-event-time {
+                  color: #ffffff !important;
+                }
+              `}</style>
               <FullCalendar
                 key={`${statusFilter}-${refreshKey}`}
                 plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
