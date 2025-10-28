@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Calendar, momentLocalizer, View } from "react-big-calendar";
-import moment from "moment";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
+import interactionPlugin from "@fullcalendar/interaction";
+import "@fullcalendar/core/main.css";
+import "@fullcalendar/daygrid/main.css";
+import "@fullcalendar/timegrid/main.css";
+import "@fullcalendar/list/main.css";
 import { CalendarEvent, FormInstance, InstanceStatus } from "@/lib/types/cadence";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,8 +18,6 @@ import { Calendar as CalendarIcon, RefreshCw, FileCheck, Clock, CheckCircle2, Al
 import { InstanceDetailModal } from "@/components/cadences/instance-detail-modal";
 import { toast } from "sonner";
 import Link from "next/link";
-
-const localizer = momentLocalizer(moment);
 
 // Status color mapping
 const STATUS_COLORS: Record<InstanceStatus, string> = {
@@ -26,11 +30,9 @@ const STATUS_COLORS: Record<InstanceStatus, string> = {
 };
 
 export default function CadencesPage() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [selectedInstance, setSelectedInstance] = useState<FormInstance | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [view, setView] = useState<View>("month");
-  const [date, setDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<InstanceStatus | "all">("all");
@@ -61,28 +63,15 @@ export default function CadencesPage() {
     fetchWorkspace();
   }, []);
 
-  // Fetch instances
-  const fetchInstances = useCallback(async () => {
+  // Fetch instances for FullCalendar
+  const fetchEvents = async (fetchInfo: any) => {
     if (!workspaceId) {
-      console.log('No workspace ID yet, skipping fetch');
-      setLoading(false);
-      return;
+      return [];
     }
 
-    setLoading(true);
     try {
-      // Get date range for current view
-      // Map calendar view to moment units
-      const viewToMomentUnit: Record<View, moment.unitOfTime.StartOf> = {
-        month: 'month',
-        week: 'week',
-        work_week: 'week',
-        day: 'day',
-        agenda: 'month'
-      };
-      const momentUnit = viewToMomentUnit[view];
-      const startDate = moment(date).startOf(momentUnit).toISOString();
-      const endDate = moment(date).endOf(momentUnit).toISOString();
+      const startDate = fetchInfo.startStr;
+      const endDate = fetchInfo.endStr;
 
       // Build query params
       const params = new URLSearchParams({
@@ -106,9 +95,7 @@ export default function CadencesPage() {
           description: 'Please apply the cadence migration in Supabase dashboard',
           duration: 10000
         });
-        setEvents([]);
-        setLoading(false);
-        return;
+        return [];
       }
       
       if (!response.ok) {
@@ -118,62 +105,33 @@ export default function CadencesPage() {
 
       const { events: apiEvents } = data;
 
-      // Transform API events to calendar events
-      const calendarEvents: CalendarEvent[] = (apiEvents || []).map((event: any) => ({
-        id: event.id,
+      // Transform API events to FullCalendar events
+      return (apiEvents || []).map((event: any) => ({
+        id: event.instanceId,
         title: event.title,
-        start: new Date(event.start),
-        end: new Date(event.end),
-        status: event.status,
-        formId: event.formId,
-        instanceId: event.instanceId,
-        cadenceId: event.cadenceId,
-        resource: event.resource
+        start: event.start,
+        end: event.end,
+        backgroundColor: STATUS_COLORS[event.status as InstanceStatus] || "#6b7280",
+        borderColor: STATUS_COLORS[event.status as InstanceStatus] || "#6b7280",
+        extendedProps: {
+          status: event.status,
+          formId: event.formId,
+          instanceId: event.instanceId,
+          cadenceId: event.cadenceId,
+          resource: event.resource
+        }
       }));
-
-      setEvents(calendarEvents);
     } catch (error) {
       console.error('Error loading instances:', error);
       toast.error('Failed to load calendar');
-    } finally {
-      setLoading(false);
+      return [];
     }
-  }, [workspaceId, date, view, statusFilter]);
+  };
 
-  useEffect(() => {
-    fetchInstances();
-  }, [fetchInstances]);
-
-  // Subscribe to real-time updates
-  useEffect(() => {
-    if (!workspaceId) return;
-
-    const supabase = createClient();
-
-    const subscription = supabase
-      .channel('form-instances-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'form_instances',
-          filter: `workspace_id=eq.${workspaceId}`
-        },
-        () => {
-          console.log('Instance changed, refreshing...');
-          fetchInstances();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [workspaceId, fetchInstances]);
-
-  // Event click handler
-  const handleSelectEvent = async (event: CalendarEvent) => {
+  // Event click handler for FullCalendar
+  const handleEventClick = async (clickInfo: any) => {
+    const instanceId = clickInfo.event.extendedProps.instanceId;
+    
     const supabase = createClient();
     
     // Type cast to avoid "excessively deep" TypeScript error with complex nested query
@@ -185,7 +143,7 @@ export default function CadencesPage() {
         cadence:form_cadences(id, name, schedule_config),
         submission:simple_form_submissions(id, data, submitted_at)
       `)
-      .eq('id', event.instanceId)
+      .eq('id', instanceId)
       .single();
     
     const instance = result.data as FormInstance | null;
@@ -196,36 +154,22 @@ export default function CadencesPage() {
     }
   };
 
-  // Custom event styling
-  const eventStyleGetter = (event: CalendarEvent) => {
-    const backgroundColor = STATUS_COLORS[event.status] || "#6b7280";
-    
-    return {
-      style: {
-        backgroundColor,
-        borderRadius: "4px",
-        opacity: 0.9,
-        color: "white",
-        border: "none",
-        display: "block",
-        fontSize: "0.85rem",
-        padding: "2px 5px"
-      }
-    };
-  };
-
-  // Calculate stats
+  // Calculate stats - simplified without moment
   const totalInstances = events.length;
-  const completedToday = events.filter(e => 
-    e.status === 'completed' && 
-    moment(e.end).isSame(moment(), 'day')
-  ).length;
-  const pendingTasks = events.filter(e => 
-    e.status === 'ready' || e.status === 'pending'
-  ).length;
-  const missedTasks = events.filter(e => 
-    e.status === 'missed'
-  ).length;
+  const today = new Date().toDateString();
+  const completedToday = events.filter(e => {
+    if (!e.extendedProps) return false;
+    return e.extendedProps.status === 'completed' && 
+           new Date(e.end).toDateString() === today;
+  }).length;
+  const pendingTasks = events.filter(e => {
+    if (!e.extendedProps) return false;
+    return e.extendedProps.status === 'ready' || e.extendedProps.status === 'pending';
+  }).length;
+  const missedTasks = events.filter(e => {
+    if (!e.extendedProps) return false;
+    return e.extendedProps.status === 'missed';
+  }).length;
 
   return (
     <div className="w-full h-full overflow-auto">
@@ -354,100 +298,30 @@ export default function CadencesPage() {
           {/* Calendar Container */}
           <div className="w-full">
             <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
-              <div className="w-full" style={{ maxWidth: '100%', overflow: 'hidden' }}>
-          <style jsx global>{`
-            .rbc-calendar {
-              font-family: inherit;
-              width: 100% !important;
-            }
-            .rbc-month-view,
-            .rbc-time-view,
-            .rbc-agenda-view {
-              width: 100% !important;
-            }
-            .rbc-calendar * {
-              color: #111827;
-              box-sizing: border-box;
-            }
-            .rbc-header {
-              padding: 10px 3px;
-              font-weight: 700 !important;
-              font-size: 1rem !important;
-              color: #000000 !important;
-              border-bottom: 2px solid #e5e7eb;
-            }
-            .rbc-header span {
-              color: #000000 !important;
-            }
-            .rbc-date-cell {
-              padding: 8px;
-              text-align: right;
-            }
-            .rbc-date-cell a,
-            .rbc-date-cell button,
-            .rbc-button-link {
-              color: #000000 !important;
-              font-weight: 700 !important;
-              font-size: 1.1rem !important;
-            }
-            .rbc-off-range-bg {
-              background: #f9fafb;
-            }
-            .rbc-off-range .rbc-date-cell a,
-            .rbc-off-range .rbc-button-link {
-              color: #9ca3af !important;
-            }
-            .rbc-today {
-              background-color: #dbeafe !important;
-            }
-            .rbc-event {
-              padding: 3px 6px;
-              font-size: 0.85rem;
-              color: white !important;
-            }
-            .rbc-toolbar {
-              margin-bottom: 20px;
-            }
-            .rbc-toolbar-label {
-              font-weight: 700 !important;
-              font-size: 1.5rem !important;
-              color: #000000 !important;
-            }
-            .rbc-toolbar button {
-              color: #000000 !important;
-              border: 1px solid #d1d5db;
-              padding: 8px 16px;
-              font-weight: 600 !important;
-              background: white;
-            }
-            .rbc-toolbar button:hover {
-              background-color: #f3f4f6;
-            }
-            .rbc-toolbar button.rbc-active {
-              background-color: #3b82f6;
-              color: white !important;
-              border-color: #3b82f6;
-            }
-          `}</style>
-                <div style={{ width: '100%', maxWidth: '100%' }}>
-                  <Calendar
-                    localizer={localizer}
-                    events={events}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: 600, width: '100%' }}
-                    view={view}
-                    onView={setView}
-                    date={date}
-                    onNavigate={setDate}
-                    onSelectEvent={handleSelectEvent}
-                    eventPropGetter={eventStyleGetter}
-                    views={['month', 'week', 'day', 'agenda']}
-                    popup
-                    tooltipAccessor={(event) => `${event.title} - ${event.status}`}
-                  />
-                </div>
-              </div>
+              <FullCalendar
+                key={statusFilter}
+                plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                headerToolbar={{
+                  left: 'prev,next today',
+                  center: 'title',
+                  right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+                }}
+                events={fetchEvents}
+                eventClick={handleEventClick}
+                height={600}
+                editable={false}
+                selectable={false}
+                selectMirror={true}
+                dayMaxEvents={true}
+                weekends={true}
+                eventDisplay="block"
+                eventTimeFormat={{
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  meridiem: false
+                }}
+              />
             </div>
           </div>
 
@@ -460,7 +334,10 @@ export default function CadencesPage() {
             setModalOpen(false);
             setSelectedInstance(null);
           }}
-          onUpdate={fetchInstances}
+          onUpdate={() => {
+            // Refresh calendar by updating the statusFilter to trigger re-fetch
+            setStatusFilter(statusFilter);
+          }}
         />
       )}
         </div>
