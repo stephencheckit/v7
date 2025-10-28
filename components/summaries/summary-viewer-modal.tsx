@@ -75,7 +75,7 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="bg-[#0a0a0a] border-gray-700 text-white max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[#0a0a0a] border-gray-700 text-white max-w-[95vw] w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -217,22 +217,22 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                   {summary.metrics && (
                     <div>
                       <h3 className="text-xl font-semibold mb-3">Key Metrics</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="p-4 bg-[#1a1a1a] rounded-lg border border-gray-700">
-                          <p className="text-sm text-gray-400">Total Instances</p>
-                          <p className="text-3xl font-bold text-white mt-1">{summary.metrics.total_instances}</p>
+                      <div className="grid grid-cols-4 gap-6">
+                        <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-700">
+                          <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Total Instances</p>
+                          <p className="text-4xl font-bold text-white">{summary.metrics.total_instances}</p>
                         </div>
-                        <div className="p-4 rounded-lg border border-green-700/30 bg-green-500/5">
-                          <p className="text-sm text-gray-400">Completed</p>
-                          <p className="text-3xl font-bold text-green-400 mt-1">{summary.metrics.completed}</p>
+                        <div className="p-6 rounded-lg border border-green-700/30 bg-green-500/5">
+                          <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Completed</p>
+                          <p className="text-4xl font-bold text-green-400">{summary.metrics.completed}</p>
                         </div>
-                        <div className="p-4 rounded-lg border border-red-700/30 bg-red-500/5">
-                          <p className="text-sm text-gray-400">Missed</p>
-                          <p className="text-3xl font-bold text-red-400 mt-1">{summary.metrics.missed}</p>
+                        <div className="p-6 rounded-lg border border-red-700/30 bg-red-500/5">
+                          <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Missed</p>
+                          <p className="text-4xl font-bold text-red-400">{summary.metrics.missed}</p>
                         </div>
-                        <div className="p-4 rounded-lg border border-blue-700/30 bg-blue-500/5">
-                          <p className="text-sm text-gray-400">Completion Rate</p>
-                          <p className="text-3xl font-bold text-blue-400 mt-1">
+                        <div className="p-6 rounded-lg border border-blue-700/30 bg-blue-500/5">
+                          <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Completion Rate</p>
+                          <p className="text-4xl font-bold text-blue-400">
                             {summary.metrics.completion_rate.toFixed(1)}%
                           </p>
                         </div>
