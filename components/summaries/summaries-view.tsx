@@ -10,15 +10,34 @@ import { toast } from "sonner";
 
 interface SummariesViewProps {
   workspaceId: string;
+  statusFilter?: string;
+  createModalOpen?: boolean;
+  onCreateModalClose?: () => void;
 }
 
-export function SummariesView({ workspaceId }: SummariesViewProps) {
+export function SummariesView({ 
+  workspaceId, 
+  statusFilter: externalStatusFilter,
+  createModalOpen: externalCreateModalOpen,
+  onCreateModalClose
+}: SummariesViewProps) {
   const [summaries, setSummaries] = useState<SummaryReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [internalCreateModalOpen, setInternalCreateModalOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<SummaryReport | null>(null);
   const [viewerModalOpen, setViewerModalOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [internalStatusFilter, setInternalStatusFilter] = useState<string>("all");
+  
+  // Use external or internal state
+  const statusFilter = externalStatusFilter !== undefined ? externalStatusFilter : internalStatusFilter;
+  const createModalOpen = externalCreateModalOpen !== undefined ? externalCreateModalOpen : internalCreateModalOpen;
+  const handleCreateModalClose = () => {
+    if (onCreateModalClose) {
+      onCreateModalClose();
+    } else {
+      setInternalCreateModalOpen(false);
+    }
+  };
 
   const fetchSummaries = async () => {
     setLoading(true);
@@ -84,28 +103,30 @@ export function SummariesView({ workspaceId }: SummariesViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white"
-        >
-          <option value="all">All Statuses</option>
-          <option value="completed">Completed</option>
-          <option value="generating">Generating</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="failed">Failed</option>
-        </select>
-        
-        <Button
-          onClick={() => setCreateModalOpen(true)}
-          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-black"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Summary
-        </Button>
-      </div>
+      {/* Header Controls - Only show if not controlled externally */}
+      {externalStatusFilter === undefined && (
+        <div className="flex items-center justify-between">
+          <select
+            value={statusFilter}
+            onChange={(e) => setInternalStatusFilter(e.target.value)}
+            className="bg-[#1a1a1a] border border-gray-700 rounded-lg px-4 py-2 text-white"
+          >
+            <option value="all">All Statuses</option>
+            <option value="completed">Completed</option>
+            <option value="generating">Generating</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="failed">Failed</option>
+          </select>
+          
+          <Button
+            onClick={() => setInternalCreateModalOpen(true)}
+            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-black"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Summary
+          </Button>
+        </div>
+      )}
 
       {/* Summaries Grid */}
       {loading ? (
@@ -229,11 +250,11 @@ export function SummariesView({ workspaceId }: SummariesViewProps) {
       {/* Create Summary Modal */}
       <CreateSummaryModal
         open={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
+        onClose={handleCreateModalClose}
         workspaceId={workspaceId}
         onSuccess={() => {
           fetchSummaries();
-          setCreateModalOpen(false);
+          handleCreateModalClose();
         }}
       />
 
