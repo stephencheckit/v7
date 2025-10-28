@@ -175,7 +175,13 @@ export default function CadencesPage() {
                   font-weight: 700 !important;
                 }
                 .fc-button {
-                  color: #000000 !important;
+                  color: #ffffff !important;
+                }
+                .fc-button-primary {
+                  color: #ffffff !important;
+                }
+                .fc-icon {
+                  color: #ffffff !important;
                 }
                 .fc-col-header-cell-cushion {
                   color: #000000 !important;
