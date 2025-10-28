@@ -149,44 +149,44 @@ export async function POST(req: NextRequest) {
 
     // Update cadences with summary inclusion
     for (const cadenceId of (cadence_ids || [])) {
-      const { error: updateError } = await supabase.rpc('array_append_unique', {
-        table_name: 'form_cadences',
-        id: cadenceId,
-        column_name: 'included_in_summaries',
-        new_value: summary.id
-      });
-
-      // Fallback if RPC doesn't exist
-      if (updateError) {
-        await supabase
-          .from('form_cadences')
-          .update({
-            included_in_summaries: supabase.raw(`
-              CASE 
-                WHEN included_in_summaries @> '"${summary.id}"'::jsonb 
-                THEN included_in_summaries
-                ELSE included_in_summaries || '"${summary.id}"'::jsonb
-              END
-            `)
-          })
-          .eq('id', cadenceId);
+      const { data: cadence } = await supabase
+        .from('form_cadences')
+        .select('included_in_summaries')
+        .eq('id', cadenceId)
+        .single();
+      
+      if (cadence) {
+        const currentSummaries = cadence.included_in_summaries || [];
+        if (!currentSummaries.includes(summary.id)) {
+          await supabase
+            .from('form_cadences')
+            .update({
+              included_in_summaries: [...currentSummaries, summary.id]
+            })
+            .eq('id', cadenceId);
+        }
       }
     }
 
     // Update forms with summary inclusion
     for (const formId of (form_ids || [])) {
-      await supabase
+      const { data: form } = await supabase
         .from('simple_forms')
-        .update({
-          included_in_summaries: supabase.raw(`
-            CASE 
-              WHEN included_in_summaries @> '"${summary.id}"'::jsonb 
-              THEN included_in_summaries
-              ELSE included_in_summaries || '"${summary.id}"'::jsonb
-            END
-          `)
-        })
-        .eq('id', formId);
+        .select('included_in_summaries')
+        .eq('id', formId)
+        .single();
+      
+      if (form) {
+        const currentSummaries = form.included_in_summaries || [];
+        if (!currentSummaries.includes(summary.id)) {
+          await supabase
+            .from('simple_forms')
+            .update({
+              included_in_summaries: [...currentSummaries, summary.id]
+            })
+            .eq('id', formId);
+        }
+      }
     }
 
     // If generate_now, trigger AI generation
