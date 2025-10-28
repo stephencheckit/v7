@@ -5,7 +5,36 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎯 Enhanced Summary Reports: Regular Form Support - October 28, 2025 (Latest)**
+### **🎨 Improved Summary Report Formatting - October 28, 2025 (Latest)**
+**Status:** ✅ DEPLOYED
+**Commit:** `c349dba`
+**Deployed:** October 28, 2025
+
+**Fix:** Transformed raw JSON display into clean, presentation-style report format
+
+**Problem Solved:** Summary viewer was showing raw JSON strings instead of properly formatted content. Users couldn't read the AI-generated insights.
+
+**What Changed:**
+- Added JSON parsing for AI content (handles both string and object formats)
+- Enhanced text formatting with proper line breaks and spacing
+- Improved typography for executive summary (larger text, better line height)
+- Fixed insights and recommendations display
+- All content now displays as clean, readable text
+
+**Visual Improvements:**
+- Executive Summary: Paragraph format with relaxed line spacing
+- Insights: Formatted cards with severity badges
+- Recommendations: Clean bullet list with checkmarks
+- Metrics: Color-coded stats (green for completed, red for missed)
+
+**Technical Details:**
+- Updated `summary-viewer-modal.tsx` with IIFE pattern for parsing
+- Handles both string and pre-parsed JSON objects
+- Graceful error handling for malformed data
+
+---
+
+### **🎯 Enhanced Summary Reports: Regular Form Support - October 28, 2025**
 **Status:** ✅ DEPLOYED
 **Commit:** `1a8eb2d`
 **Deployed:** October 28, 2025
