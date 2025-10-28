@@ -85,14 +85,7 @@ export function SummariesView({ workspaceId }: SummariesViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Summary Reports</h2>
-          <p className="text-gray-400 mt-1">
-            AI-generated compliance summaries and insights
-          </p>
-        </div>
-        
+      <div className="flex items-center justify-end">
         <Button
           onClick={() => setCreateModalOpen(true)}
           className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-black"
