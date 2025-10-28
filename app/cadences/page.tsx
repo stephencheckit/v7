@@ -352,7 +352,7 @@ export default function CadencesPage() {
           </div>
 
           {/* Calendar */}
-          <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <div className="w-full max-w-full overflow-hidden bg-white rounded-lg shadow-lg p-4 md:p-6">
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
