@@ -43,8 +43,10 @@ export async function GET(req: NextRequest) {
         // Generate the summary
         await generateSummary(
           summary.id,
-          summary.cadence_ids,
-          summary.filter_config || {}
+          summary.cadence_ids || [],
+          summary.form_ids || [],
+          summary.filter_config || {},
+          summary.user_commentary
         );
 
         // Calculate next run if recurring
