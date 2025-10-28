@@ -380,6 +380,7 @@ Please extract and build the form now.`;
     cleaned = cleaned.replace(/UPDATE_FORM_META:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     cleaned = cleaned.replace(/MOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/CLEAR_FORM:\s*\{\s*\}/g, '');
     
     // Remove reporting operations
     cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
@@ -842,6 +843,22 @@ Please extract and build the form now.`;
             }
           }
           
+          // Check for CLEAR_FORM (reset/clear all fields)
+          const clearFormRegex = /CLEAR_FORM:\s*\{\s*\}/g;
+          const clearMatches = Array.from(content.matchAll(clearFormRegex));
+          
+          if (clearMatches.length > 0) {
+            console.log('🧹 Found CLEAR_FORM operation');
+            
+            // Clear all fields
+            onFormUpdate?.([], { title: undefined, description: undefined });
+            
+            console.log('✅ Cleared all form fields');
+            
+            // Don't process other operations if we cleared
+            return;
+          }
+          
           // Check for add_field calls in multiple formats:
         // Format 0: ADD_FIELD:\n{...}  (NEW EXPLICIT FORMAT)
         // Format 1: <tool name="add_field">{...}</tool>
@@ -983,6 +1000,11 @@ Please extract and build the form now.`;
                 // Add to beginning
                 console.log(`⬆️ Adding "${newField.label}" to beginning (top)`);
                 updatedFields.unshift(newField);
+              } else if (typeof position === 'number') {
+                // Numeric position (1-based index)
+                const index = Math.max(0, Math.min(position - 1, updatedFields.length));
+                console.log(`🔢 Inserting "${newField.label}" at position ${position} (index ${index})`);
+                updatedFields.splice(index, 0, newField);
               } else if (typeof position === 'object') {
                 if (position.after) {
                   // Insert after specific field
@@ -1200,7 +1222,8 @@ Please extract and build the form now.`;
                                assistantMessage.includes('ADD_FIELD:') ||
                                assistantMessage.includes('UPDATE_FIELD:') ||
                                assistantMessage.includes('REMOVE_FIELD:') ||
-                               assistantMessage.includes('UPDATE_FORM_META:');
+                               assistantMessage.includes('UPDATE_FORM_META:') ||
+                               assistantMessage.includes('CLEAR_FORM:');
           
           if (hasOperations) {
             currentMode = 'execution';
@@ -1214,7 +1237,8 @@ Please extract and build the form now.`;
             assistantMessage.includes('ADD_FIELD:') ||
             assistantMessage.includes('UPDATE_FIELD:') ||
             assistantMessage.includes('REMOVE_FIELD:') ||
-            assistantMessage.includes('UPDATE_FORM_META:')) {
+            assistantMessage.includes('UPDATE_FORM_META:') ||
+            assistantMessage.includes('CLEAR_FORM:')) {
           
           // EXECUTION mode - show operation indicators
           if (assistantMessage.includes('CREATE_FORM:')) {
@@ -1232,6 +1256,9 @@ Please extract and build the form now.`;
           }
           if (assistantMessage.includes('UPDATE_FORM_META:')) {
             thinking.push('📋 Updating form info...');
+          }
+          if (assistantMessage.includes('CLEAR_FORM:')) {
+            thinking.push('🧹 Clearing form...');
           }
           
           // If we detected operations, make sure mode is execution
@@ -1259,7 +1286,7 @@ Please extract and build the form now.`;
         displayText = displayText.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
         
         // Find the first occurrence of any operation keyword and truncate there
-        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:'];
+        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:', 'CLEAR_FORM:'];
         let cutoffIndex = -1;
         
         for (const keyword of operationKeywords) {
@@ -1309,7 +1336,8 @@ Please extract and build the form now.`;
                              assistantMessage.includes('ADD_FIELD:') ||
                              assistantMessage.includes('UPDATE_FIELD:') ||
                              assistantMessage.includes('REMOVE_FIELD:') ||
-                             assistantMessage.includes('UPDATE_FORM_META:');
+                             assistantMessage.includes('UPDATE_FORM_META:') ||
+                             assistantMessage.includes('CLEAR_FORM:');
         
         const finalMode: AIMode = aiMode === 'auto' 
           ? (hasOperations ? 'execution' : 'strategy')

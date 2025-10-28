@@ -295,9 +295,18 @@ ADD_FIELD:
 OR
 { "id": "new_field_id", "type": "single-text", "label": "Field Label", "position": "bottom" }
 OR
+{ "id": "new_field_id", "type": "single-text", "label": "Field Label", "position": 1 }
+(Note: position 1 = 1st field, position 2 = 2nd field, position 3 = 3rd field, etc. Use 1-based indexing)
+OR
 { "id": "new_field_id", "type": "single-text", "label": "Field Label", "position": { "after": "existing_field_id" } }
 OR
 { "id": "new_field_id", "type": "single-text", "label": "Field Label", "position": { "before": "existing_field_id" } }
+
+**IMPORTANT for numeric positions:**
+- When user says "add this as the 2nd field" → use "position": 2
+- When user says "put this in the 1st spot" → use "position": 1
+- When user says "make this the 3rd question" → use "position": 3
+- If no position specified, field goes to bottom by default
 
 **For updating an existing field use this format:**
 UPDATE_FIELD:
@@ -324,6 +333,16 @@ OR
 { "description": "New form description text" }
 OR
 { "title": "New Form Title", "description": "New description" }
+
+**For clearing/resetting the entire form (removing all fields) use this format:**
+CLEAR_FORM:
+{}
+
+**IMPORTANT for clearing:**
+- When user says "clear the form", "start over", "delete everything", "give me a blank slate", "reset" → use CLEAR_FORM
+- This removes ALL fields and resets to empty
+- After clearing, user can start fresh with CREATE_FORM or ADD_FIELD
+- Always confirm after clearing: "✓ Cleared all fields"
 
 CRITICAL JSON RULES:
 - ALWAYS escape quotes within strings: use \" not "
