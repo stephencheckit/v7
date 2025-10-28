@@ -112,18 +112,23 @@ export async function POST(
     // Update cadences if filter changed them
     const cadenceIds = filter_config?.cadence_filter || parentSummary.cadence_ids;
     for (const cadenceId of cadenceIds) {
-      await supabase
+      const { data: cadence } = await supabase
         .from('form_cadences')
-        .update({
-          included_in_summaries: supabase.raw(`
-            CASE 
-              WHEN included_in_summaries @> '"${newSummary.id}"'::jsonb 
-              THEN included_in_summaries
-              ELSE included_in_summaries || '"${newSummary.id}"'::jsonb
-            END
-          `)
-        })
-        .eq('id', cadenceId);
+        .select('included_in_summaries')
+        .eq('id', cadenceId)
+        .single();
+      
+      if (cadence) {
+        const currentSummaries = cadence.included_in_summaries || [];
+        if (!currentSummaries.includes(newSummary.id)) {
+          await supabase
+            .from('form_cadences')
+            .update({
+              included_in_summaries: [...currentSummaries, newSummary.id]
+            })
+            .eq('id', cadenceId);
+        }
+      }
     }
 
     // Trigger AI generation with commentary context
