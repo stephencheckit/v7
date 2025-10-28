@@ -144,9 +144,21 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                 let aiContent = summary.ai_content;
                 if (typeof aiContent === 'string') {
                   try {
-                    aiContent = JSON.parse(aiContent);
+                    // Strip markdown code fences if present
+                    let cleanedText = aiContent.trim();
+                    if (cleanedText.startsWith('```')) {
+                      cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '');
+                      cleanedText = cleanedText.replace(/\n?```$/, '');
+                    }
+                    aiContent = JSON.parse(cleanedText.trim());
                   } catch (e) {
                     console.error('Failed to parse AI content:', e);
+                    // If parsing fails, display as-is
+                    aiContent = {
+                      executive_summary: aiContent,
+                      insights: [],
+                      recommendations: []
+                    };
                   }
                 }
 
@@ -243,7 +255,13 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                 let aiContent = summary.ai_content;
                 if (typeof aiContent === 'string') {
                   try {
-                    aiContent = JSON.parse(aiContent);
+                    // Strip markdown code fences if present
+                    let cleanedText = aiContent.trim();
+                    if (cleanedText.startsWith('```')) {
+                      cleanedText = cleanedText.replace(/^```(?:json)?\n?/, '');
+                      cleanedText = cleanedText.replace(/\n?```$/, '');
+                    }
+                    aiContent = JSON.parse(cleanedText.trim());
                   } catch (e) {
                     console.error('Failed to parse AI content:', e);
                     return null;
