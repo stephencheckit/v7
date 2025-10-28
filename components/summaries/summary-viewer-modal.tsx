@@ -75,7 +75,7 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="bg-[#0a0a0a] border-gray-700 text-white max-w-[98vw] w-[98vw] max-h-[95vh] overflow-y-auto">
+        <DialogContent className="bg-[#0a0a0a] border-gray-700 text-white !max-w-[96vw] w-[96vw] max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1">
@@ -211,97 +211,104 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
 
                 return (
                   <>
-                    {/* Executive Summary */}
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-purple-500/20 rounded-lg">
-                          <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                        <h3 className="text-2xl font-bold">Executive Summary</h3>
-                      </div>
-                      <div className="relative p-8 bg-gradient-to-br from-[#1a1a1a] to-[#111111] rounded-2xl border border-gray-700 shadow-xl">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-green-500 rounded-t-2xl"></div>
-                        <p className="text-gray-200 whitespace-pre-wrap leading-relaxed text-lg">
-                          {aiContent?.executive_summary || 'No summary available'}
-                        </p>
-                      </div>
-                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Key Metrics - Left Column */}
+                      {summary.metrics && (
+                        <div className="lg:col-span-1">
+                          <h3 className="text-2xl font-bold mb-6">Key Metrics</h3>
+                          <div className="grid grid-cols-1 gap-4">
+                            {/* Total Instances */}
+                            <div className="group relative p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl border border-gray-700 hover:border-gray-600 transition-all">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">Total</p>
+                                  <p className="text-4xl font-black text-white">{summary.metrics.total_instances}</p>
+                                </div>
+                                <div className="p-3 bg-gray-700/30 rounded-xl">
+                                  <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
 
-                  {/* Key Metrics */}
-                  {summary.metrics && (
-                    <div>
-                      <h3 className="text-2xl font-bold mb-6">Key Performance Metrics</h3>
-                      <div className="grid grid-cols-4 gap-6">
-                        {/* Total Instances */}
-                        <div className="group relative p-8 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl border border-gray-700 hover:border-gray-600 transition-all">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-gray-700/30 rounded-xl">
-                              <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
+                            {/* Completed */}
+                            <div className="group relative p-6 bg-gradient-to-br from-green-900/20 to-green-950/30 rounded-xl border border-green-700/40 hover:border-green-600/60 transition-all">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-green-400/70 mb-1">Completed</p>
+                                  <p className="text-4xl font-black text-green-400">{summary.metrics.completed}</p>
+                                </div>
+                                <div className="p-3 bg-green-500/20 rounded-xl">
+                                  <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                              </div>
+                              <div className="h-1 bg-green-950 rounded-full mt-3">
+                                <div className="h-1 bg-green-500 rounded-full" style={{ width: `${(summary.metrics.completed / summary.metrics.total_instances) * 100}%` }}></div>
+                              </div>
+                            </div>
+
+                            {/* Missed */}
+                            <div className="group relative p-6 bg-gradient-to-br from-red-900/20 to-red-950/30 rounded-xl border border-red-700/40 hover:border-red-600/60 transition-all">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-red-400/70 mb-1">Missed</p>
+                                  <p className="text-4xl font-black text-red-400">{summary.metrics.missed}</p>
+                                </div>
+                                <div className="p-3 bg-red-500/20 rounded-xl">
+                                  <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                              </div>
+                              <div className="h-1 bg-red-950 rounded-full mt-3">
+                                <div className="h-1 bg-red-500 rounded-full" style={{ width: `${(summary.metrics.missed / summary.metrics.total_instances) * 100}%` }}></div>
+                              </div>
+                            </div>
+
+                            {/* Completion Rate */}
+                            <div className="group relative p-6 bg-gradient-to-br from-blue-900/20 to-blue-950/30 rounded-xl border border-blue-700/40 hover:border-blue-600/60 transition-all">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-blue-400/70 mb-1">Rate</p>
+                                  <p className="text-4xl font-black text-blue-400">
+                                    {summary.metrics.completion_rate.toFixed(1)}%
+                                  </p>
+                                </div>
+                                <div className="p-3 bg-blue-500/20 rounded-xl">
+                                  <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                  </svg>
+                                </div>
+                              </div>
+                              <div className="h-1 bg-blue-950 rounded-full mt-3">
+                                <div className="h-1 bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${summary.metrics.completion_rate}%` }}></div>
+                              </div>
                             </div>
                           </div>
-                          <p className="text-sm font-medium uppercase tracking-wider text-gray-400 mb-2">Total Instances</p>
-                          <p className="text-5xl font-black text-white mb-1">{summary.metrics.total_instances}</p>
-                          <div className="h-1 bg-gray-700 rounded-full mt-4">
-                            <div className="h-1 bg-gray-500 rounded-full" style={{ width: '100%' }}></div>
-                          </div>
                         </div>
+                      )}
 
-                        {/* Completed */}
-                        <div className="group relative p-8 bg-gradient-to-br from-green-900/20 to-green-950/30 rounded-2xl border border-green-700/40 hover:border-green-600/60 transition-all">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-green-500/20 rounded-xl">
-                              <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
+                      {/* Executive Summary - Right Columns */}
+                      <div className="lg:col-span-2">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-purple-500/20 rounded-lg">
+                            <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                           </div>
-                          <p className="text-sm font-medium uppercase tracking-wider text-green-400/70 mb-2">Completed</p>
-                          <p className="text-5xl font-black text-green-400 mb-1">{summary.metrics.completed}</p>
-                          <div className="h-1 bg-green-950 rounded-full mt-4">
-                            <div className="h-1 bg-green-500 rounded-full" style={{ width: `${(summary.metrics.completed / summary.metrics.total_instances) * 100}%` }}></div>
-                          </div>
+                          <h3 className="text-2xl font-bold">Executive Summary</h3>
                         </div>
-
-                        {/* Missed */}
-                        <div className="group relative p-8 bg-gradient-to-br from-red-900/20 to-red-950/30 rounded-2xl border border-red-700/40 hover:border-red-600/60 transition-all">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-red-500/20 rounded-xl">
-                              <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                          </div>
-                          <p className="text-sm font-medium uppercase tracking-wider text-red-400/70 mb-2">Missed</p>
-                          <p className="text-5xl font-black text-red-400 mb-1">{summary.metrics.missed}</p>
-                          <div className="h-1 bg-red-950 rounded-full mt-4">
-                            <div className="h-1 bg-red-500 rounded-full" style={{ width: `${(summary.metrics.missed / summary.metrics.total_instances) * 100}%` }}></div>
-                          </div>
-                        </div>
-
-                        {/* Completion Rate */}
-                        <div className="group relative p-8 bg-gradient-to-br from-blue-900/20 to-blue-950/30 rounded-2xl border border-blue-700/40 hover:border-blue-600/60 transition-all">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-blue-500/20 rounded-xl">
-                              <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                              </svg>
-                            </div>
-                          </div>
-                          <p className="text-sm font-medium uppercase tracking-wider text-blue-400/70 mb-2">Completion Rate</p>
-                          <p className="text-5xl font-black text-blue-400 mb-1">
-                            {summary.metrics.completion_rate.toFixed(1)}%
+                        <div className="relative p-8 bg-gradient-to-br from-[#1a1a1a] to-[#111111] rounded-2xl border border-gray-700 shadow-xl h-full">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-green-500 rounded-t-2xl"></div>
+                          <p className="text-gray-200 whitespace-pre-wrap leading-relaxed text-lg">
+                            {aiContent?.executive_summary || 'No summary available'}
                           </p>
-                          <div className="h-1 bg-blue-950 rounded-full mt-4">
-                            <div className="h-1 bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${summary.metrics.completion_rate}%` }}></div>
-                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
                   </>
                 );
               })()}
