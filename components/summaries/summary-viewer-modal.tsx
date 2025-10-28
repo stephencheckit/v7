@@ -139,17 +139,28 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                 </div>
               )}
 
-              {summary.status === 'completed' && (
-                <>
-                  {/* Executive Summary */}
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3">Executive Summary</h3>
-                    <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-700">
-                      <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        {summary.ai_content?.executive_summary || 'No summary available'}
-                      </p>
+              {summary.status === 'completed' && (() => {
+                // Parse AI content if it's a string
+                let aiContent = summary.ai_content;
+                if (typeof aiContent === 'string') {
+                  try {
+                    aiContent = JSON.parse(aiContent);
+                  } catch (e) {
+                    console.error('Failed to parse AI content:', e);
+                  }
+                }
+
+                return (
+                  <>
+                    {/* Executive Summary */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3">Executive Summary</h3>
+                      <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-700">
+                        <p className="text-gray-300 whitespace-pre-wrap leading-relaxed text-base">
+                          {aiContent?.executive_summary || 'No summary available'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
                   {/* Key Metrics */}
                   {summary.metrics && (
@@ -177,8 +188,9 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                       </div>
                     </div>
                   )}
-                </>
-              )}
+                  </>
+                );
+              })()}
             </TabsContent>
 
             {/* Cadence Details Tab */}
@@ -226,10 +238,22 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
 
             {/* Insights Tab */}
             <TabsContent value="insights" className="space-y-4 mt-6">
-              {summary.status === 'completed' && summary.ai_content?.insights && summary.ai_content.insights.length > 0 ? (
+              {summary.status === 'completed' && (() => {
+                // Parse AI content if it's a string
+                let aiContent = summary.ai_content;
+                if (typeof aiContent === 'string') {
+                  try {
+                    aiContent = JSON.parse(aiContent);
+                  } catch (e) {
+                    console.error('Failed to parse AI content:', e);
+                    return null;
+                  }
+                }
+                
+                return aiContent?.insights && aiContent.insights.length > 0 ? (
                 <>
                   <div className="space-y-3">
-                    {summary.ai_content.insights.map((insight, idx) => (
+                    {aiContent.insights.map((insight, idx) => (
                       <div key={idx} className="p-5 bg-[#1a1a1a] rounded-lg border border-gray-700">
                         <div className="flex items-start justify-between mb-2">
                           <h4 className="font-semibold text-lg">{insight.title}</h4>
@@ -249,12 +273,12 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                     ))}
                   </div>
 
-                  {summary.ai_content.recommendations && summary.ai_content.recommendations.length > 0 && (
+                  {aiContent.recommendations && aiContent.recommendations.length > 0 && (
                     <div className="mt-6">
                       <h3 className="text-xl font-semibold mb-3">Recommendations</h3>
                       <div className="p-5 bg-[#1a1a1a] rounded-lg border border-gray-700">
                         <ul className="space-y-2">
-                          {summary.ai_content.recommendations.map((rec, idx) => (
+                          {aiContent.recommendations.map((rec, idx) => (
                             <li key={idx} className="flex items-start gap-3">
                               <span className="text-[#c4dfc4] mt-1">✓</span>
                               <span className="text-gray-300">{rec}</span>
@@ -265,11 +289,12 @@ export function SummaryViewerModal({ summary, open, onClose, onUpdate }: Summary
                     </div>
                   )}
                 </>
-              ) : (
-                <div className="p-8 bg-[#1a1a1a] rounded-lg border border-gray-700 text-center">
-                  <p className="text-gray-400">No insights available yet</p>
-                </div>
-              )}
+                ) : (
+                  <div className="p-8 bg-[#1a1a1a] rounded-lg border border-gray-700 text-center">
+                    <p className="text-gray-400">No insights available yet</p>
+                  </div>
+                );
+              })()}
             </TabsContent>
 
             {/* Raw Data Tab */}
