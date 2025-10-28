@@ -1,0 +1,17 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/generate-instances",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/update-instance-status",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/generate-summaries",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
+

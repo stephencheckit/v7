@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Check, BarChart3 } from "lucide-react";
 import { AIVisionAssistant } from "@/components/ai-vision-assistant";
 import { SignaturePadWidget } from "@/components/signature-pad-widget";
 
@@ -62,6 +62,7 @@ export default function PublicFormPage() {
   const [aiMetadata, setAiMetadata] = useState<Record<string, any>>({});
   const [analysisFeed, setAnalysisFeed] = useState<any[]>([]);
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+  const [cadenceInfo, setCadenceInfo] = useState<any>(null);
 
   // Reset state when timestamp changes (new preview load)
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function PublicFormPage() {
 
   useEffect(() => {
     loadForm();
+    loadCadenceInfo();
   }, [formId]);
 
   const loadForm = async () => {
@@ -94,6 +96,32 @@ export default function PublicFormPage() {
       setError(err.message || 'Failed to load form');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCadenceInfo = async () => {
+    try {
+      // Fetch cadence for this form
+      const response = await fetch(`/api/cadences?form_id=${formId}`);
+      if (response.ok) {
+        const { cadences } = await response.json();
+        if (cadences && cadences.length > 0) {
+          const cadence = cadences[0];
+          // Fetch summaries that include this cadence
+          if (cadence.included_in_summaries && cadence.included_in_summaries.length > 0) {
+            const summaryResponse = await fetch(`/api/summaries?workspace_id=${cadence.workspace_id}`);
+            if (summaryResponse.ok) {
+              const { summaries } = await summaryResponse.json();
+              const includedSummaries = summaries.filter((s: any) => 
+                cadence.included_in_summaries.includes(s.id)
+              );
+              setCadenceInfo({ cadence, includedSummaries });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading cadence info:', error);
     }
   };
 
@@ -391,6 +419,21 @@ export default function PublicFormPage() {
                 Submissions in preview mode will not be counted in your analytics.
               </p>
             </div>
+          </div>
+        )}
+        
+        {/* Visibility Banner */}
+        {cadenceInfo?.includedSummaries && cadenceInfo.includedSummaries.length > 0 && (
+          <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="flex items-center gap-2 text-blue-400 mb-2">
+              <BarChart3 className="w-5 h-5" />
+              <p className="font-medium">
+                This form is part of {cadenceInfo.includedSummaries[0].name}
+              </p>
+            </div>
+            <p className="text-sm text-blue-300">
+              Sent to: {cadenceInfo.includedSummaries[0].recipients?.join(', ') || 'Management'}
+            </p>
           </div>
         )}
         

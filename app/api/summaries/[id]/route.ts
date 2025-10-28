@@ -1,0 +1,135 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { generateSummary } from '@/lib/ai/summary-generator';
+
+// GET /api/summaries/[id] - Get summary details
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: summary, error } = await supabase
+      .from('summary_reports')
+      .select(`
+        *,
+        cadences:form_cadences!inner(id, name, form:forms(title)),
+        created_by_user:auth.users!summary_reports_created_by_fkey(email, raw_user_meta_data),
+        parent_summary:summary_reports!summary_reports_parent_summary_id_fkey(id, name)
+      `)
+      .eq('id', params.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching summary:', error);
+      return NextResponse.json({ error: 'Failed to fetch summary', details: error.message }, { status: 500 });
+    }
+
+    if (!summary) {
+      return NextResponse.json({ error: 'Summary not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ summary });
+  } catch (error: any) {
+    console.error('Error in GET /api/summaries/[id]:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  }
+}
+
+// PATCH /api/summaries/[id] - Update summary
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const updates = await req.json();
+    
+    // Don't allow updating certain fields directly
+    delete updates.id;
+    delete updates.workspace_id;
+    delete updates.created_by;
+    delete updates.created_at;
+
+    const { data: summary, error } = await supabase
+      .from('summary_reports')
+      .update(updates)
+      .eq('id', params.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating summary:', error);
+      return NextResponse.json({ error: 'Failed to update summary', details: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ summary });
+  } catch (error: any) {
+    console.error('Error in PATCH /api/summaries/[id]:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  }
+}
+
+// DELETE /api/summaries/[id] - Delete summary
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get summary to access cadence_ids before deletion
+    const { data: summary } = await supabase
+      .from('summary_reports')
+      .select('cadence_ids')
+      .eq('id', params.id)
+      .single();
+
+    if (summary) {
+      // Remove from cadences' included_in_summaries
+      for (const cadenceId of (summary.cadence_ids as string[])) {
+        await supabase
+          .from('form_cadences')
+          .update({
+            included_in_summaries: supabase.raw(`
+              included_in_summaries - '"${params.id}"'::text
+            `)
+          })
+          .eq('id', cadenceId);
+      }
+    }
+
+    const { error } = await supabase
+      .from('summary_reports')
+      .delete()
+      .eq('id', params.id);
+
+    if (error) {
+      console.error('Error deleting summary:', error);
+      return NextResponse.json({ error: 'Failed to delete summary', details: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error in DELETE /api/summaries/[id]:', error);
+    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+  }
+}
+

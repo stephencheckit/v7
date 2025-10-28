@@ -4,6 +4,7 @@ import { useState, useEffect as React_useEffect, Suspense } from "react";
 import * as React from "react";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { SignatureDisplay } from "@/components/signature-display";
+import { ScheduleSettings } from "@/components/forms/schedule-settings";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -911,7 +912,7 @@ function FormsPageContent() {
   
   const [activeTab, setActiveTab] = useState<"builder" | "settings" | "report">("builder");
   const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
-  const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou" | "publish">("general");
+  const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou" | "cadence" | "publish">("general");
   const [selectedResponseId, setSelectedResponseId] = useState<string | "all">("all");
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
@@ -920,6 +921,19 @@ function FormsPageContent() {
   
   // AI Vision Settings
   const [aiVisionEnabled, setAiVisionEnabled] = useState(false);
+  
+  // Handle URL parameters for direct navigation
+  React_useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const sectionParam = searchParams.get('section');
+    
+    if (tabParam === 'settings') {
+      setActiveTab('settings');
+      if (sectionParam === 'cadence' || sectionParam === 'schedule') {
+        setActiveSettingsSection('cadence');
+      }
+    }
+  }, [searchParams]);
   
   // Thank You Page Settings
   const [thankYouMessage, setThankYouMessage] = useState("Thank you for your submission!");
@@ -1926,6 +1940,20 @@ function FormsPageContent() {
                           <div className="text-xs text-gray-500">Form status and URL</div>
                         </button>
                         )}
+
+                        {!isLeftSidebarCollapsed && (
+                        <button
+                          onClick={() => setActiveSettingsSection("cadence")}
+                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeSettingsSection === "cadence"
+                              ? "bg-[#c4dfc4]/20 text-white font-medium"
+                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                        >
+                          <div className="text-sm">Cadence</div>
+                          <div className="text-xs text-gray-500">Recurring form instances</div>
+                        </button>
+                        )}
                       </div>
                     </div>
 
@@ -2260,6 +2288,15 @@ function FormsPageContent() {
                                 )}
                               </div>
                             )}
+                          </div>
+                          )}
+
+                          {activeSettingsSection === "cadence" && (
+                          <div className="space-y-8">
+                            <ScheduleSettings 
+                              formId={editingFormId || lastSavedFormId || ""}
+                              formTitle={formName}
+                            />
                           </div>
                           )}
                         </Card>
