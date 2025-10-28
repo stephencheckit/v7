@@ -22,6 +22,7 @@ interface SimpleForm {
   title: string;
   description: string;
   schema: any;
+  status: 'draft' | 'published';
   created_at: string;
   simple_form_stats: Array<{
     total_submissions: number;
@@ -29,7 +30,7 @@ interface SimpleForm {
   }>;
 }
 
-type SortColumn = 'name' | 'questions' | 'responses' | 'created';
+type SortColumn = 'name' | 'questions' | 'responses' | 'status' | 'created';
 type SortDirection = 'asc' | 'desc';
 
 export default function FormsPage() {
@@ -135,6 +136,10 @@ export default function FormsPage() {
         case 'responses':
           aValue = a.simple_form_stats?.[0]?.total_submissions || 0;
           bValue = b.simple_form_stats?.[0]?.total_submissions || 0;
+          break;
+        case 'status':
+          aValue = a.status || 'draft';
+          bValue = b.status || 'draft';
           break;
         case 'created':
           aValue = new Date(a.created_at).getTime();
@@ -293,6 +298,19 @@ export default function FormsPage() {
                       </TableHead>
                       <TableHead className="text-gray-400">
                         <button
+                          onClick={() => handleSort('status')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Status
+                          {sortColumn === 'status' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="h-3 w-3 opacity-30" />
+                          )}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-gray-400">
+                        <button
                           onClick={() => handleSort('created')}
                           className="flex items-center gap-1 hover:text-white transition-colors"
                         >
@@ -310,7 +328,7 @@ export default function FormsPage() {
                   <TableBody>
                     {sortedForms.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-12 text-gray-400">
+                        <TableCell colSpan={6} className="text-center py-12 text-gray-400">
                           No forms yet. Create your first form to get started!
                         </TableCell>
                       </TableRow>
@@ -343,6 +361,17 @@ export default function FormsPage() {
                             </TableCell>
                             <TableCell className="text-gray-300">
                               {responseCount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-gray-300">
+                              <Badge 
+                                variant={form.status === 'published' ? 'default' : 'secondary'}
+                                className={form.status === 'published' 
+                                  ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-[#c4dfc4]/30' 
+                                  : 'bg-gray-700/50 text-gray-400 border-gray-600/50'
+                                }
+                              >
+                                {form.status === 'published' ? 'Published' : 'Draft'}
+                              </Badge>
                             </TableCell>
                             <TableCell className="text-gray-300">
                               <div className="flex items-center gap-2">

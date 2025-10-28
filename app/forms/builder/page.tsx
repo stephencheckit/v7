@@ -2809,8 +2809,8 @@ function FormsPageContent() {
         onPromptSubmitted={() => { hasAutoSubmittedPrompt.current = true; }}
         onFormUpdate={(fields, formMeta) => {
           setFormFields(fields);
-          if (formMeta?.title) setFormName(formMeta.title);
-          if (formMeta?.description) setFormDescription(formMeta.description);
+          if (formMeta?.title) setFormName(formMeta.title || "Untitled Form");
+          if (formMeta?.description) setFormDescription(formMeta.description || "Add a description for your form");
           
           // Hide AI generating spinner once fields appear
           if (fields.length > 0 && isAiGenerating) {

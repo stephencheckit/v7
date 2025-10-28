@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserWorkspaceId } from '@/lib/workspace-helper';
 import { nanoid } from 'nanoid';
+import { apiRateLimit, getClientIdentifier, checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 /**
  * POST /api/forms - Create a new form (in authenticated user's workspace)
  * Body: { title, description, schema }
  * Returns: { id, shareUrl, form }
+ * Rate limited: 100 requests per minute per user
  */
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +21,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized - no workspace found' },
         { status: 401 }
+      );
+    }
+
+    // Apply rate limiting (100 requests per minute per user)
+    const { data: { user } } = await supabase.auth.getUser();
+    const identifier = getClientIdentifier(req, user?.id);
+    const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please slow down.',
+          reset: rateLimitResult.reset
+        },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
       );
     }
 

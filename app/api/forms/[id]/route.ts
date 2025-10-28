@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
+import { getUserWorkspaceId } from '@/lib/workspace-helper';
+import { apiRateLimit, getClientIdentifier, checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,6 +45,8 @@ export async function GET(
 
 /**
  * PUT /api/forms/[id] - Update a form
+ * Rate limited: 100 requests per minute per user
+ * Workspace verified: User can only update forms in their workspace
  */
 export async function PUT(
   req: NextRequest,
@@ -49,6 +54,56 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+
+    // Get authenticated user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - no workspace found' },
+        { status: 401 }
+      );
+    }
+
+    // Apply rate limiting
+    const serverSupabase = await createServerClient();
+    const { data: { user } } = await serverSupabase.auth.getUser();
+    const identifier = getClientIdentifier(req, user?.id);
+    const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please slow down.',
+          reset: rateLimitResult.reset
+        },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    // Verify workspace ownership before allowing update
+    const { data: existingForm, error: fetchError } = await supabase
+      .from('simple_forms')
+      .select('workspace_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingForm) {
+      return NextResponse.json(
+        { error: 'Form not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingForm.workspace_id !== workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - you do not have permission to update this form' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { title, description, schema, status, ai_vision_enabled, thank_you_settings } = body;
 
@@ -119,6 +174,8 @@ export async function PUT(
 
 /**
  * PATCH /api/forms/[id] - Partially update a form (for quick updates like title)
+ * Rate limited: 100 requests per minute per user
+ * Workspace verified: User can only update forms in their workspace
  */
 export async function PATCH(
   req: NextRequest,
@@ -126,6 +183,56 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+
+    // Get authenticated user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - no workspace found' },
+        { status: 401 }
+      );
+    }
+
+    // Apply rate limiting
+    const serverSupabase = await createServerClient();
+    const { data: { user } } = await serverSupabase.auth.getUser();
+    const identifier = getClientIdentifier(req, user?.id);
+    const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please slow down.',
+          reset: rateLimitResult.reset
+        },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    // Verify workspace ownership before allowing update
+    const { data: existingForm, error: fetchError } = await supabase
+      .from('simple_forms')
+      .select('workspace_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingForm) {
+      return NextResponse.json(
+        { error: 'Form not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingForm.workspace_id !== workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - you do not have permission to update this form' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
 
     // Build update object with only provided fields
@@ -171,6 +278,8 @@ export async function PATCH(
 
 /**
  * DELETE /api/forms/[id] - Delete a form
+ * Rate limited: 100 requests per minute per user
+ * Workspace verified: User can only delete forms in their workspace
  */
 export async function DELETE(
   req: NextRequest,
@@ -178,6 +287,55 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+
+    // Get authenticated user's workspace
+    const workspaceId = await getUserWorkspaceId();
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - no workspace found' },
+        { status: 401 }
+      );
+    }
+
+    // Apply rate limiting
+    const serverSupabase = await createServerClient();
+    const { data: { user } } = await serverSupabase.auth.getUser();
+    const identifier = getClientIdentifier(req, user?.id);
+    const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please slow down.',
+          reset: rateLimitResult.reset
+        },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
+    // Verify workspace ownership before allowing deletion
+    const { data: existingForm, error: fetchError } = await supabase
+      .from('simple_forms')
+      .select('workspace_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingForm) {
+      return NextResponse.json(
+        { error: 'Form not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingForm.workspace_id !== workspaceId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - you do not have permission to delete this form' },
+        { status: 403 }
+      );
+    }
 
     // Delete the form (this will cascade delete submissions due to FK constraint)
     const { error } = await supabase

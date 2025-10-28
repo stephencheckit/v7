@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { apiRateLimit, getClientIdentifier, checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,23 @@ export async function GET(
   try {
     const { id } = await params;
     console.log(`📊 API: Fetching submissions for form ${id}`);
+
+    // Apply rate limiting (100 requests per minute)
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded. Please slow down.',
+          reset: rateLimitResult.reset
+        },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
 
     // Fetch all submissions for this form, ordered by most recent first
     const { data: submissions, error } = await supabase
