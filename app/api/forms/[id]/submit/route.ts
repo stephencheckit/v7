@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { submitRateLimit, getClientIdentifier, checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 /**
  * POST /api/forms/:id/submit - Submit form response
  * Body: { data: { field1: value1, field2: value2, ... } }
@@ -19,6 +14,12 @@ export async function POST(
 ) {
   try {
     const { id: formId } = await params;
+
+    // Create Supabase client at request time
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     // Apply rate limiting (10 submissions per hour per IP)
     const identifier = getClientIdentifier(req);

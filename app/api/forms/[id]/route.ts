@@ -4,11 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 import { getUserWorkspaceId } from '@/lib/workspace-helper';
 import { apiRateLimit, getClientIdentifier, checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 /**
  * GET /api/forms/[id] - Get a single form by ID
  */
@@ -18,6 +13,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+
+    // Create Supabase client at request time
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     const { data: form, error } = await supabase
       .from('simple_forms')
@@ -54,6 +55,12 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+
+    // Create Supabase client at request time
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     // Get authenticated user's workspace
     const workspaceId = await getUserWorkspaceId();
@@ -184,6 +191,12 @@ export async function PATCH(
   try {
     const { id } = await params;
 
+    // Create Supabase client at request time
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     // Get authenticated user's workspace
     const workspaceId = await getUserWorkspaceId();
     if (!workspaceId) {
@@ -287,6 +300,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+
+    // Create Supabase client at request time
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     // Get authenticated user's workspace
     const workspaceId = await getUserWorkspaceId();

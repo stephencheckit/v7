@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 /**
  * GET /api/forms/:id/report - Generate basic report
  * Returns: {
@@ -21,6 +16,12 @@ export async function GET(
 ) {
   try {
     const { id: formId } = await params;
+
+    // Create Supabase client at request time (not build time)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     // Get form with stats
     const { data: form, error: formError } = await supabase
