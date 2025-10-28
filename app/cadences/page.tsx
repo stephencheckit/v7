@@ -352,22 +352,17 @@ export default function CadencesPage() {
           </div>
 
           {/* Calendar */}
-          <Card className="shadow-lg border-gray-200 overflow-hidden">
+          <Card className="shadow-lg border-gray-200">
             <div className="p-4 md:p-6">
               <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">Schedule Calendar</h2>
-              <div className="bg-white rounded-lg p-3 md:p-6">
+              <div className="overflow-x-auto -mx-4 md:mx-0">
+                <div className="bg-white rounded-lg p-3 md:p-6 min-w-[700px]">
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
-              width: 100% !important;
-              max-width: 100%;
             }
             .rbc-calendar * {
               color: #111827;
-              box-sizing: border-box;
-            }
-            .rbc-month-view {
-              overflow: hidden;
             }
             .rbc-header {
               padding: 8px 2px;
@@ -457,7 +452,6 @@ export default function CadencesPage() {
               border-color: #3b82f6;
             }
           `}</style>
-          <div className="w-full">
             <Calendar
               localizer={localizer}
               events={events}
@@ -474,7 +468,7 @@ export default function CadencesPage() {
               popup
               tooltipAccessor={(event) => `${event.title} - ${event.status}`}
             />
-          </div>
+                </div>
               </div>
             </div>
           </Card>
