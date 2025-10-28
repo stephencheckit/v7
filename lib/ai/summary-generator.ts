@@ -336,10 +336,11 @@ function buildPrompt(
 
   prompt += `\n**Form Responses** (sample from completed forms):\n`;
   for (const [cadenceName, submissions] of Object.entries(responses as any)) {
-    const sampleSize = Math.min(submissions.length, 5);
-    prompt += `\n${cadenceName} (showing ${sampleSize} of ${submissions.length}):\n`;
+    const submissionArray = submissions as any[];
+    const sampleSize = Math.min(submissionArray.length, 5);
+    prompt += `\n${cadenceName} (showing ${sampleSize} of ${submissionArray.length}):\n`;
     
-    submissions.slice(0, sampleSize).forEach((sub: any, idx: number) => {
+    submissionArray.slice(0, sampleSize).forEach((sub: any, idx: number) => {
       prompt += `  ${idx + 1}. Completed: ${new Date(sub.completed_at).toLocaleString()}\n`;
       prompt += `     Data: ${JSON.stringify(sub.data, null, 2).substring(0, 500)}...\n`;
     });
