@@ -376,9 +376,9 @@ export default function CadencesPage() {
             tooltipAccessor={(event) => `${event.title} - ${event.status}`}
           />
         </div>
-        </div>
+      </div>
 
-        {/* Instance Detail Modal */}
+      {/* Instance Detail Modal */}
       {selectedInstance && (
         <InstanceDetailModal
           instance={selectedInstance}
@@ -390,6 +390,7 @@ export default function CadencesPage() {
           onUpdate={fetchInstances}
         />
       )}
+        </div>
       </div>
     </div>
   );
