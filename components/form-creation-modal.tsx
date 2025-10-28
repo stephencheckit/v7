@@ -74,12 +74,11 @@ export function FormCreationModal({ isOpen, onClose }: FormCreationModalProps) {
       const formId = data.form.id;
       
       // Navigate to builder with mode param
+      // Don't close modal - let navigation handle it to prevent flash
       router.push(`/forms/builder?id=${formId}&chatMode=${aiChatMode}`);
-      handleClose();
     } catch (error) {
       console.error('Failed to create form:', error);
       alert('Failed to create form. Please try again.');
-    } finally {
       setIsCreating(false);
     }
   };
@@ -131,12 +130,11 @@ ${additionalNotes ? `\n**Additional Notes:** ${additionalNotes}` : ''}
 Please create the form now with appropriate fields and a descriptive title.`;
       
       // Navigate to builder with AI prompt
+      // Don't close modal - let navigation handle it to prevent flash
       router.push(`/forms/builder?id=${formId}&chatMode=expanded&aiPrompt=${encodeURIComponent(aiPrompt)}`);
-      handleClose();
     } catch (error) {
       console.error('Failed to create form:', error);
       alert('Failed to create form. Please try again.');
-    } finally {
       setIsCreating(false);
     }
   };
