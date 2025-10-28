@@ -141,7 +141,7 @@ export function SummariesView({
             Create your first summary to start analyzing compliance data and generating insights
           </p>
           <Button
-            onClick={() => setCreateModalOpen(true)}
+            onClick={() => setInternalCreateModalOpen(true)}
             className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-black"
           >
             <Plus className="w-4 h-4 mr-2" />

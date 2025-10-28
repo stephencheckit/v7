@@ -351,16 +351,23 @@ export default function CadencesPage() {
             </div>
           </div>
 
-          {/* Calendar */}
-          <div className="w-full max-w-full bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[700px]">
+          {/* Calendar Container */}
+          <div className="w-full">
+            <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+              <div className="w-full" style={{ maxWidth: '100%', overflow: 'hidden' }}>
           <style jsx global>{`
             .rbc-calendar {
               font-family: inherit;
+              width: 100% !important;
+            }
+            .rbc-month-view,
+            .rbc-time-view,
+            .rbc-agenda-view {
+              width: 100% !important;
             }
             .rbc-calendar * {
               color: #111827;
+              box-sizing: border-box;
             }
             .rbc-header {
               padding: 10px 3px;
@@ -422,22 +429,24 @@ export default function CadencesPage() {
               border-color: #3b82f6;
             }
           `}</style>
-              <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ height: 600 }}
-                view={view}
-                onView={setView}
-                date={date}
-                onNavigate={setDate}
-                onSelectEvent={handleSelectEvent}
-                eventPropGetter={eventStyleGetter}
-                views={['month', 'week', 'day', 'agenda']}
-                popup
-                tooltipAccessor={(event) => `${event.title} - ${event.status}`}
-              />
+                <div style={{ width: '100%', maxWidth: '100%' }}>
+                  <Calendar
+                    localizer={localizer}
+                    events={events}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: 600, width: '100%' }}
+                    view={view}
+                    onView={setView}
+                    date={date}
+                    onNavigate={setDate}
+                    onSelectEvent={handleSelectEvent}
+                    eventPropGetter={eventStyleGetter}
+                    views={['month', 'week', 'day', 'agenda']}
+                    popup
+                    tooltipAccessor={(event) => `${event.title} - ${event.status}`}
+                  />
+                </div>
               </div>
             </div>
           </div>
