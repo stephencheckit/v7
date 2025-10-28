@@ -5,9 +5,10 @@ import { generateSummary } from '@/lib/ai/summary-generator';
 // GET /api/summaries/[id] - Get summary details
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -18,7 +19,7 @@ export async function GET(
     const { data: summary, error } = await supabase
       .from('summary_reports')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) {
@@ -40,9 +41,10 @@ export async function GET(
 // PATCH /api/summaries/[id] - Update summary
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -61,7 +63,7 @@ export async function PATCH(
     const { data: summary, error } = await supabase
       .from('summary_reports')
       .update(updates)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -80,9 +82,10 @@ export async function PATCH(
 // DELETE /api/summaries/[id] - Delete summary
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -94,7 +97,7 @@ export async function DELETE(
     const { data: summary } = await supabase
       .from('summary_reports')
       .select('cadence_ids')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (summary) {
@@ -104,7 +107,7 @@ export async function DELETE(
           .from('form_cadences')
           .update({
             included_in_summaries: supabase.raw(`
-              included_in_summaries - '"${params.id}"'::text
+              included_in_summaries - '"${id}"'::text
             `)
           })
           .eq('id', cadenceId);
@@ -114,7 +117,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('summary_reports')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       console.error('Error deleting summary:', error);
