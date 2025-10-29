@@ -27,23 +27,29 @@ export type TriggerConfig = SensorTriggerConfig | FormTriggerConfig | ScheduleTr
 
 export interface EmailAction {
     type: 'email';
-    recipients: string[]; // 'user:uuid' or 'role:manager'
-    subject: string;
-    message: string;
+    config: {
+        recipients: string[]; // 'user:uuid' or 'role:manager'
+        subject: string;
+        message: string;
+    };
 }
 
 export interface SMSAction {
     type: 'sms';
-    recipients: string[];
-    message: string;
+    config: {
+        recipients: string[];
+        message: string;
+    };
 }
 
 export interface CreateTaskAction {
     type: 'create_task';
-    form_id: string;
-    assign_to: string;
-    due_minutes: number;
-    priority: 'low' | 'medium' | 'high';
+    config: {
+        form_id: string;
+        assign_to: string;
+        due_minutes: number;
+        priority: 'low' | 'medium' | 'high';
+    };
 }
 
 export type WorkflowAction = EmailAction | SMSAction | CreateTaskAction;
