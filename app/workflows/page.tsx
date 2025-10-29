@@ -10,7 +10,7 @@ import { WorkflowCard } from "@/components/workflows/workflow-card";
 import { WorkflowInfoDrawer } from "@/components/workflows/workflow-info-drawer";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { Workflow } from "@/lib/types/workflow";
-import { CenteredSpinner } from "@/components/loading";
+import { WorkflowsSkeleton } from "@/components/loading";
 
 export default function WorkflowsPage() {
   const { workspaceId, isLoading: authLoading } = useAuth();
@@ -71,7 +71,7 @@ export default function WorkflowsPage() {
   };
 
   if (authLoading || loading) {
-    return <CenteredSpinner />;
+    return <WorkflowsSkeleton />;
   }
 
   return (

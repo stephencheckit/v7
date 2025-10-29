@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, Plus } from "lucide-react";
 import { CourseCard } from "@/components/learn/course-card";
 import { AIChatPanel } from "@/components/ai-chat-panel";
-import { CenteredSpinner } from "@/components/loading";
+import { LearnSkeleton } from "@/components/loading";
 import type { Course } from "@/lib/types/course";
 
 export default function LearnPage() {
@@ -65,7 +65,7 @@ export default function LearnPage() {
     };
 
     if (authLoading || loading) {
-        return <CenteredSpinner />;
+        return <LearnSkeleton />;
     }
 
     return (

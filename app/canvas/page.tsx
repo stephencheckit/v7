@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Network, RefreshCw, ExternalLink, FileText, Zap, Thermometer, GraduationCap, Calendar } from 'lucide-react';
+import { CanvasSkeleton } from '@/components/loading';
 
 export default function CanvasPage() {
   const { workspaceId } = useAuth();
@@ -280,14 +281,7 @@ export default function CanvasPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[#0a0a0a]">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-[#c4dfc4] mx-auto mb-4" />
-          <p className="text-white">Loading workspace data...</p>
-        </div>
-      </div>
-    );
+    return <CanvasSkeleton />;
   }
 
   return (
