@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Plus } from "lucide-react";
-import { CourseCard } from "@/components/engage/course-card";
+import { BookOpen, Plus } from "lucide-react";
+import { CourseCard } from "@/components/learn/course-card";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { CenteredSpinner } from "@/components/loading";
 import type { Course } from "@/lib/types/course";
 
-export default function EngagePage() {
+export default function LearnPage() {
     const { workspaceId, isLoading: authLoading } = useAuth();
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ export default function EngagePage() {
     // Load initial chat state from localStorage after mount
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('engage-ai-chat-open');
+            const saved = localStorage.getItem('learn-ai-chat-open');
             if (saved === 'true') {
                 setShowAI(true);
             }
@@ -28,7 +28,7 @@ export default function EngagePage() {
     // Save AI chat state to localStorage whenever it changes
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            localStorage.setItem('engage-ai-chat-open', String(showAI));
+            localStorage.setItem('learn-ai-chat-open', String(showAI));
         }
     }, [showAI]);
 
@@ -100,7 +100,7 @@ export default function EngagePage() {
                         {/* Course Grid */}
                         {courses.length === 0 ? (
                             <div className="text-center py-16 space-y-4">
-                                <GraduationCap className="h-16 w-16 text-muted-foreground/50 mx-auto" />
+                                <BookOpen className="h-16 w-16 text-muted-foreground/50 mx-auto" />
                                 <div>
                                     <h3 className="text-xl font-semibold text-white mb-2">
                                         No courses yet

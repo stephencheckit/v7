@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, Trophy, X } from "lucide-react";
-import { TextBlock } from "@/components/engage/text-block";
-import { MultipleChoiceBlock } from "@/components/engage/multiple-choice-block";
-import { TrueFalseBlock } from "@/components/engage/true-false-block";
+import { TextBlock } from "@/components/learn/text-block";
+import { MultipleChoiceBlock } from "@/components/learn/multiple-choice-block";
+import { TrueFalseBlock } from "@/components/learn/true-false-block";
 import { CenteredSpinner } from "@/components/loading";
 import type { Course, CourseBlock } from "@/lib/types/course";
 

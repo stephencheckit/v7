@@ -87,7 +87,7 @@ export function AIChatPanel({
       return `workflows_builder_${workspaceId}`;
     }
     if (context === 'courses' && workspaceId) {
-      return `courses_builder_${workspaceId}`;
+      return `learn_builder_${workspaceId}`;
     }
     if (formId && formId !== 'new') {
       return formId; // Use actual form ID
@@ -1065,11 +1065,11 @@ Please extract and build the form now.`;
                   const result = await response.json();
                   console.log('✅ Course created:', result.course);
                   toast.success(`Created course: ${courseData.title}`, {
-                    description: 'View in Engage',
+                    description: 'View in Learn',
                     action: {
                       label: 'View',
                       onClick: () => {
-                        window.location.href = '/engage';
+                        window.location.href = '/learn';
                       }
                     }
                   });

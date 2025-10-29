@@ -14,7 +14,7 @@ export function CourseCard({ course }: CourseCardProps) {
     const router = useRouter();
 
     const handleStart = () => {
-        router.push(`/engage/${course.id}`);
+        router.push(`/learn/${course.id}`);
     };
 
     return (
