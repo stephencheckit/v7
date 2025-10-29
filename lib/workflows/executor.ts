@@ -131,7 +131,9 @@ async function executeAction(action: WorkflowAction, trigger_data: any, workspac
       return await createFormInstance(action.config, trigger_data, workspace_id);
     
     default:
-      throw new Error(`Unknown action type: ${action.type}`);
+      // TypeScript exhaustiveness check - this should never be reached
+      const exhaustiveCheck: never = action;
+      throw new Error(`Unknown action type: ${(exhaustiveCheck as any).type}`);
   }
 }
 
