@@ -12,7 +12,7 @@ import {
   Calendar,
   FileCheck,
   Zap,
-  BookOpen,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,7 +32,7 @@ const menuItems = [
   { title: "Forms", url: "/forms", icon: FileText },
   { title: "Cadences", url: "/cadences", icon: Calendar },
   { title: "Workflows", url: "/workflows", icon: Zap },
-  { title: "Learn", url: "/learn", icon: BookOpen },
+  { title: "Learn", url: "/learn", icon: Sparkles },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },
   { title: "Summaries", url: "/summaries", icon: FileCheck },

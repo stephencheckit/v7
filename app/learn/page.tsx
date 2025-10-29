@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Plus } from "lucide-react";
+import { Sparkles, Plus } from "lucide-react";
 import { CourseCard } from "@/components/learn/course-card";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { CenteredSpinner } from "@/components/loading";
@@ -79,8 +79,8 @@ export default function LearnPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-                                        <GraduationCap className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-                                        Engage
+                                        <Sparkles className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+                                        Learn
                                     </h1>
                                     <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
                                         Interactive training courses for your team
@@ -100,7 +100,7 @@ export default function LearnPage() {
                         {/* Course Grid */}
                         {courses.length === 0 ? (
                             <div className="text-center py-16 space-y-4">
-                                <BookOpen className="h-16 w-16 text-muted-foreground/50 mx-auto" />
+                                <Sparkles className="h-16 w-16 text-muted-foreground/50 mx-auto" />
                                 <div>
                                     <h3 className="text-xl font-semibold text-white mb-2">
                                         No courses yet
