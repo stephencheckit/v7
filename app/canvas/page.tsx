@@ -413,31 +413,33 @@ export default function CanvasPage() {
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="mt-6 space-y-6 pb-8">
+              <div className="px-6 py-6 space-y-6">
                 {/* Form Details */}
                 {selectedNode.type === 'form' && (
                   <>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Description</p>
-                      <p className="text-sm text-white">{selectedNode.data.description || 'No description'}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
+                      <p className="text-sm text-white leading-relaxed">{selectedNode.data.description || 'No description'}</p>
                     </div>
-                    <div className="flex gap-4">
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Questions</p>
+                    
+                    <div className="flex gap-6">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Questions</p>
                         <p className="text-2xl font-bold text-[#c4dfc4]">
                           {Array.isArray(selectedNode.data.schema)
                             ? selectedNode.data.schema.length
                             : (selectedNode.data.schema?.fields?.length || 0)}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Responses</p>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Responses</p>
                         <p className="text-2xl font-bold text-[#c4dfc4]">0</p>
                       </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-2">Sample Questions</p>
-                      <div className="space-y-1">
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Sample Questions</p>
+                      <div className="flex flex-wrap gap-2">
                         {(() => {
                           const fields = Array.isArray(selectedNode.data.schema)
                             ? selectedNode.data.schema
@@ -450,8 +452,9 @@ export default function CanvasPage() {
                         })()}
                       </div>
                     </div>
+                    
                     <Button
-                      className="w-full bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5]"
+                      className="w-full bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] mt-2"
                       onClick={() => window.open(`/forms/builder?formId=${selectedNode.data.id}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -463,26 +466,30 @@ export default function CanvasPage() {
                 {/* Workflow Details */}
                 {selectedNode.type === 'workflow' && (
                   <>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Description</p>
-                      <p className="text-sm text-white">{selectedNode.data.description || 'No description'}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
+                      <p className="text-sm text-white leading-relaxed">{selectedNode.data.description || 'No description'}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Status</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Status</p>
                       <Badge className={selectedNode.data.is_active ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-300'}>
                         {selectedNode.data.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Trigger</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Trigger</p>
                       <p className="text-sm text-white capitalize">{selectedNode.data.trigger_type?.replace(/_/g, ' ')}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Actions</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Actions</p>
                       <p className="text-2xl font-bold text-[#c8e0f5]">{selectedNode.data.actions?.length || 0}</p>
                     </div>
+                    
                     <Button
-                      className="w-full bg-[#c8e0f5] text-[#0a0a0a] hover:bg-[#b8d0e5]"
+                      className="w-full bg-[#c8e0f5] text-[#0a0a0a] hover:bg-[#b8d0e5] mt-2"
                       onClick={() => window.open(`/workflows`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -494,22 +501,25 @@ export default function CanvasPage() {
                 {/* Sensor Details */}
                 {selectedNode.type === 'sensor' && (
                   <>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Type</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Type</p>
                       <p className="text-sm text-white capitalize">{selectedNode.data.type}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Location</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Location</p>
                       <p className="text-sm text-white">{selectedNode.data.location || 'Unknown'}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Current Reading</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Reading</p>
                       <p className="text-2xl font-bold text-[#ffd4d4]">
                         {selectedNode.data.current_value ? `${selectedNode.data.current_value}°${selectedNode.data.unit}` : 'No data'}
                       </p>
                     </div>
+                    
                     <Button
-                      className="w-full bg-[#ffd4d4] text-[#0a0a0a] hover:bg-[#ffc4c4]"
+                      className="w-full bg-[#ffd4d4] text-[#0a0a0a] hover:bg-[#ffc4c4] mt-2"
                       onClick={() => window.open(`/sensors`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -521,26 +531,29 @@ export default function CanvasPage() {
                 {/* Course Details */}
                 {selectedNode.type === 'course' && (
                   <>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Description</p>
-                      <p className="text-sm text-white">{selectedNode.data.description || 'No description'}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
+                      <p className="text-sm text-white leading-relaxed">{selectedNode.data.description || 'No description'}</p>
                     </div>
-                    <div className="flex gap-4">
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Estimated Time</p>
+                    
+                    <div className="flex gap-6">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Estimated Time</p>
                         <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.estimated_minutes || 0} min</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Total Points</p>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Total Points</p>
                         <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.total_points || 0}</p>
                       </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Blocks</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Blocks</p>
                       <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.blocks?.length || 0}</p>
                     </div>
+                    
                     <Button
-                      className="w-full bg-[#e8d4ff] text-[#0a0a0a] hover:bg-[#d8c4ef]"
+                      className="w-full bg-[#e8d4ff] text-[#0a0a0a] hover:bg-[#d8c4ef] mt-2"
                       onClick={() => window.open(`/learn/${selectedNode.data.id}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -552,28 +565,31 @@ export default function CanvasPage() {
                 {/* Cadence Details */}
                 {selectedNode.type === 'cadence' && (
                   <>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Form</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Form</p>
                       <p className="text-sm text-white">{selectedNode.data.form_title}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Status</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Status</p>
                       <Badge className={
                         selectedNode.data.status === 'completed' ? 'bg-green-500/20 text-green-300' :
-                          selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                            'bg-red-500/20 text-red-300'
+                        selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                        'bg-red-500/20 text-red-300'
                       }>
                         {selectedNode.data.status}
                       </Badge>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Scheduled For</p>
+                    
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Scheduled For</p>
                       <p className="text-sm text-white">
                         {selectedNode.data.scheduled_for ? new Date(selectedNode.data.scheduled_for).toLocaleString() : 'Not scheduled'}
                       </p>
                     </div>
+                    
                     <Button
-                      className="w-full bg-[#ffe4b5] text-[#0a0a0a] hover:bg-[#ffd495]"
+                      className="w-full bg-[#ffe4b5] text-[#0a0a0a] hover:bg-[#ffd495] mt-2"
                       onClick={() => window.open(`/f/${selectedNode.data.form_id}?source=canvas&instance_id=${selectedNode.data.id}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
