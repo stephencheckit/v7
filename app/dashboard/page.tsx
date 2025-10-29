@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Inbox, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Inbox, TrendingUp } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { CenteredSpinner } from "@/components/loading";
 import { MyWorkView } from "@/components/dashboard/my-work-view";
@@ -49,7 +49,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-            <Inbox className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+            <LayoutDashboard className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
             <span className="hidden sm:inline">Welcome back, {getUserName()}</span>
             <span className="sm:hidden">Dashboard</span>
           </h1>
