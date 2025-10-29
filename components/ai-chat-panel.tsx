@@ -1854,11 +1854,11 @@ Please extract and build the form now.`;
                 size="icon"
                 onClick={toggleVoiceInput}
                 disabled={isLoading || isParsingFile}
-                className={`shrink-0 ${isRecording ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90'}`}
-                title={isRecording ? "Click to stop & send" : "Voice input"}
+                className={`shrink-0 ${isRecording ? 'bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] animate-pulse' : 'bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90'}`}
+                title={isRecording ? "Click to send" : "Voice input"}
               >
                 {isRecording ? (
-                  <MicOff className="h-4 w-4" />
+                  <Send className="h-4 w-4" />
                 ) : (
                   <Mic className="h-4 w-4" />
                 )}
