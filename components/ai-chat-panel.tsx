@@ -891,36 +891,43 @@ Please extract and build the form now.`;
               const workflowData = JSON.parse(jsonStr);
               console.log('Parsed workflow data:', workflowData);
               
-              // Call API to create workflow
-              const response = await fetch('/api/workflows', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  workspace_id: workspaceId, // Assuming workspaceId is available
-                  name: workflowData.name,
-                  description: workflowData.description || '',
-                  trigger_type: workflowData.trigger.type,
-                  trigger_config: workflowData.trigger.config,
-                  actions: workflowData.actions,
-                }),
-              });
-              
-              if (response.ok) {
-                const result = await response.json();
-                console.log('✅ Workflow created:', result.workflow);
-                toast.success(`Created workflow: ${workflowData.name}`);
-                
-                // Call onWorkflowCreated callback if provided
-                if (onWorkflowCreated) {
-                  onWorkflowCreated();
+              // Call API to create workflow (using async IIFE to handle await)
+              (async () => {
+                try {
+                  const response = await fetch('/api/workflows', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      workspace_id: workspaceId,
+                      name: workflowData.name,
+                      description: workflowData.description || '',
+                      trigger_type: workflowData.trigger.type,
+                      trigger_config: workflowData.trigger.config,
+                      actions: workflowData.actions,
+                    }),
+                  });
+                  
+                  if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Workflow created:', result.workflow);
+                    toast.success(`Created workflow: ${workflowData.name}`);
+                    
+                    // Call onWorkflowCreated callback if provided
+                    if (onWorkflowCreated) {
+                      onWorkflowCreated();
+                    }
+                  } else {
+                    const error = await response.json();
+                    console.error('Failed to create workflow:', error);
+                    toast.error(`Failed to create workflow: ${error.error}`);
+                  }
+                } catch (error) {
+                  console.error('Failed to create workflow:', error);
+                  toast.error('Failed to create workflow');
                 }
-              } else {
-                const error = await response.json();
-                console.error('Failed to create workflow:', error);
-                toast.error(`Failed to create workflow: ${error.error}`);
-              }
+              })();
             } catch (parseError) {
               console.error('Failed to parse workflow JSON:', parseError);
               toast.error('Failed to parse workflow data');
