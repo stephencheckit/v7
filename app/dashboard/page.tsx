@@ -16,18 +16,18 @@ export default function DashboardPage() {
   // Extract first name from user metadata or email
   const getUserName = () => {
     if (!user) return "there";
-    
+
     // Try to get first name from metadata
     const firstName = user.user_metadata?.first_name;
     if (firstName) return firstName;
-    
+
     // Fallback to email-based name
     if (user.email) {
       const emailName = user.email.split('@')[0];
       const name = emailName.split(/[._-]/)[0];
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
-    
+
     return "there";
   };
 
@@ -46,17 +46,17 @@ export default function DashboardPage() {
     <div className="w-full h-full overflow-auto">
       <div className="p-4 md:p-8">
         <div className="mx-auto max-w-[1600px]">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-            <LayoutDashboard className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-            <span className="hidden sm:inline">Welcome back, {getUserName()}</span>
-            <span className="sm:hidden">Dashboard</span>
-          </h1>
-          <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-            Here's your food safety overview for today
-          </p>
-        </div>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+              <LayoutDashboard className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+              <span className="hidden sm:inline">Welcome back, {getUserName()}</span>
+              <span className="sm:hidden">Dashboard</span>
+            </h1>
+            <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+              Here's your food safety overview for today
+            </p>
+          </div>
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>

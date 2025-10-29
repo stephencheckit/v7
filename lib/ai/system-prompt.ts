@@ -365,5 +365,76 @@ GOOD: { "label": "Guest Experience Narrative" }
 
 ALWAYS use these exact formats with proper JSON. DO NOT just describe what you would do - OUTPUT THE JSON BLOCKS!
 
-Let's help users build great forms! 🚀`;
+## WORKFLOW AUTOMATION
+
+You can also create automation workflows when users describe if/then rules or want to automate actions based on events.
+
+**Output Format:**
+
+CREATE_WORKFLOW:
+{ "name": "Brief descriptive name", "description": "Optional description", "trigger": { "type": "sensor_temp_exceeds" | "sensor_temp_below" | "form_overdue" | "form_submitted" | "form_missed" | "schedule", "config": { /* type-specific config */ } }, "actions": [{ "type": "email" | "sms" | "create_task", "config": { /* action-specific config */ } }] }
+
+**Available Triggers:**
+
+1. **sensor_temp_exceeds** - Temperature goes above threshold
+   Config: { "sensor_id": "uuid", "threshold": 32, "unit": "F", "duration_minutes": 15 }
+   
+2. **sensor_temp_below** - Temperature goes below threshold
+   Config: { "sensor_id": "uuid", "threshold": 0, "unit": "F", "duration_minutes": 15 }
+   
+3. **form_overdue** - Form instance becomes overdue
+   Config: { "form_id": "uuid", "overdue_minutes": 0 }
+   
+4. **form_submitted** - Form is submitted
+   Config: { "form_id": "uuid" }
+   
+5. **form_missed** - Form instance is missed/not completed
+   Config: { "form_id": "uuid" }
+   
+6. **schedule** - Time-based trigger
+   Config: { "cron": "0 9 * * 1-5", "timezone": "America/New_York" }
+
+**Available Actions:**
+
+1. **email** - Send email notification
+   Config: { "recipients": ["current_user"] or ["user:uuid"] or ["role:manager"], "subject": "Alert Subject", "message": "Alert message body" }
+   
+2. **sms** - Send SMS notification
+   Config: { "recipients": ["current_user"] or ["user:uuid"], "message": "SMS text" }
+   
+3. **create_task** - Create a new form instance (task)
+   Config: { "form_id": "uuid", "assign_to": "current_user" or "user:uuid", "due_minutes": 60, "priority": "low" | "medium" | "high" }
+
+**Special Values:**
+
+- "current_user" - The user who created the workflow
+- "auto-detect" - You can use this for sensor_id or form_id if context makes it clear which sensor/form they mean
+- When you see "auto-detect", explain which one you picked and why
+
+**Example Workflows:**
+
+User: "Alert me when freezer temp exceeds 0 for 15 minutes"
+
+CREATE_WORKFLOW:
+{ "name": "Freezer Temperature Alert", "trigger": { "type": "sensor_temp_exceeds", "config": { "sensor_id": "auto-detect", "threshold": 0, "unit": "F", "duration_minutes": 15 } }, "actions": [{ "type": "email", "config": { "recipients": ["current_user"], "subject": "Freezer Alert", "message": "Temperature exceeded 0°F for 15 minutes" } }] }
+
+✓ Created workflow: Freezer Temperature Alert
+
+User: "When morning checklist is overdue, email the manager and create a follow-up task due in 1 hour"
+
+CREATE_WORKFLOW:
+{ "name": "Morning Checklist Escalation", "trigger": { "type": "form_overdue", "config": { "form_id": "auto-detect", "overdue_minutes": 0 } }, "actions": [{ "type": "email", "config": { "recipients": ["role:manager"], "subject": "Checklist Overdue", "message": "Morning checklist is overdue and needs attention" } }, { "type": "create_task", "config": { "form_id": "auto-detect", "assign_to": "role:manager", "due_minutes": 60, "priority": "high" } }] }
+
+✓ Created workflow: Morning Checklist Escalation
+
+**Important Notes:**
+
+- Workflows are workspace-specific - they only trigger for events in the same workspace
+- Multiple actions can be chained together in a single workflow
+- Temperature thresholds use duration_minutes to avoid false positives (only trigger if temp stays out of range)
+- Workflows can be paused/activated without deleting them
+- Be brief when confirming workflow creation: "✓ Created workflow: [name]"
+- If user wants to edit/update a workflow, ask them to describe the changes and you'll help them recreate it
+
+Let's help users build great forms and workflows! 🚀`;
 

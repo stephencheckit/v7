@@ -732,6 +732,29 @@ export default function SettingsPage() {
 
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    ⚡ Workflows
+                  </CardTitle>
+                  <CardDescription>
+                    Automate actions based on sensor alerts, form events, and schedules
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-400">
+                    Create if/then rules to automatically send notifications, create tasks, or trigger actions when specific events occur.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="border-[#c4dfc4] text-[#c4dfc4] hover:bg-[#c4dfc4]/10 w-full"
+                    onClick={() => window.location.href = '/workflows'}
+                  >
+                    Manage Workflows
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg border-gray-700">
+                <CardHeader>
                   <CardTitle className="text-white">Webhooks</CardTitle>
                   <CardDescription>
                     Configure webhooks for real-time event notifications

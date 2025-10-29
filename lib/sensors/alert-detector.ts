@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/database.types";
+import { executeWorkflows } from "@/lib/workflows/executor";
 
 export type Sensor = Database["public"]["Tables"]["sensors"]["Row"];
 export type SensorAlert = Database["public"]["Tables"]["sensor_alerts"]["Row"];
@@ -59,7 +60,7 @@ async function createNewAlert(
 ): Promise<void> {
   const supabase = createClient();
 
-  const { error } = await supabase.from("sensor_alerts").insert({
+  const { data: alert, error } = await supabase.from("sensor_alerts").insert({
     sensor_id: sensor.id,
     alert_type: "temperature_violation",
     severity: "warning",
@@ -70,12 +71,30 @@ async function createNewAlert(
     status: "active",
     started_at: new Date().toISOString(),
     detected_at: new Date().toISOString(),
-  });
+  }).select().single();
 
   if (error) {
     console.error("Error creating alert:", error);
   } else {
     console.log(`🚨 New alert created for sensor: ${sensor.name}`);
+    
+    // Execute workflows for temperature violations
+    if (alert && sensor.workspace_id) {
+      const trigger_type = celsius > sensor.max_temp_celsius ? 'sensor_temp_exceeds' : 'sensor_temp_below';
+      
+      await executeWorkflows({
+        trigger_type,
+        workspace_id: sensor.workspace_id,
+        trigger_data: {
+          sensor_id: sensor.id,
+          sensor_name: sensor.name,
+          temperature: fahrenheit,
+          unit: 'F',
+          alert_id: alert.id,
+          threshold: celsius > sensor.max_temp_celsius ? sensor.max_temp_celsius : sensor.min_temp_celsius
+        }
+      });
+    }
   }
 }
 

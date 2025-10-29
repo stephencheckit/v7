@@ -12,6 +12,7 @@ import type { FormSchema } from "@/lib/types/form-schema";
 import { toast } from "sonner";
 import { convertBackendFormToFrontend } from "@/lib/converters/form-types";
 import { parseExcelFile, generateFormPrompt, type ParsedExcelData } from "@/lib/utils/excel-parser";
+import { useAuth } from "@/lib/auth/auth-context";
 
 type AIMode = 'strategy' | 'execution';
 
@@ -29,11 +30,13 @@ interface AIChatPanelProps {
   onToggle: () => void;
   formId?: string | null;  // Current form ID or null for new forms
   currentPage?: 'builder' | 'distribution'; // What page/tab user is on
+  context?: 'forms' | 'workflows';  // What context AI should operate in
   onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
   currentFields?: FrontendFormField[];
   disabled?: boolean;  // Show as disabled with overlay (for Settings/Publish tabs)
   autoSubmitPrompt?: string;  // Auto-submit this prompt on mount
   onPromptSubmitted?: () => void;  // Callback when auto-submit completes
+  onWorkflowCreated?: () => void;  // Callback when workflow is created
 }
 
 export function AIChatPanel({ 
@@ -41,11 +44,13 @@ export function AIChatPanel({
   onToggle, 
   formId,
   currentPage = 'builder',
+  context = 'forms',
   onFormUpdate, 
   currentFields = [],
   disabled = false,
   autoSubmitPrompt,
-  onPromptSubmitted
+  onPromptSubmitted,
+  onWorkflowCreated
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +67,7 @@ export function AIChatPanel({
   const [detectedMode, setDetectedMode] = useState<AIMode>('strategy');
   const previousFormIdRef = useRef<string | null | undefined>(undefined);
   const hasAutoSubmitted = useRef(false);
+  const { workspaceId } = useAuth();
   
   // Ensure client-only rendering to avoid hydration mismatch
   useEffect(() => {
@@ -390,6 +396,7 @@ Please extract and build the form now.`;
     cleaned = cleaned.replace(/REMOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     cleaned = cleaned.replace(/MOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     cleaned = cleaned.replace(/CLEAR_FORM:\s*\{\s*\}/g, '');
+    cleaned = cleaned.replace(/CREATE_WORKFLOW:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     
     // Remove reporting operations
     cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
@@ -868,6 +875,58 @@ Please extract and build the form now.`;
             return;
           }
           
+          // Check for CREATE_WORKFLOW
+          const createWorkflowMatch = content.match(/CREATE_WORKFLOW:\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/);
+          
+          if (createWorkflowMatch) {
+            let jsonStr = createWorkflowMatch[1];
+            console.log('Found CREATE_WORKFLOW JSON (raw):', jsonStr.substring(0, 100) + '...');
+            
+            // Unescape JSON if it was escaped by the streaming format
+            if (jsonStr.includes('\\"')) {
+              jsonStr = jsonStr.replace(/\\"/g, '"');
+            }
+            
+            try {
+              const workflowData = JSON.parse(jsonStr);
+              console.log('Parsed workflow data:', workflowData);
+              
+              // Call API to create workflow
+              const response = await fetch('/api/workflows', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  workspace_id: workspaceId, // Assuming workspaceId is available
+                  name: workflowData.name,
+                  description: workflowData.description || '',
+                  trigger_type: workflowData.trigger.type,
+                  trigger_config: workflowData.trigger.config,
+                  actions: workflowData.actions,
+                }),
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                console.log('✅ Workflow created:', result.workflow);
+                toast.success(`Created workflow: ${workflowData.name}`);
+                
+                // Call onWorkflowCreated callback if provided
+                if (onWorkflowCreated) {
+                  onWorkflowCreated();
+                }
+              } else {
+                const error = await response.json();
+                console.error('Failed to create workflow:', error);
+                toast.error(`Failed to create workflow: ${error.error}`);
+              }
+            } catch (parseError) {
+              console.error('Failed to parse workflow JSON:', parseError);
+              toast.error('Failed to parse workflow data');
+            }
+          }
+          
           // Check for add_field calls in multiple formats:
         // Format 0: ADD_FIELD:\n{...}  (NEW EXPLICIT FORMAT)
         // Format 1: <tool name="add_field">{...}</tool>
@@ -1232,7 +1291,8 @@ Please extract and build the form now.`;
                                assistantMessage.includes('UPDATE_FIELD:') ||
                                assistantMessage.includes('REMOVE_FIELD:') ||
                                assistantMessage.includes('UPDATE_FORM_META:') ||
-                               assistantMessage.includes('CLEAR_FORM:');
+                               assistantMessage.includes('CLEAR_FORM:') ||
+                               assistantMessage.includes('CREATE_WORKFLOW:');
           
           if (hasOperations) {
             currentMode = 'execution';
@@ -1247,7 +1307,8 @@ Please extract and build the form now.`;
             assistantMessage.includes('UPDATE_FIELD:') ||
             assistantMessage.includes('REMOVE_FIELD:') ||
             assistantMessage.includes('UPDATE_FORM_META:') ||
-            assistantMessage.includes('CLEAR_FORM:')) {
+            assistantMessage.includes('CLEAR_FORM:') ||
+            assistantMessage.includes('CREATE_WORKFLOW:')) {
           
           // EXECUTION mode - show operation indicators
           if (assistantMessage.includes('CREATE_FORM:')) {
@@ -1268,6 +1329,9 @@ Please extract and build the form now.`;
           }
           if (assistantMessage.includes('CLEAR_FORM:')) {
             thinking.push('🧹 Clearing form...');
+          }
+          if (assistantMessage.includes('CREATE_WORKFLOW:')) {
+            thinking.push('⚡ Creating workflow...');
           }
           
           // If we detected operations, make sure mode is execution
@@ -1295,7 +1359,7 @@ Please extract and build the form now.`;
         displayText = displayText.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
         
         // Find the first occurrence of any operation keyword and truncate there
-        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:', 'CLEAR_FORM:'];
+        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:', 'CLEAR_FORM:', 'CREATE_WORKFLOW:'];
         let cutoffIndex = -1;
         
         for (const keyword of operationKeywords) {
@@ -1346,7 +1410,8 @@ Please extract and build the form now.`;
                              assistantMessage.includes('UPDATE_FIELD:') ||
                              assistantMessage.includes('REMOVE_FIELD:') ||
                              assistantMessage.includes('UPDATE_FORM_META:') ||
-                             assistantMessage.includes('CLEAR_FORM:');
+                             assistantMessage.includes('CLEAR_FORM:') ||
+                             assistantMessage.includes('CREATE_WORKFLOW:');
         
         const finalMode: AIMode = aiMode === 'auto' 
           ? (hasOperations ? 'execution' : 'strategy')

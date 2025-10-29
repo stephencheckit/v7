@@ -11,6 +11,7 @@ import {
   Thermometer,
   Calendar,
   FileCheck,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +30,7 @@ const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Forms", url: "/forms", icon: FileText },
   { title: "Cadences", url: "/cadences", icon: Calendar },
+  { title: "Workflows", url: "/workflows", icon: Zap },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },
   { title: "Summaries", url: "/summaries", icon: FileCheck },
