@@ -5,7 +5,82 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🔧 AI Chat Context Awareness Fix - October 29, 2025 (Latest)**
+### **💾 AI Chat Conversation Persistence - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025
+**Commit:** 9c20553
+
+**Issue:**
+AI chat conversations were lost on every page refresh or navigation. User reported:
+> "I was creating a workflow, and then hit refresh... I shouldn't lose all that information.. or if i go to another page, same thing..."
+
+**Root Cause:**
+1. Conversation persistence was tied to `formId` prop only
+2. Workflows page doesn't pass a `formId` (no form being edited)
+3. When `formId` was undefined, load/save logic exited early
+4. Result: Conversations never saved or loaded for workflows
+
+**Fix:**
+Implemented **conversation ID** system based on context:
+
+1. **Workflows:** `workflows_builder_{workspaceId}`
+   - Persists across all workflow page visits
+   - Tied to workspace, not a specific workflow
+
+2. **New Forms:** `new_form_{workspaceId}`
+   - Persists while building a new form
+   - Clears when you start editing an existing form
+
+3. **Existing Forms:** Uses actual `form_id`
+   - Persists per form (existing behavior)
+
+**Implementation:**
+
+1. **Added conversation ID logic (`components/ai-chat-panel.tsx`):**
+   ```typescript
+   const getConversationId = (): string | null => {
+     if (context === 'workflows' && workspaceId) {
+       return `workflows_builder_${workspaceId}`;
+     }
+     if (formId && formId !== 'new') {
+       return formId; // Use actual form ID
+     }
+     if (formId === 'new' && workspaceId) {
+       return `new_form_${workspaceId}`;
+     }
+     return null;
+   };
+   ```
+
+2. **Updated load/save logic:**
+   - Changed from `formId` to `conversationId`
+   - Loads conversation on mount based on ID
+   - Saves conversation after each message exchange (1s debounce)
+
+3. **Updated API (`app/api/ai/conversations/[formId]/route.ts`):**
+   - Accepts special IDs like `workflows_builder_xxx`
+   - Still enforces workspace isolation
+   - Uses existing `form_id` column (no schema change needed)
+
+**Files Changed:**
+- `components/ai-chat-panel.tsx` - Conversation ID logic, load/save updates
+- `app/api/ai/conversations/[formId]/route.ts` - Handle special conversation IDs
+
+**Conversations Now Persist Across:**
+- ✅ Page refreshes (F5 / Cmd+R)
+- ✅ Navigation between pages
+- ✅ Browser tab closes/reopens
+- ✅ Different contexts (workflows, form builder, new forms)
+
+**Result:**
+- ✅ All 720 tests passing
+- ✅ Workflows chat persists perfectly
+- ✅ Form builder chat persists perfectly
+- ✅ No data loss on refresh/navigation
+
+---
+
+### **🔧 AI Chat Context Awareness Fix - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025
 **Commit:** eb1d483
