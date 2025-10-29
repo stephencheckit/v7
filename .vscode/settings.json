@@ -19,12 +19,43 @@
                 "cd ${workspaceFolder} && npm run test:watch"
             ]
         },
+        "Dev Server": {
+            "path": "zsh",
+            "args": [
+                "-c",
+                "cd ${workspaceFolder} && npm run dev"
+            ]
+        },
+        "Check Vercel": {
+            "path": "zsh",
+            "args": [
+                "-c",
+                "cd ${workspaceFolder} && node scripts/check-vercel-deploy.js"
+            ]
+        },
         "Regular Terminal": {
             "path": "zsh"
         }
     },
-    // Suggested extensions for testing
+    // TypeScript problem matcher
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    // Show all problems in panel
+    "problems.showCurrentInStatus": true,
+    "problems.autoReveal": true,
+    // Better error visibility
+    "workbench.colorCustomizations": {
+        "editorError.foreground": "#ff0000",
+        "editorWarning.foreground": "#FFA500",
+        "editorInfo.foreground": "#00BFFF"
+    },
+    // File associations for better syntax highlighting
+    "files.associations": {
+        "*.css": "tailwindcss"
+    },
+    // Suggested extensions for testing and deployment
     "recommendations": [
-        "vitest.explorer"
+        "vitest.explorer",
+        "vercel.vscode-vercel"
     ]
 }

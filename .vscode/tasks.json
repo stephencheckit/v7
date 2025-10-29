@@ -24,6 +24,86 @@
                 "reveal": "always",
                 "panel": "shared"
             }
+        },
+        {
+            "label": "🚀 Dev Server with TypeScript Problem Matcher",
+            "type": "shell",
+            "command": "npm run dev",
+            "problemMatcher": {
+                "owner": "typescript",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    {
+                        "regexp": "^(.+):(\\d+):(\\d+)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3
+                    },
+                    {
+                        "regexp": "^Type error: (.+)$",
+                        "message": 1
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "○ Compiling",
+                    "endsPattern": "(✓ Compiled|Failed to compile)"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "isBackground": true
+        },
+        {
+            "label": "📊 Check Vercel Deployment Status",
+            "type": "shell",
+            "command": "npx vercel ls --scope ${input:vercelTeam}",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "📋 Show Latest Vercel Build Logs",
+            "type": "shell",
+            "command": "npx vercel logs --follow --scope ${input:vercelTeam}",
+            "problemMatcher": {
+                "owner": "vercel",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.+):(\\d+):(\\d+)\\s*Type error: (.+)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "🔍 Check Latest Vercel Deployment",
+            "type": "shell",
+            "command": "node scripts/check-vercel-deploy.js",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "vercelTeam",
+            "type": "promptString",
+            "description": "Enter your Vercel team/username",
+            "default": ""
         }
     ]
 }
