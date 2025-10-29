@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit, apiRateLimit } from '@/lib/rate-limit';
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     // Rate limiting
     const identifier = req.headers.get('x-forwarded-for') || 'anonymous';
     console.log('🔵 Checking rate limit for:', identifier);
-    const rateLimitResult = await checkRateLimit(identifier);
+    const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
     console.log('🔵 Rate limit result:', rateLimitResult);
     
     if (!rateLimitResult.success) {
