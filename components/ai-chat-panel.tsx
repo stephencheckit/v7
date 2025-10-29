@@ -80,6 +80,7 @@ export function AIChatPanel({
   // Track initial load to avoid reprocessing messages from database
   const isInitialLoad = useRef(true);
   const previousMessageCount = useRef(0);
+  const lastSavedMessageCount = useRef(0);
 
   // Generate conversation ID based on context
   const getConversationId = (): string | null => {
@@ -158,13 +159,17 @@ export function AIChatPanel({
         if (data.messages && data.messages.length > 0) {
           console.log(`📝 Loaded ${data.messages.length} messages for ${conversationId}`);
           setMessages(data.messages);
+          // Initialize last saved count to the loaded message count
+          lastSavedMessageCount.current = data.messages.length;
         } else {
           console.log(`📝 No saved conversation for ${conversationId}`);
           setMessages([]);
+          lastSavedMessageCount.current = 0;
         }
       } catch (error) {
         console.error('❌ Error loading conversation:', error);
         setMessages([]);
+        lastSavedMessageCount.current = 0;
       }
     }
 
@@ -177,6 +182,12 @@ export function AIChatPanel({
 
     if (!conversationId || messages.length === 0) {
       console.log(`⏭️ Skipping save - conversationId: ${conversationId}, messages.length: ${messages.length}`);
+      return;
+    }
+
+    // Skip if we've already saved this exact message count
+    if (messages.length === lastSavedMessageCount.current) {
+      console.log(`⏭️ Skipping save - already saved ${messages.length} messages`);
       return;
     }
 
@@ -211,6 +222,8 @@ export function AIChatPanel({
 
         const data = await response.json();
         console.log(`✅ Saved ${messages.length} messages for conversation ${conversationId}`, data);
+        // Update the last saved count after successful save
+        lastSavedMessageCount.current = messages.length;
       } catch (error) {
         console.error('❌ Error saving conversation:', error);
       }
