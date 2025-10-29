@@ -25,8 +25,16 @@ export function WorkInstanceCard({
   const startTime = showStartTime ? getTimeUntilDue(instance.scheduled_for) : null;
 
   const handleClick = () => {
-    // If not yet due (pending), don't allow opening
-    if (instance.status === 'pending' && !showStartTime) {
+    // Always allow clicking if it's overdue or time remaining is shown (due/incomplete)
+    // Only block if it's truly pending (not yet scheduled)
+    const isOverdue = timeRemaining?.isOverdue;
+    if (instance.status === 'pending' && !showStartTime && !isOverdue) {
+      return;
+    }
+    
+    // Navigate to the form
+    if (!instance.form_id) {
+      console.error('No form_id found for instance:', instance);
       return;
     }
     router.push(`/f/${instance.form_id}`);
@@ -39,11 +47,15 @@ export function WorkInstanceCard({
     return 'default';
   };
 
+  const isClickable = !(instance.status === 'pending' && !showStartTime && !timeRemaining?.isOverdue);
+  
   return (
     <div
       onClick={handleClick}
-      className={`flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg border border-gray-700 hover:border-[#c4dfc4] transition-all ${
-        instance.status === 'pending' && !showStartTime ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+      className={`flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg border border-gray-700 transition-all ${
+        isClickable 
+          ? 'cursor-pointer hover:border-[#c4dfc4]' 
+          : 'opacity-60 cursor-not-allowed'
       }`}
     >
       <div className="flex-1 min-w-0">
@@ -81,7 +93,7 @@ export function WorkInstanceCard({
           </Badge>
         )}
         
-        {instance.status !== 'pending' && <ChevronRight className="w-5 h-5 text-gray-500" />}
+        {isClickable && <ChevronRight className="w-5 h-5 text-gray-500" />}
       </div>
     </div>
   );
