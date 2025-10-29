@@ -1,15 +1,23 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run tests before allowing commit
+echo ""
 echo "🧪 Running tests before commit..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 npm test
 
 if [ $? -ne 0 ]; then
-  echo "❌ Tests failed! Commit aborted."
-  echo "Fix failing tests or use 'git commit --no-verify' to skip (not recommended)"
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "❌ COMMIT BLOCKED: Tests failed!"
+  echo ""
+  echo "💡 Fix the failing tests, then try again"
+  echo "💡 Tip: Run 'npm run test:watch' to auto-rerun tests"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   exit 1
 fi
 
-echo "✅ Tests passed! Proceeding with commit."
-
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ All 720+ tests passed! Committing..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""

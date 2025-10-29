@@ -1,0 +1,31 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  
+  // Remind to run tests
+  "todo-tree.general.tags": [
+    "TODO",
+    "FIXME",
+    "TEST_ME",
+    "NEEDS_TEST"
+  ],
+  
+  // Terminal profiles for easy access
+  "terminal.integrated.profiles.osx": {
+    "Test Watcher": {
+      "path": "zsh",
+      "args": ["-c", "cd ${workspaceFolder} && npm run test:watch"]
+    },
+    "Regular Terminal": {
+      "path": "zsh"
+    }
+  },
+  
+  // Suggested extensions for testing
+  "recommendations": [
+    "vitest.explorer"
+  ]
+}
+
