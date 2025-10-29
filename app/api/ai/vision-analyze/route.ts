@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
 export const runtime = 'edge';
 export const maxDuration = 25;
 
@@ -25,6 +21,11 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    // Create OpenAI client at request time, not build time
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
+    });
 
     // Build prompt with form schema
     const questionsList = formSchema.fields

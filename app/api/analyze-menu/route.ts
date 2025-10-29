@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 // Configure function timeout - Node Runtime allows longer timeouts
 export const runtime = 'nodejs';
 export const maxDuration = 60; // seconds
@@ -26,6 +22,11 @@ export async function POST(req: NextRequest) {
         error: 'API key not configured. Please add ANTHROPIC_API_KEY to your .env.local file' 
       }, { status: 500 });
     }
+
+    // Create Anthropic client at request time, not build time
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
 
     // Extract base64 data and media type
     const matches = image.match(/^data:image\/(\w+);base64,(.+)$/);
