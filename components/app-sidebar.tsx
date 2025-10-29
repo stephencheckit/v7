@@ -12,6 +12,7 @@ import {
   Calendar,
   FileCheck,
   Zap,
+  GraduationCap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ const menuItems = [
   { title: "Forms", url: "/forms", icon: FileText },
   { title: "Cadences", url: "/cadences", icon: Calendar },
   { title: "Workflows", url: "/workflows", icon: Zap },
+  { title: "Engage", url: "/engage", icon: GraduationCap },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },
   { title: "Summaries", url: "/summaries", icon: FileCheck },

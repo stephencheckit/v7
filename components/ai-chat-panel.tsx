@@ -32,13 +32,14 @@ interface AIChatPanelProps {
   onToggle: () => void;
   formId?: string | null;  // Current form ID or null for new forms
   currentPage?: 'builder' | 'distribution'; // What page/tab user is on
-  context?: 'forms' | 'workflows';  // What context AI should operate in
+  context?: 'forms' | 'workflows' | 'courses';  // What context AI should operate in
   onFormUpdate?: (fields: FrontendFormField[], formMeta?: { title?: string; description?: string }) => void;
   currentFields?: FrontendFormField[];
   disabled?: boolean;  // Show as disabled with overlay (for Settings/Publish tabs)
   autoSubmitPrompt?: string;  // Auto-submit this prompt on mount
   onPromptSubmitted?: () => void;  // Callback when auto-submit completes
   onWorkflowCreated?: () => void;  // Callback when workflow is created
+  onCourseCreated?: () => void;  // Callback when course is created
 }
 
 export function AIChatPanel({
@@ -52,7 +53,8 @@ export function AIChatPanel({
   disabled = false,
   autoSubmitPrompt,
   onPromptSubmitted,
-  onWorkflowCreated
+  onWorkflowCreated,
+  onCourseCreated
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -74,7 +76,7 @@ export function AIChatPanel({
   const previousFormIdRef = useRef<string | null | undefined>(undefined);
   const hasAutoSubmitted = useRef(false);
   const { workspaceId } = useAuth();
-  
+
   // Track initial load to avoid reprocessing messages from database
   const isInitialLoad = useRef(true);
   const previousMessageCount = useRef(0);
@@ -83,6 +85,9 @@ export function AIChatPanel({
   const getConversationId = (): string | null => {
     if (context === 'workflows' && workspaceId) {
       return `workflows_builder_${workspaceId}`;
+    }
+    if (context === 'courses' && workspaceId) {
+      return `courses_builder_${workspaceId}`;
     }
     if (formId && formId !== 'new') {
       return formId; // Use actual form ID
@@ -114,7 +119,7 @@ export function AIChatPanel({
       // Get the last message element (most recent)
       const messageElements = scrollRef.current.querySelectorAll('.space-y-4 > div');
       const lastMessage = messageElements[messageElements.length - 1];
-      
+
       if (lastMessage) {
         // Scroll so the last message appears at the TOP of the chat panel
         lastMessage.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
@@ -430,6 +435,7 @@ Please extract and build the form now.`;
     cleaned = cleaned.replace(/MOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     cleaned = cleaned.replace(/CLEAR_FORM:\s*\{\s*\}/g, '');
     cleaned = cleaned.replace(/CREATE_WORKFLOW:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
+    cleaned = cleaned.replace(/CREATE_COURSE:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
 
     // Remove reporting operations
     cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
@@ -473,7 +479,7 @@ Please extract and build the form now.`;
       console.log('📂 Initial conversation load detected - skipping processing to avoid duplicates');
       isInitialLoad.current = false;
       previousMessageCount.current = messages.length;
-      
+
       // Load processed IDs from localStorage for this conversation
       if (conversationId) {
         const storedIds = localStorage.getItem(`processed_${conversationId}`);
@@ -511,7 +517,7 @@ Please extract and build the form now.`;
 
     // Mark as processed BEFORE doing any work
     processedMessageIds.current.add(messageId);
-    
+
     // Persist to localStorage
     if (conversationId) {
       try {
@@ -1018,6 +1024,82 @@ Please extract and build the form now.`;
           }
         }
 
+        // Check for CREATE_COURSE
+        const createCourseMatch = content.match(/CREATE_COURSE:\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/);
+
+        if (createCourseMatch) {
+          let jsonStr = createCourseMatch[1];
+          console.log('Found CREATE_COURSE JSON (raw):', jsonStr.substring(0, 100) + '...');
+
+          // Unescape JSON if it was escaped by the streaming format
+          if (jsonStr.includes('\\"')) {
+            jsonStr = jsonStr.replace(/\\"/g, '"');
+          }
+
+          try {
+            const courseData = JSON.parse(jsonStr);
+            console.log('Parsed course data:', courseData);
+
+            // Call API to create course (using async IIFE to handle await)
+            (async () => {
+              try {
+                const requestBody = {
+                  workspace_id: workspaceId,
+                  title: courseData.title,
+                  description: courseData.description || '',
+                  blocks: courseData.blocks,
+                  estimated_minutes: courseData.estimated_minutes || 10,
+                };
+                console.log('📤 Sending course creation request:', requestBody);
+
+                const response = await fetch('/api/courses', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(requestBody),
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log('✅ Course created:', result.course);
+                  toast.success(`Created course: ${courseData.title}`, {
+                    description: 'View in Engage',
+                    action: {
+                      label: 'View',
+                      onClick: () => {
+                        window.location.href = '/engage';
+                      }
+                    }
+                  });
+
+                  // Call onCourseCreated callback if provided
+                  if (onCourseCreated) {
+                    onCourseCreated();
+                  }
+                } else {
+                  const errorText = await response.text();
+                  console.error('Failed to create course. Status:', response.status);
+                  console.error('Response:', errorText);
+
+                  try {
+                    const error = JSON.parse(errorText);
+                    toast.error(`Failed to create course: ${error.error || 'Unknown error'}`);
+                  } catch {
+                    toast.error(`Failed to create course (${response.status}). Check console for details.`);
+                  }
+                }
+              } catch (error) {
+                console.error('Failed to create course:', error);
+                toast.error('Failed to create course');
+              }
+            })();
+          } catch (parseError) {
+            console.error('Failed to parse course JSON:', parseError);
+            toast.error('Failed to parse course data');
+          }
+        }
+
         // Check for add_field calls in multiple formats:
         // Format 0: ADD_FIELD:\n{...}  (NEW EXPLICIT FORMAT)
         // Format 1: <tool name="add_field">{...}</tool>
@@ -1393,7 +1475,8 @@ Please extract and build the form now.`;
             assistantMessage.includes('REMOVE_FIELD:') ||
             assistantMessage.includes('UPDATE_FORM_META:') ||
             assistantMessage.includes('CLEAR_FORM:') ||
-            assistantMessage.includes('CREATE_WORKFLOW:');
+            assistantMessage.includes('CREATE_WORKFLOW:') ||
+            assistantMessage.includes('CREATE_COURSE:');
 
           if (hasOperations) {
             currentMode = 'execution';
@@ -1409,7 +1492,8 @@ Please extract and build the form now.`;
           assistantMessage.includes('REMOVE_FIELD:') ||
           assistantMessage.includes('UPDATE_FORM_META:') ||
           assistantMessage.includes('CLEAR_FORM:') ||
-          assistantMessage.includes('CREATE_WORKFLOW:')) {
+          assistantMessage.includes('CREATE_WORKFLOW:') ||
+          assistantMessage.includes('CREATE_COURSE:')) {
 
           // EXECUTION mode - show operation indicators
           if (assistantMessage.includes('CREATE_FORM:')) {
@@ -1433,6 +1517,9 @@ Please extract and build the form now.`;
           }
           if (assistantMessage.includes('CREATE_WORKFLOW:')) {
             thinking.push('⚡ Creating workflow...');
+          }
+          if (assistantMessage.includes('CREATE_COURSE:')) {
+            thinking.push('📚 Creating course...');
           }
 
           // If we detected operations, make sure mode is execution
@@ -1460,7 +1547,7 @@ Please extract and build the form now.`;
         displayText = displayText.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
 
         // Find the first occurrence of any operation keyword and truncate there
-        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:', 'CLEAR_FORM:', 'CREATE_WORKFLOW:'];
+        const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:', 'CLEAR_FORM:', 'CREATE_WORKFLOW:', 'CREATE_COURSE:'];
         let cutoffIndex = -1;
 
         for (const keyword of operationKeywords) {
@@ -1659,15 +1746,15 @@ Please extract and build the form now.`;
   return (
     <div
       className={`fixed top-0 right-0 h-screen border-l flex flex-col transition-all duration-300 z-50 ${isOpen
-          ? "w-96 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] border-border shadow-lg"
-          : "w-12 bg-gradient-to-b from-[#c4dfc4] to-[#b5d0b5] border-[#c4dfc4]"
+        ? "w-96 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] border-border shadow-lg"
+        : "w-12 bg-gradient-to-b from-[#c4dfc4] to-[#b5d0b5] border-[#c4dfc4]"
         }`}
     >
       {/* Header */}
       <div
         className={`flex items-center transition-all duration-300 ${isOpen
-            ? "border-b border-white bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4] p-4 justify-between h-16"
-            : "flex-col pt-4 pb-4 justify-center"
+          ? "border-b border-white bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4] p-4 justify-between h-16"
+          : "flex-col pt-4 pb-4 justify-center"
           }`}
       >
         {isOpen ? (
@@ -1707,8 +1794,8 @@ Please extract and build the form now.`;
               <button
                 onClick={() => setAiMode('auto')}
                 className={`text-xs px-3 py-1 rounded transition-all ${aiMode === 'auto'
-                    ? 'bg-white text-gray-900 font-semibold shadow'
-                    : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-gray-900 font-semibold shadow'
+                  : 'text-gray-600 hover:text-gray-900'
                   }`}
                 title="Auto-detect based on your request"
               >
@@ -1717,8 +1804,8 @@ Please extract and build the form now.`;
               <button
                 onClick={() => setAiMode('strategy')}
                 className={`text-xs px-3 py-1 rounded transition-all ${aiMode === 'strategy'
-                    ? 'bg-purple-500/20 text-purple-900 font-semibold border border-purple-500/30'
-                    : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-purple-500/20 text-purple-900 font-semibold border border-purple-500/30'
+                  : 'text-gray-600 hover:text-gray-900'
                   }`}
                 title="Strategy mode: AI will discuss and plan"
               >
@@ -1727,8 +1814,8 @@ Please extract and build the form now.`;
               <button
                 onClick={() => setAiMode('execution')}
                 className={`text-xs px-3 py-1 rounded transition-all ${aiMode === 'execution'
-                    ? 'bg-blue-500/20 text-blue-900 font-semibold border border-blue-500/30'
-                    : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-blue-500/20 text-blue-900 font-semibold border border-blue-500/30'
+                  : 'text-gray-600 hover:text-gray-900'
                   }`}
                 title="Execution mode: AI will take action immediately"
               >
@@ -1750,7 +1837,7 @@ Please extract and build the form now.`;
               const element = e.currentTarget;
               const atTop = element.scrollTop === 0;
               const atBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 1;
-              
+
               if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
                 e.preventDefault();
               }
@@ -1793,8 +1880,8 @@ Please extract and build the form now.`;
                       {message.completed && message.mode && (
                         <Badge
                           className={`text-xs font-bold uppercase px-2 py-0.5 ${message.mode === 'execution'
-                              ? 'bg-blue-500/20 text-blue-700 border-blue-500/30'
-                              : 'bg-purple-500/20 text-purple-700 border-purple-500/30'
+                            ? 'bg-blue-500/20 text-blue-700 border-blue-500/30'
+                            : 'bg-purple-500/20 text-purple-700 border-purple-500/30'
                             }`}
                           variant="outline"
                         >

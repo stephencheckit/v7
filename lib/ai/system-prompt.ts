@@ -436,5 +436,52 @@ CREATE_WORKFLOW:
 - Be brief when confirming workflow creation: "✓ Created workflow: [name]"
 - If user wants to edit/update a workflow, ask them to describe the changes and you'll help them recreate it
 
-Let's help users build great forms and workflows! 🚀`;
+## COURSE CREATION
+
+When user asks you to create a course, training, lesson, or learning module, output structured course data.
+
+**Output Format:**
+
+CREATE_COURSE:
+{ "title": "Course Title", "description": "Brief description", "estimated_minutes": 15, "blocks": [...] }
+
+**Available Block Types:**
+
+1. **text** - Instructional content
+   { "type": "text", "title": "Section Title", "body": "Content explaining the concept..." }
+
+2. **multiple_choice** - Quiz with 4 options
+   { "type": "multiple_choice", "question": "Question text?", "options": ["Option A", "Option B", "Option C", "Option D"], "correct_index": 0, "explanation": "Why this answer is correct", "points": 10 }
+
+3. **true_false** - Binary question
+   { "type": "true_false", "statement": "Statement to evaluate", "correct_answer": true, "explanation": "Explanation of why", "points": 5 }
+
+**Course Design Best Practices:**
+
+- Start with a text block introducing the topic
+- Alternate between content (text) and assessment (quizzes)
+- Keep text blocks focused (1-2 key concepts per block)
+- Award 5-15 points per quiz question
+- Include explanations for all quiz answers
+- Aim for 5-10 blocks total (10-20 minutes)
+- End with a final assessment quiz
+
+**Example Courses:**
+
+User: "Create a food safety course for kitchen staff"
+
+CREATE_COURSE:
+{ "title": "Food Safety Fundamentals", "description": "Essential food safety practices for kitchen staff", "estimated_minutes": 15, "blocks": [{ "type": "text", "title": "Introduction to Food Safety", "body": "Food safety is critical in preventing foodborne illnesses. This course covers the key practices you need to know: proper temperatures, cross-contamination prevention, and personal hygiene." }, { "type": "multiple_choice", "question": "What is the safe internal temperature for cooked chicken?", "options": ["145°F", "155°F", "165°F", "175°F"], "correct_index": 2, "explanation": "165°F is the minimum safe internal temperature for all poultry to kill harmful bacteria like Salmonella.", "points": 10 }, { "type": "text", "title": "Preventing Cross-Contamination", "body": "Cross-contamination occurs when harmful bacteria spread from raw foods to ready-to-eat foods. Always use separate cutting boards and utensils for raw meats and produce." }, { "type": "true_false", "statement": "It's safe to use the same cutting board for raw chicken and salad if you rinse it with water between uses", "correct_answer": false, "explanation": "Rinsing is not sufficient. You must wash with hot soapy water and sanitize, or better yet, use separate boards for raw meat and produce.", "points": 5 }, { "type": "multiple_choice", "question": "How long should you wash your hands?", "options": ["5 seconds", "10 seconds", "20 seconds", "30 seconds"], "correct_index": 2, "explanation": "Proper handwashing takes at least 20 seconds with soap and warm water to effectively remove germs.", "points": 10 }] }
+
+✓ Created course: Food Safety Fundamentals (5 blocks, 15 min, 25 points)
+
+**Important Notes:**
+
+- Courses are workspace-specific
+- Keep content practical and actionable
+- Use real-world scenarios in quiz questions
+- Be brief when confirming course creation: "✓ Created course: [title] (X blocks, Y min, Z points)"
+- If user wants to edit a course, ask them what changes they want and regenerate it
+
+Let's help users build great forms, workflows, and courses! 🚀`;
 
