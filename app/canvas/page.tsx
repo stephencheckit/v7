@@ -60,7 +60,7 @@ export default function CanvasPage() {
         const coursesData = await coursesRes.json();
 
         // Fetch cadences (form instances)
-        const cadencesRes = await fetch(`/api/instances?workspace_id=${workspaceId}&limit=5`);
+        const cadencesRes = await fetch(`/api/instances?workspace_id=${workspaceId}&limit=10`);
         const cadencesData = await cadencesRes.json();
 
         // Generate nodes from data
@@ -70,7 +70,7 @@ export default function CanvasPage() {
         let yOffset = 0;
 
         // Add Forms (left column)
-        formsData.forms?.slice(0, 5).forEach((form: any, idx: number) => {
+        formsData.forms?.slice(0, 10).forEach((form: any, idx: number) => {
           generatedNodes.push({
             id: `form-${form.id}`,
             type: 'default',
@@ -90,7 +90,7 @@ export default function CanvasPage() {
         });
 
         // Add Workflows (middle column)
-        workflowsData.workflows?.slice(0, 5).forEach((workflow: any, idx: number) => {
+        workflowsData.workflows?.slice(0, 10).forEach((workflow: any, idx: number) => {
           const workflowId = `workflow-${workflow.id}`;
           generatedNodes.push({
             id: workflowId,
@@ -127,7 +127,7 @@ export default function CanvasPage() {
         });
 
         // Add Sensors (right column)
-        sensorsData.sensors?.slice(0, 5).forEach((sensor: any, idx: number) => {
+        sensorsData.sensors?.slice(0, 10).forEach((sensor: any, idx: number) => {
           const sensorId = `sensor-${sensor.id}`;
           generatedNodes.push({
             id: sensorId,
@@ -168,7 +168,7 @@ export default function CanvasPage() {
         });
 
         // Add Courses (column 4)
-        coursesData.courses?.slice(0, 5).forEach((course: any, idx: number) => {
+        coursesData.courses?.slice(0, 10).forEach((course: any, idx: number) => {
           generatedNodes.push({
             id: `course-${course.id}`,
             type: 'default',
@@ -188,7 +188,7 @@ export default function CanvasPage() {
         });
 
         // Add Cadences (column 5)
-        cadencesData.instances?.slice(0, 5).forEach((instance: any, idx: number) => {
+        cadencesData.instances?.slice(0, 10).forEach((instance: any, idx: number) => {
           const cadenceId = `cadence-${instance.id}`;
           generatedNodes.push({
             id: cadenceId,
@@ -223,7 +223,7 @@ export default function CanvasPage() {
 
         setNodes(generatedNodes);
         setEdges(generatedEdges);
-        
+
         // Store full data for drawer
         setWorkspaceData({
           forms: formsData.forms || [],
@@ -238,7 +238,7 @@ export default function CanvasPage() {
         setIsLoading(false);
       }
     }
-    
+
     loadWorkspaceData();
   }, [workspaceId, setNodes, setEdges]);
 
@@ -250,7 +250,7 @@ export default function CanvasPage() {
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     // Extract node type and ID
     const [nodeType, nodeId] = node.id.split('-');
-    
+
     // Find full data object
     let fullData = null;
     if (nodeType === 'form') {
@@ -264,7 +264,7 @@ export default function CanvasPage() {
     } else if (nodeType === 'cadence') {
       fullData = workspaceData.cadences.find((c: any) => c.id === nodeId);
     }
-    
+
     if (fullData) {
       setSelectedNode({ type: nodeType, data: fullData });
       setDrawerOpen(true);
@@ -348,8 +348,8 @@ export default function CanvasPage() {
           className="bg-[#0a0a0a]"
         >
           <Controls className="bg-white/10 border border-white/20 !bottom-6" />
-          <MiniMap 
-            className="bg-white/10 border border-white/20 !bottom-6" 
+          <MiniMap
+            className="bg-white/10 border border-white/20 !bottom-6"
             nodeColor={(node) => {
               if (node.id.startsWith('form-')) return '#c4dfc4';
               if (node.id.startsWith('workflow-')) return '#c8e0f5';
@@ -396,10 +396,10 @@ export default function CanvasPage() {
 
       {/* Node Details Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent className="bg-[#0a0a0a] border-l border-white/20 text-white w-[400px] sm:w-[540px]">
+        <SheetContent className="bg-[#0a0a0a] border-l border-white/20 text-white w-[400px] sm:w-[540px] overflow-y-auto">
           {selectedNode && (
             <>
-              <SheetHeader>
+              <SheetHeader className="sticky top-0 bg-[#0a0a0a] pb-4 z-10">
                 <SheetTitle className="text-white flex items-center gap-2">
                   {selectedNode.type === 'form' && <FileText className="h-5 w-5 text-[#c4dfc4]" />}
                   {selectedNode.type === 'workflow' && <Zap className="h-5 w-5 text-[#c8e0f5]" />}
@@ -413,7 +413,7 @@ export default function CanvasPage() {
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="mt-6 space-y-4">
+              <div className="mt-6 space-y-4 pb-6">
                 {/* Form Details */}
                 {selectedNode.type === 'form' && (
                   <>
@@ -425,8 +425,8 @@ export default function CanvasPage() {
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Questions</p>
                         <p className="text-2xl font-bold text-[#c4dfc4]">
-                          {Array.isArray(selectedNode.data.schema) 
-                            ? selectedNode.data.schema.length 
+                          {Array.isArray(selectedNode.data.schema)
+                            ? selectedNode.data.schema.length
                             : (selectedNode.data.schema?.fields?.length || 0)}
                         </p>
                       </div>
@@ -439,8 +439,8 @@ export default function CanvasPage() {
                       <p className="text-xs text-gray-400 mb-2">Sample Questions</p>
                       <div className="space-y-1">
                         {(() => {
-                          const fields = Array.isArray(selectedNode.data.schema) 
-                            ? selectedNode.data.schema 
+                          const fields = Array.isArray(selectedNode.data.schema)
+                            ? selectedNode.data.schema
                             : (selectedNode.data.schema?.fields || []);
                           return fields.slice(0, 3).map((field: any, idx: number) => (
                             <Badge key={idx} variant="outline" className="text-xs text-gray-300 border-white/20">
@@ -560,8 +560,8 @@ export default function CanvasPage() {
                       <p className="text-xs text-gray-400 mb-1">Status</p>
                       <Badge className={
                         selectedNode.data.status === 'completed' ? 'bg-green-500/20 text-green-300' :
-                        selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                        'bg-red-500/20 text-red-300'
+                          selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                            'bg-red-500/20 text-red-300'
                       }>
                         {selectedNode.data.status}
                       </Badge>
