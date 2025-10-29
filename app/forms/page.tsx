@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, ExternalLink, X, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormCreationModal } from "@/components/form-creation-modal";
 import { FormsListSkeleton } from "@/components/loading";
@@ -40,7 +40,10 @@ export default function FormsPage() {
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showCreationModal, setShowCreationModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedFormUrl, setSelectedFormUrl] = useState<string>("");
+  const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [sortColumn, setSortColumn] = useState<SortColumn>('created');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -92,6 +95,37 @@ export default function FormsPage() {
 
   const handleReport = (formId: string) => {
     router.push(`/forms/${formId}/report`);
+  };
+
+  const handleDeleteClick = (formId: string) => {
+    setSelectedFormId(formId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedFormId) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/forms/${selectedFormId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove the form from the list
+        setForms(forms.filter(f => f.id !== selectedFormId));
+        setShowDeleteModal(false);
+        setSelectedFormId(null);
+      } else {
+        const error = await response.json();
+        alert(`Failed to delete form: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to delete form:', error);
+      alert('Failed to delete form. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const copyShareUrl = () => {
@@ -412,6 +446,18 @@ export default function FormsPage() {
                                   <BarChart3 className="h-4 w-4 md:mr-1" />
                                   <span className="hidden md:inline">Report</span>
                                 </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(form.id);
+                                  }}
+                                  className="text-red-400 hover:text-red-400 hover:bg-red-400/10 px-2 md:px-3"
+                                >
+                                  <Trash2 className="h-4 w-4 md:mr-1" />
+                                  <span className="hidden md:inline">Delete</span>
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -477,6 +523,51 @@ export default function FormsPage() {
         isOpen={showCreationModal}
         onClose={() => setShowCreationModal(false)}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => !deleting && setShowDeleteModal(false)}>
+          <Card className="bg-[#1a1a1a] border-red-400/30 p-8 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Delete Form</h2>
+              <p className="text-gray-400 mb-6">
+                Are you sure you want to delete this form? This action cannot be undone and will also delete all submissions.
+              </p>
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  disabled={deleting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </>
   );
 }
