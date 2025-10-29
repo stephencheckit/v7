@@ -55,6 +55,7 @@ export function AIChatPanel({
   onWorkflowCreated
 }: AIChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -106,6 +107,14 @@ export function AIChatPanel({
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
     }
   }, [input]);
+
+  // Cursor-style auto-scroll: scroll new messages to TOP of visible area
+  useEffect(() => {
+    if (messagesEndRef.current && messages.length > 0) {
+      // Scroll so the last message appears at the TOP of the viewport
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [messages.length]); // Only trigger when new messages arrive
 
   // Auto-submit prompt if provided (for "Let AI Build Draft" flow)
   useEffect(() => {
@@ -1735,7 +1744,7 @@ Please extract and build the form now.`;
               {/* Welcome Message */}
               {messages.length === 0 && (
                 <div className="flex-1">
-                  <p className="text-sm text-gray-800 leading-relaxed mb-3">
+                  <p className="text-xs text-gray-800 leading-relaxed mb-3">
                     👋 Hi! I'm your AI operator. I can help you {context === 'workflows' ? 'create workflow automations, trigger actions based on events' : 'build forms, configure distribution settings, analyze data, or generate reports'} - just tell me what you need!
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -1798,7 +1807,7 @@ Please extract and build the form now.`;
                       {/* AI Message - No icon, transparent background */}
                       {message.role === "assistant" && (
                         <div className="flex-1">
-                          <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                          <p className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
                             {message.displayContent || cleanMessageForDisplay(message.content)}
                           </p>
                         </div>
@@ -1807,7 +1816,7 @@ Please extract and build the form now.`;
                       {/* User Message - White bubble, no icon */}
                       {message.role === "user" && (
                         <Card className="max-w-[85%] p-3 bg-white border-0 shadow-sm">
-                          <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                          <p className="text-xs text-gray-800 whitespace-pre-wrap">
                             {message.content}
                           </p>
                         </Card>
