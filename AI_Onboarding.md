@@ -5,7 +5,24 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🗄️ Workflow Database Migration Applied - October 29, 2025 (Latest)**
+### **🔧 Fixed Rate Limiter Bug in Workflow Creation - October 29, 2025 (Latest)**
+**Status:** ✅ BUG FIXED
+**Date:** October 29, 2025
+**Commit:** abfadf5
+
+**Issue:**
+Workflow creation was failing with a 500 error: `TypeError: rateLimit.limit is not a function`. The `checkRateLimit` function requires two parameters (rate limiter instance + identifier), but the workflow route was only passing one.
+
+**Fix:**
+- Imported `apiRateLimit` from `@/lib/rate-limit`
+- Updated call to: `checkRateLimit(apiRateLimit, identifier)`
+
+**Result:**
+Workflow creation API endpoint is now fully functional. Users can create workflows via AI chat or manual builder without errors.
+
+---
+
+### **🗄️ Workflow Database Migration Applied - October 29, 2025**
 **Status:** ✅ DATABASE MIGRATION COMPLETE
 **Date:** October 29, 2025
 **Commit:** 6776eb5
