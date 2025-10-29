@@ -21,7 +21,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(() => {
+    // Optimistically load from cache for instant UI
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('current_workspace_id');
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -37,6 +43,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: session.user.email,
           username: session.user.email?.split('@')[0],
         });
+      } else {
+        // No user, clear cached workspace
+        setWorkspaceId(null);
+        localStorage.removeItem('current_workspace_id');
       }
       setIsLoading(false);
     });
