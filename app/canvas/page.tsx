@@ -18,7 +18,6 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Network, RefreshCw, ExternalLink, FileText, Zap, Thermometer, GraduationCap, Calendar, Package, TruckIcon, Factory, CheckCircle2, Tag, Search } from 'lucide-react';
@@ -55,7 +54,8 @@ export default function CanvasPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'workspace' | 'supply-chain'>('supply-chain');
+  // Supply chain only for Sheetz demo
+  // const [activeTab, setActiveTab] = useState<'workspace' | 'supply-chain'>('supply-chain');
   const [selectedProduct, setSelectedProduct] = useState<any>(sheetzMenuItems[0]);
   const [lotCodeSearch, setLotCodeSearch] = useState('');
   const [workspaceData, setWorkspaceData] = useState<any>({
@@ -268,43 +268,18 @@ export default function CanvasPage() {
   );
 
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    // Check if this is a supply chain node
-    if (activeTab === 'supply-chain') {
-      // Extract step type from node ID (e.g., "turkey-sandwich-receiving")
-      const parts = node.id.split('-');
-      const stepType = parts[parts.length - 1]; // Last part is the step (receiving, production, etc.)
-      
-      setSelectedNode({ 
-        type: 'supply-chain-step', 
-        stepType,
-        product: selectedProduct 
-      });
-      setDrawerOpen(true);
-      return;
-    }
-
-    // Workspace node click (existing logic)
-    const [nodeType, nodeId] = node.id.split('-');
+    // Supply chain node click (only mode for Sheetz demo)
+    // Extract step type from node ID (e.g., "turkey-sandwich-receiving")
+    const parts = node.id.split('-');
+    const stepType = parts[parts.length - 1]; // Last part is the step (receiving, production, etc.)
     
-    // Find full data object
-    let fullData = null;
-    if (nodeType === 'form') {
-      fullData = workspaceData.forms.find((f: any) => f.id === nodeId);
-    } else if (nodeType === 'workflow') {
-      fullData = workspaceData.workflows.find((w: any) => w.id === nodeId);
-    } else if (nodeType === 'sensor') {
-      fullData = workspaceData.sensors.find((s: any) => s.id === nodeId);
-    } else if (nodeType === 'course') {
-      fullData = workspaceData.courses.find((c: any) => c.id === nodeId);
-    } else if (nodeType === 'cadence') {
-      fullData = workspaceData.cadences.find((c: any) => c.id === nodeId);
-    }
-    
-    if (fullData) {
-      setSelectedNode({ type: nodeType, data: fullData });
-      setDrawerOpen(true);
-    }
-  }, [workspaceData, activeTab, selectedProduct]);
+    setSelectedNode({ 
+      type: 'supply-chain-step', 
+      stepType,
+      product: selectedProduct 
+    });
+    setDrawerOpen(true);
+  }, [selectedProduct]);
 
   const handleAutoLayout = () => {
     // Simple auto-layout: arrange nodes in columns by type
@@ -374,12 +349,12 @@ export default function CanvasPage() {
     setEdges(supplyEdges);
   }, [setNodes, setEdges]);
 
-  // Load supply chain when product changes
+  // Load supply chain when product changes (always in supply chain mode)
   useEffect(() => {
-    if (activeTab === 'supply-chain' && selectedProduct) {
+    if (selectedProduct) {
       generateSupplyChainNodes(selectedProduct);
     }
-  }, [activeTab, selectedProduct, generateSupplyChainNodes]);
+  }, [selectedProduct, generateSupplyChainNodes]);
 
   if (isLoading) {
     return <CanvasSkeleton />;
@@ -396,24 +371,11 @@ export default function CanvasPage() {
               Canvas
             </h1>
             <p className="text-sm text-gray-400 mt-1">
-              {activeTab === 'workspace' 
-                ? `Visual map of your workspace - ${nodes.length} nodes, ${edges.length} connections`
-                : `Supply chain for ${selectedProduct.name}`
-              }
+              FSMA 204 supply chain for {selectedProduct.name}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {activeTab === 'workspace' && (
-              <Button
-                onClick={handleAutoLayout}
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <Network className="h-4 w-4 mr-2" />
-                Auto Layout
-              </Button>
-            )}
-            {activeTab === 'supply-chain' && lotCodeSearch && (
+            {lotCodeSearch && (
               <Badge className="bg-[#c4dfc4]/20 text-[#c4dfc4] border-[#c4dfc4]/30">
                 Tracing: {lotCodeSearch}
               </Badge>
@@ -422,91 +384,8 @@ export default function CanvasPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col">
-        <div className="border-b border-white/10 bg-[#0f0f0f] px-4">
-          <TabsList className="bg-transparent border-0 h-12">
-            <TabsTrigger 
-              value="supply-chain"
-              className="data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-white"
-            >
-              <Factory className="h-4 w-4 mr-2" />
-              Supply Chain
-            </TabsTrigger>
-            <TabsTrigger 
-              value="workspace" 
-              className="data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-white"
-            >
-              <Network className="h-4 w-4 mr-2" />
-              Workspace Map
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* Workspace Tab */}
-        <TabsContent value="workspace" className="flex-1 m-0">
-          <div className="h-full relative">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          fitView
-          className="bg-[#0a0a0a]"
-        >
-          <Controls className="bg-white/10 border border-white/20 !bottom-6" />
-          <MiniMap
-            className="bg-white/10 border border-white/20 !bottom-6"
-            nodeColor={(node) => {
-              if (node.id.startsWith('form-')) return '#c4dfc4';
-              if (node.id.startsWith('workflow-')) return '#c8e0f5';
-              if (node.id.startsWith('sensor-')) return '#ffd4d4';
-              if (node.id.startsWith('course-')) return '#e8d4ff';
-              if (node.id.startsWith('cadence-')) return '#ffe4b5';
-              return '#666';
-            }}
-          />
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={20}
-            size={1}
-            color="#ffffff20"
-          />
-        </ReactFlow>
-
-            {/* Legend for Workspace */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/90 border border-white/20 rounded-lg px-6 py-3 backdrop-blur-sm z-50">
-              <div className="flex items-center gap-6 text-xs text-white">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#c4dfc4]"></div>
-                  <span>Forms</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#c8e0f5]"></div>
-                  <span>Workflows</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#ffd4d4]"></div>
-                  <span>Sensors</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#e8d4ff]"></div>
-                  <span>Courses</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#ffe4b5]"></div>
-                  <span>Cadences</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Supply Chain Tab */}
-        <TabsContent value="supply-chain" className="flex-1 m-0">
-          <div className="h-full flex">
+      {/* Supply Chain View (No Tabs - Simplified for Sheetz Demo) */}
+      <div className="flex-1 flex overflow-hidden">
             {/* Left Panel: Product Selector */}
             <div className="w-80 border-r border-white/10 bg-[#0f0f0f] flex flex-col">
               {/* Search */}
@@ -574,9 +453,7 @@ export default function CanvasPage() {
                 />
               </ReactFlow>
             </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+      </div>
 
       {/* Node Details Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
