@@ -147,6 +147,12 @@ export default function WorkflowsPage() {
         context="workflows"
         onWorkflowCreated={loadWorkflows}
       />
+      
+      {/* Info Drawer */}
+      <WorkflowInfoDrawer 
+        isOpen={showInfo}
+        onClose={() => setShowInfo(false)}
+      />
     </div>
   );
 }
