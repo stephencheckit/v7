@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, Network, RefreshCw, ExternalLink, FileText, Zap, Thermometer, GraduationCap, Calendar, Package, TruckIcon, Factory, CheckCircle2, Tag, Search } from 'lucide-react';
 import { CanvasSkeleton } from '@/components/loading';
+import { toast } from 'sonner';
 
 // Sheetz prepared food menu items (DC-produced)
 const sheetzMenuItems = [
@@ -70,11 +71,11 @@ export default function CanvasPage() {
   // DISABLED FOR SHEETZ DEMO - Supply chain mode only
   useEffect(() => {
     if (!workspaceId) return;
-    
+
     // Skip workspace data loading, just mark as loaded
     setIsLoading(false);
     return;
-    
+
     /* COMMENTED OUT FOR SHEETZ DEMO
     async function loadWorkspaceData() {
       try {
@@ -279,11 +280,11 @@ export default function CanvasPage() {
     // Extract step type from node ID (e.g., "turkey-sandwich-receiving")
     const parts = node.id.split('-');
     const stepType = parts[parts.length - 1]; // Last part is the step (receiving, production, etc.)
-    
-    setSelectedNode({ 
-      type: 'supply-chain-step', 
+
+    setSelectedNode({
+      type: 'supply-chain-step',
       stepType,
-      product: selectedProduct 
+      product: selectedProduct
     });
     setDrawerOpen(true);
   }, [selectedProduct]);
@@ -323,7 +324,7 @@ export default function CanvasPage() {
       id: `${product.id}-${step.id}`,
       type: 'default',
       position: { x: step.x, y: 100 },
-      data: { 
+      data: {
         label: step.label,
       },
       style: {
@@ -393,73 +394,72 @@ export default function CanvasPage() {
 
       {/* Supply Chain View (No Tabs - Simplified for Sheetz Demo) */}
       <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel: Product Selector */}
-            <div className="w-80 border-r border-white/10 bg-[#0f0f0f] flex flex-col">
-              {/* Search */}
-              <div className="p-4 border-b border-white/10">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search lot code..."
-                    value={lotCodeSearch}
-                    onChange={(e) => setLotCodeSearch(e.target.value)}
-                    className="pl-10 bg-[#1a1a1a] border-gray-700 text-white"
-                  />
-                </div>
+        {/* Left Panel: Product Selector */}
+        <div className="w-80 border-r border-white/10 bg-[#0f0f0f] flex flex-col">
+          {/* Search */}
+          <div className="p-4 border-b border-white/10">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search lot code..."
+                value={lotCodeSearch}
+                onChange={(e) => setLotCodeSearch(e.target.value)}
+                className="pl-10 bg-[#1a1a1a] border-gray-700 text-white"
+              />
+            </div>
+          </div>
+
+          {/* Product List */}
+          <ScrollArea className="flex-1">
+            <div className="p-2">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide px-3 py-2">
+                Products ({sheetzMenuItems.length})
+              </p>
+              <div className="space-y-1">
+                {sheetzMenuItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setSelectedProduct(item)}
+                    className={`w-full text-left p-3 rounded-lg transition-colors ${selectedProduct.id === item.id
+                        ? 'bg-[#c4dfc4]/20 border border-[#c4dfc4]/30'
+                        : 'hover:bg-white/5 border border-transparent'
+                      }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{item.emoji}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">{item.name}</p>
+                        <p className="text-xs text-gray-400">{item.category}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-
-              {/* Product List */}
-              <ScrollArea className="flex-1">
-                <div className="p-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide px-3 py-2">
-                    Products ({sheetzMenuItems.length})
-                  </p>
-                  <div className="space-y-1">
-                    {sheetzMenuItems.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setSelectedProduct(item)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
-                          selectedProduct.id === item.id
-                            ? 'bg-[#c4dfc4]/20 border border-[#c4dfc4]/30'
-                            : 'hover:bg-white/5 border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{item.emoji}</span>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">{item.name}</p>
-                            <p className="text-xs text-gray-400">{item.category}</p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </ScrollArea>
             </div>
+          </ScrollArea>
+        </div>
 
-            {/* Right: Supply Chain Flow */}
-            <div className="flex-1 relative">
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onNodeClick}
-                fitView
-                className="bg-[#0a0a0a]"
-              >
-                <Controls className="bg-white/10 border border-white/20 !bottom-6" />
-                <Background
-                  variant={BackgroundVariant.Dots}
-                  gap={20}
-                  size={1}
-                  color="#ffffff20"
-                />
-              </ReactFlow>
-            </div>
+        {/* Right: Supply Chain Flow */}
+        <div className="flex-1 relative">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={onNodeClick}
+            fitView
+            className="bg-[#0a0a0a]"
+          >
+            <Controls className="bg-white/10 border border-white/20 !bottom-6" />
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={20}
+              size={1}
+              color="#ffffff20"
+            />
+          </ReactFlow>
+        </div>
       </div>
 
       {/* Node Details Drawer */}
@@ -492,7 +492,7 @@ export default function CanvasPage() {
                   )}
                 </SheetTitle>
                 <SheetDescription className="text-gray-400 mt-2">
-                  {selectedNode.type === 'supply-chain-step' 
+                  {selectedNode.type === 'supply-chain-step'
                     ? `${selectedProduct.name} - Supply chain process`
                     : `${selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1)} details and quick actions`
                   }
@@ -507,7 +507,7 @@ export default function CanvasPage() {
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
                       <p className="text-sm text-white leading-relaxed">{selectedNode.data.description || 'No description'}</p>
                     </div>
-                    
+
                     <div className="flex gap-6">
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Questions</p>
@@ -522,7 +522,7 @@ export default function CanvasPage() {
                         <p className="text-2xl font-bold text-[#c4dfc4]">0</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Sample Questions</p>
                       <div className="flex flex-wrap gap-2">
@@ -538,7 +538,7 @@ export default function CanvasPage() {
                         })()}
                       </div>
                     </div>
-                    
+
                     <Button
                       className="w-full bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] mt-2"
                       onClick={() => window.open(`/forms/builder?formId=${selectedNode.data.id}`, '_blank')}
@@ -556,24 +556,24 @@ export default function CanvasPage() {
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
                       <p className="text-sm text-white leading-relaxed">{selectedNode.data.description || 'No description'}</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Status</p>
                       <Badge className={selectedNode.data.is_active ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-300'}>
                         {selectedNode.data.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Trigger</p>
                       <p className="text-sm text-white capitalize">{selectedNode.data.trigger_type?.replace(/_/g, ' ')}</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Actions</p>
                       <p className="text-2xl font-bold text-[#c8e0f5]">{selectedNode.data.actions?.length || 0}</p>
                     </div>
-                    
+
                     <Button
                       className="w-full bg-[#c8e0f5] text-[#0a0a0a] hover:bg-[#b8d0e5] mt-2"
                       onClick={() => window.open(`/workflows`, '_blank')}
@@ -591,19 +591,19 @@ export default function CanvasPage() {
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Type</p>
                       <p className="text-sm text-white capitalize">{selectedNode.data.type}</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Location</p>
                       <p className="text-sm text-white">{selectedNode.data.location || 'Unknown'}</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current Reading</p>
                       <p className="text-2xl font-bold text-[#ffd4d4]">
                         {selectedNode.data.current_value ? `${selectedNode.data.current_value}°${selectedNode.data.unit}` : 'No data'}
                       </p>
                     </div>
-                    
+
                     <Button
                       className="w-full bg-[#ffd4d4] text-[#0a0a0a] hover:bg-[#ffc4c4] mt-2"
                       onClick={() => window.open(`/sensors`, '_blank')}
@@ -621,7 +621,7 @@ export default function CanvasPage() {
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
                       <p className="text-sm text-white leading-relaxed">{selectedNode.data.description || 'No description'}</p>
                     </div>
-                    
+
                     <div className="flex gap-6">
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Estimated Time</p>
@@ -632,12 +632,12 @@ export default function CanvasPage() {
                         <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.total_points || 0}</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Blocks</p>
                       <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.blocks?.length || 0}</p>
                     </div>
-                    
+
                     <Button
                       className="w-full bg-[#e8d4ff] text-[#0a0a0a] hover:bg-[#d8c4ef] mt-2"
                       onClick={() => window.open(`/learn/${selectedNode.data.id}`, '_blank')}
@@ -655,25 +655,25 @@ export default function CanvasPage() {
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Form</p>
                       <p className="text-sm text-white">{selectedNode.data.form_title}</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Status</p>
                       <Badge className={
                         selectedNode.data.status === 'completed' ? 'bg-green-500/20 text-green-300' :
-                        selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                        'bg-red-500/20 text-red-300'
+                          selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                            'bg-red-500/20 text-red-300'
                       }>
                         {selectedNode.data.status}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Scheduled For</p>
                       <p className="text-sm text-white">
                         {selectedNode.data.scheduled_for ? new Date(selectedNode.data.scheduled_for).toLocaleString() : 'Not scheduled'}
                       </p>
                     </div>
-                    
+
                     <Button
                       className="w-full bg-[#ffe4b5] text-[#0a0a0a] hover:bg-[#ffd495] mt-2"
                       onClick={() => window.open(`/f/${selectedNode.data.form_id}?source=canvas&instance_id=${selectedNode.data.id}`, '_blank')}
