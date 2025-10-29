@@ -5,7 +5,46 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎤📊 Voice Input for Summary Commentary - October 29, 2025 (Latest)**
+### **🧹🎓 Fix Empty Messages in Course AI - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025  
+**Commit:** 263487b
+
+**Summary:**
+Fixed critical AI chat error where empty assistant messages from previous failed attempts were causing Anthropic API to reject requests with "messages: text content blocks must be non-empty" error. Course creation now works reliably.
+
+**Changes:**
+1. **Message Filtering:**
+   - Added filter to remove empty assistant messages before sending to Anthropic API
+   - Applied to both text-based chat flow (streamText)
+   - Applied to image-based chat flow (direct Anthropic API)
+   - Logged all filtered messages for debugging
+
+2. **Error Prevention:**
+   - Empty messages from conversation history no longer sent to API
+   - Conversation persistence no longer causes API rejections
+   - Course creation workflow now completes successfully
+
+3. **Debugging Improvements:**
+   - Added logging for filtered message count
+   - Clear warning messages when empty messages are detected
+   - Better visibility into what's being sent to API
+
+**Impact:**
+- **Course Creation:** Users can now reliably create training courses via AI chat
+- **Error Reduction:** Eliminates 400 "non-empty text" errors from Anthropic
+- **Conversation Persistence:** Chat history can include failed attempts without breaking future requests
+- **Developer Experience:** Clear logs show when/why messages are filtered
+
+**Technical Details:**
+- Empty assistant messages occur when AI fails to generate content (e.g., credit issues, API errors)
+- These get saved to conversation history via the persistence layer
+- When reloaded, they were being sent back to Anthropic, which rejects empty content
+- Filter now removes any assistant message with `!content || content.trim() === ''`
+
+---
+
+### **🎤📊 Voice Input for Summary Commentary - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025  
 **Commit:** 8048309
