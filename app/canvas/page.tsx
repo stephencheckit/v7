@@ -16,13 +16,24 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Network, RefreshCw } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Network, RefreshCw, ExternalLink, FileText, Zap, Thermometer, GraduationCap, Calendar } from 'lucide-react';
 
 export default function CanvasPage() {
   const { workspaceId } = useAuth();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedNode, setSelectedNode] = useState<any>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [workspaceData, setWorkspaceData] = useState<any>({
+    forms: [],
+    workflows: [],
+    sensors: [],
+    courses: [],
+    cadences: []
+  });
 
   // Load workspace data and generate initial nodes
   useEffect(() => {
@@ -212,13 +223,22 @@ export default function CanvasPage() {
 
         setNodes(generatedNodes);
         setEdges(generatedEdges);
+        
+        // Store full data for drawer
+        setWorkspaceData({
+          forms: formsData.forms || [],
+          workflows: workflowsData.workflows || [],
+          sensors: sensorsData.sensors || [],
+          courses: coursesData.courses || [],
+          cadences: cadencesData.instances || []
+        });
       } catch (error) {
         console.error('Error loading workspace data:', error);
       } finally {
         setIsLoading(false);
       }
     }
-
+    
     loadWorkspaceData();
   }, [workspaceId, setNodes, setEdges]);
 
@@ -226,6 +246,30 @@ export default function CanvasPage() {
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    // Extract node type and ID
+    const [nodeType, nodeId] = node.id.split('-');
+    
+    // Find full data object
+    let fullData = null;
+    if (nodeType === 'form') {
+      fullData = workspaceData.forms.find((f: any) => f.id === nodeId);
+    } else if (nodeType === 'workflow') {
+      fullData = workspaceData.workflows.find((w: any) => w.id === nodeId);
+    } else if (nodeType === 'sensor') {
+      fullData = workspaceData.sensors.find((s: any) => s.id === nodeId);
+    } else if (nodeType === 'course') {
+      fullData = workspaceData.courses.find((c: any) => c.id === nodeId);
+    } else if (nodeType === 'cadence') {
+      fullData = workspaceData.cadences.find((c: any) => c.id === nodeId);
+    }
+    
+    if (fullData) {
+      setSelectedNode({ type: nodeType, data: fullData });
+      setDrawerOpen(true);
+    }
+  }, [workspaceData]);
 
   const handleAutoLayout = () => {
     // Simple auto-layout: arrange nodes in columns by type
@@ -299,6 +343,7 @@ export default function CanvasPage() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
           fitView
           className="bg-[#0a0a0a]"
         >
@@ -348,6 +393,190 @@ export default function CanvasPage() {
           </div>
         </div>
       </div>
+
+      {/* Node Details Drawer */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent className="bg-[#0a0a0a] border-l border-white/20 text-white w-[400px] sm:w-[540px]">
+          {selectedNode && (
+            <>
+              <SheetHeader>
+                <SheetTitle className="text-white flex items-center gap-2">
+                  {selectedNode.type === 'form' && <FileText className="h-5 w-5 text-[#c4dfc4]" />}
+                  {selectedNode.type === 'workflow' && <Zap className="h-5 w-5 text-[#c8e0f5]" />}
+                  {selectedNode.type === 'sensor' && <Thermometer className="h-5 w-5 text-[#ffd4d4]" />}
+                  {selectedNode.type === 'course' && <GraduationCap className="h-5 w-5 text-[#e8d4ff]" />}
+                  {selectedNode.type === 'cadence' && <Calendar className="h-5 w-5 text-[#ffe4b5]" />}
+                  {selectedNode.data.title || selectedNode.data.name || 'Details'}
+                </SheetTitle>
+                <SheetDescription className="text-gray-400">
+                  {selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1)} details and quick actions
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-4">
+                {/* Form Details */}
+                {selectedNode.type === 'form' && (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Description</p>
+                      <p className="text-sm text-white">{selectedNode.data.description || 'No description'}</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Questions</p>
+                        <p className="text-2xl font-bold text-[#c4dfc4]">{selectedNode.data.schema?.length || 0}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Responses</p>
+                        <p className="text-2xl font-bold text-[#c4dfc4]">0</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-2">Sample Questions</p>
+                      <div className="space-y-1">
+                        {selectedNode.data.schema?.slice(0, 3).map((field: any, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs text-gray-300 border-white/20">
+                            {field.label}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <Button
+                      className="w-full bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5]"
+                      onClick={() => window.open(`/forms/builder?formId=${selectedNode.data.id}`, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in Form Builder
+                    </Button>
+                  </>
+                )}
+
+                {/* Workflow Details */}
+                {selectedNode.type === 'workflow' && (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Description</p>
+                      <p className="text-sm text-white">{selectedNode.data.description || 'No description'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Status</p>
+                      <Badge className={selectedNode.data.is_active ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-300'}>
+                        {selectedNode.data.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Trigger</p>
+                      <p className="text-sm text-white capitalize">{selectedNode.data.trigger_type?.replace(/_/g, ' ')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Actions</p>
+                      <p className="text-2xl font-bold text-[#c8e0f5]">{selectedNode.data.actions?.length || 0}</p>
+                    </div>
+                    <Button
+                      className="w-full bg-[#c8e0f5] text-[#0a0a0a] hover:bg-[#b8d0e5]"
+                      onClick={() => window.open(`/workflows`, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in Workflows
+                    </Button>
+                  </>
+                )}
+
+                {/* Sensor Details */}
+                {selectedNode.type === 'sensor' && (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Type</p>
+                      <p className="text-sm text-white capitalize">{selectedNode.data.type}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Location</p>
+                      <p className="text-sm text-white">{selectedNode.data.location || 'Unknown'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Current Reading</p>
+                      <p className="text-2xl font-bold text-[#ffd4d4]">
+                        {selectedNode.data.current_value ? `${selectedNode.data.current_value}°${selectedNode.data.unit}` : 'No data'}
+                      </p>
+                    </div>
+                    <Button
+                      className="w-full bg-[#ffd4d4] text-[#0a0a0a] hover:bg-[#ffc4c4]"
+                      onClick={() => window.open(`/sensors`, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in Sensors
+                    </Button>
+                  </>
+                )}
+
+                {/* Course Details */}
+                {selectedNode.type === 'course' && (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Description</p>
+                      <p className="text-sm text-white">{selectedNode.data.description || 'No description'}</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Estimated Time</p>
+                        <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.estimated_minutes || 0} min</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Total Points</p>
+                        <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.total_points || 0}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Blocks</p>
+                      <p className="text-2xl font-bold text-[#e8d4ff]">{selectedNode.data.blocks?.length || 0}</p>
+                    </div>
+                    <Button
+                      className="w-full bg-[#e8d4ff] text-[#0a0a0a] hover:bg-[#d8c4ef]"
+                      onClick={() => window.open(`/learn/${selectedNode.data.id}`, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open Course
+                    </Button>
+                  </>
+                )}
+
+                {/* Cadence Details */}
+                {selectedNode.type === 'cadence' && (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Form</p>
+                      <p className="text-sm text-white">{selectedNode.data.form_title}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Status</p>
+                      <Badge className={
+                        selectedNode.data.status === 'completed' ? 'bg-green-500/20 text-green-300' :
+                        selectedNode.data.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                        'bg-red-500/20 text-red-300'
+                      }>
+                        {selectedNode.data.status}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Scheduled For</p>
+                      <p className="text-sm text-white">
+                        {selectedNode.data.scheduled_for ? new Date(selectedNode.data.scheduled_for).toLocaleString() : 'Not scheduled'}
+                      </p>
+                    </div>
+                    <Button
+                      className="w-full bg-[#ffe4b5] text-[#0a0a0a] hover:bg-[#ffd495]"
+                      onClick={() => window.open(`/f/${selectedNode.data.form_id}?source=canvas&instance_id=${selectedNode.data.id}`, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open Form
+                    </Button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
