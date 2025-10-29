@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles, Pencil, MessageSquare, Wand2, Loader2, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface FormCreationModalProps {
   isOpen: boolean;
@@ -78,14 +79,18 @@ export function FormCreationModal({ isOpen, onClose }: FormCreationModalProps) {
       router.push(`/forms/builder?id=${formId}&chatMode=${aiChatMode}`);
     } catch (error) {
       console.error('Failed to create form:', error);
-      alert('Failed to create form. Please try again.');
+      toast.error('Failed to create form', {
+        description: 'Please try again or contact support.',
+      });
       setIsCreating(false);
     }
   };
 
   const handleAIDraft = async () => {
     if (!formGoal.trim()) {
-      alert('Please describe the goal of your form');
+      toast.error('Form goal required', {
+        description: 'Please describe the goal of your form.',
+      });
       return;
     }
     
@@ -134,7 +139,9 @@ Please create the form now with appropriate fields and a descriptive title.`;
       router.push(`/forms/builder?id=${formId}&chatMode=expanded&aiPrompt=${encodeURIComponent(aiPrompt)}`);
     } catch (error) {
       console.error('Failed to create form:', error);
-      alert('Failed to create form. Please try again.');
+      toast.error('Failed to create form', {
+        description: 'Please try again or contact support.',
+      });
       setIsCreating(false);
     }
   };

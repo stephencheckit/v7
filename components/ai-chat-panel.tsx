@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2 } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
+import { toast } from "sonner";
 import { convertBackendFormToFrontend } from "@/lib/converters/form-types";
 import { parseExcelFile, generateFormPrompt, type ParsedExcelData } from "@/lib/utils/excel-parser";
 
@@ -187,7 +188,9 @@ export function AIChatPanel({
     // Check if it's an Excel file
     const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv');
     if (!isExcel) {
-      alert('Please upload an Excel file (.xlsx, .xls, or .csv)');
+      toast.error('Invalid file type', {
+        description: 'Please upload an Excel file (.xlsx, .xls, or .csv)',
+      });
       return;
     }
     
@@ -214,7 +217,9 @@ export function AIChatPanel({
       
     } catch (error) {
       console.error('Failed to parse Excel file:', error);
-      alert(`Failed to parse Excel file: ${error}`);
+      toast.error('Failed to parse Excel file', {
+        description: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       setIsParsingFile(false);
       // Reset file input
@@ -239,7 +244,9 @@ export function AIChatPanel({
     // Check if it's an image file
     const isImage = file.type.startsWith('image/');
     if (!isImage) {
-      alert('Please upload an image file (JPG, PNG, etc.)');
+      toast.error('Invalid file type', {
+        description: 'Please upload an image file (JPG, PNG, etc.)',
+      });
       return;
     }
     
@@ -342,7 +349,9 @@ Please extract and build the form now.`;
       
     } catch (error) {
       console.error('❌ Failed to process image:', error);
-      alert(`Failed to process image: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error('Failed to process image', {
+        description: error instanceof Error ? error.message : String(error),
+      });
       setIsParsingFile(false);
       setUploadedImage(null);
     } finally {

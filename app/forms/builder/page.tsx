@@ -1002,7 +1002,9 @@ function FormsPageContent() {
     try {
       const response = await fetch(`/api/forms/${formId}`);
       if (!response.ok) {
-        alert('Failed to load form');
+        toast.error('Failed to load form', {
+          description: 'The form could not be loaded. Please try again.',
+        });
         return;
       }
       const { form } = await response.json();
@@ -1032,7 +1034,9 @@ function FormsPageContent() {
       setLastSaveTime(new Date()); // Set initial save time
     } catch (error) {
       console.error('Error loading form:', error);
-      alert('Failed to load form');
+      toast.error('Failed to load form', {
+        description: 'An error occurred while loading the form.',
+      });
     } finally {
       setLoadingForm(false);
     }
@@ -1410,7 +1414,9 @@ function FormsPageContent() {
 
   const handlePreview = () => {
     if (!lastSavedFormId && !editingFormId) {
-      alert('Please add at least one field and wait for auto-save before previewing.');
+      toast.error('Form not saved yet', {
+        description: 'Please add at least one field and wait for auto-save before previewing.',
+      });
       return;
     }
     
@@ -1433,7 +1439,9 @@ function FormsPageContent() {
   const copyShareUrl = () => {
     if (shareUrl) {
       navigator.clipboard.writeText(shareUrl);
-      alert('Share URL copied to clipboard!');
+      toast.success('Share URL copied to clipboard!', {
+        description: 'You can now share this link to collect responses.',
+      });
     }
   };
 
@@ -2262,7 +2270,9 @@ function FormsPageContent() {
                                   <Button
                                     onClick={() => {
                                       navigator.clipboard.writeText(shareUrl);
-                                      alert('Link copied to clipboard!');
+                                      toast.success('Link copied to clipboard!', {
+                                        description: 'Share this link to collect form responses.',
+                                      });
                                     }}
                                     disabled={formStatus === "draft"}
                                     className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -2554,7 +2564,9 @@ function FormsPageContent() {
                                       className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                                       onClick={() => {
                                         // TODO: Implement CSV export
-                                        alert('CSV export coming soon!');
+                                        toast.info('Coming soon!', {
+                                          description: 'CSV export feature is under development.',
+                                        });
                                       }}
                                     >
                                       Export CSV

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { PenTool, Trash2, Check, AlertCircle, Loader2, Shield } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 interface SignaturePadWidgetProps {
   field: {
@@ -151,7 +152,9 @@ export function SignaturePadWidget({ field, value, onChange, disabled }: Signatu
     }
 
     if (!isAuthenticated && !signerName.trim()) {
-      alert('Please enter your name');
+      toast.error('Name required', {
+        description: 'Please enter your name to continue.',
+      });
       return;
     }
 
@@ -202,7 +205,9 @@ export function SignaturePadWidget({ field, value, onChange, disabled }: Signatu
       setStrokeCount(0);
     } catch (error) {
       console.error('Error saving signature:', error);
-      alert('Failed to save signature');
+      toast.error('Failed to save signature', {
+        description: 'Please try again or contact support.',
+      });
     } finally {
       setIsSigning(false);
     }

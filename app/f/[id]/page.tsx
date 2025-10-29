@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, AlertCircle, Check, BarChart3 } from "lucide-react";
 import { AIVisionAssistant } from "@/components/ai-vision-assistant";
+import { toast } from "sonner";
 import { SignaturePadWidget } from "@/components/signature-pad-widget";
 
 interface FormField {
@@ -383,7 +384,9 @@ export default function PublicFormPage() {
                   onClick={() => {
                     const url = window.location.href.replace(/\/f\/.*$/, `/f/${formId}`);
                     navigator.clipboard.writeText(url);
-                    alert('Form link copied to clipboard!');
+                    toast.success('Form link copied to clipboard!', {
+                      description: 'Share this link with others to collect responses.',
+                    });
                   }}
                   variant="outline"
                   className="border-gray-600 text-gray-300 hover:bg-white/5"

@@ -1,30 +1,29 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "🧪 Start Test Watch Mode",
-      "type": "shell",
-      "command": "npm run test:watch",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": false
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
-    },
-    {
-      "label": "✅ Run All Tests",
-      "type": "shell",
-      "command": "npm test",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    }
-  ]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "🧪 Start Test Watch Mode",
+            "type": "shell",
+            "command": "npm run test:watch",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "✅ Run All Tests",
+            "type": "shell",
+            "command": "npm test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
 }
-

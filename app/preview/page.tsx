@@ -26,6 +26,7 @@ import {
   Sparkles,
   Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface FormField {
   id: string;
@@ -103,7 +104,9 @@ export default function PreviewPage() {
   const handleStartCamera = async () => {
     const success = await startCamera();
     if (!success) {
-      alert('Failed to start camera. Please check permissions.');
+      toast.error('Failed to start camera', {
+        description: 'Please check camera permissions in your browser settings.',
+      });
     }
   };
 
@@ -217,7 +220,9 @@ export default function PreviewPage() {
     // Merge manual inputs with AI answers
     const finalValues = { ...aiAnswers, ...formValues };
     console.log("Form submitted:", finalValues);
-    alert("Form submitted! Check console for values.");
+    toast.success('Form submitted successfully!', {
+      description: 'Check the console to see your form values.',
+    });
   };
 
   const handleInputChange = (fieldId: string, value: any) => {

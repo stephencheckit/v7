@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Sensor } from "@/app/sensors/page";
+import { toast } from "sonner";
 
 interface AlertResolutionFormProps {
   alert: any;
@@ -41,7 +42,9 @@ export function AlertResolutionForm({
     e.preventDefault();
 
     if (!resolutionAction) {
-      alert("Please select a resolution action");
+      toast.error('Resolution action required', {
+        description: 'Please select a resolution action to continue.',
+      });
       return;
     }
 
@@ -68,7 +71,9 @@ export function AlertResolutionForm({
       onResolved();
     } catch (error) {
       console.error("Error resolving alert:", error);
-      alert("Failed to resolve alert");
+      toast.error('Failed to resolve alert', {
+        description: 'Please try again or contact support.',
+      });
     } finally {
       setSubmitting(false);
     }
