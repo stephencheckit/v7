@@ -67,9 +67,15 @@ export default function CanvasPage() {
   });
 
   // Load workspace data and generate initial nodes
+  // DISABLED FOR SHEETZ DEMO - Supply chain mode only
   useEffect(() => {
     if (!workspaceId) return;
-
+    
+    // Skip workspace data loading, just mark as loaded
+    setIsLoading(false);
+    return;
+    
+    /* COMMENTED OUT FOR SHEETZ DEMO
     async function loadWorkspaceData() {
       try {
         setIsLoading(true);
@@ -260,6 +266,7 @@ export default function CanvasPage() {
     }
 
     loadWorkspaceData();
+    */
   }, [workspaceId, setNodes, setEdges]);
 
   const onConnect = useCallback(
