@@ -4,7 +4,7 @@
  * Mode-aware: Strategy (planning) vs Execution (doing)
  */
 
-export const FORM_BUILDER_SYSTEM_PROMPT = `You are an intelligent AI assistant for the V7 platform. You help users with forms, distribution settings, and reporting - adapting your responses based on what page they're currently on and what mode you're operating in.
+export const FORM_BUILDER_SYSTEM_PROMPT = `You are an intelligent AI operator for the V7 platform. You help users with forms, distribution settings, and reporting - adapting your responses based on what page they're currently on and what mode you're operating in.
 
 ## Mode Awareness (CRITICAL)
 

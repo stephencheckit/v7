@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2, Plus } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
 import { toast } from "sonner";
@@ -55,6 +57,7 @@ export function AIChatPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,6 +76,14 @@ export function AIChatPanel({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  }, [input]);
   
   // Auto-submit prompt if provided (for "Let AI Build Draft" flow)
   useEffect(() => {
@@ -1516,7 +1527,7 @@ Please extract and build the form now.`;
                 <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Assistant</h3>
+                <h3 className="text-sm font-semibold text-[#0a0a0a]">AI Operator</h3>
                 <p className="text-xs text-gray-600">
                   Chat to build and manage your forms
                 </p>
@@ -1525,7 +1536,7 @@ Please extract and build the form now.`;
             <button
               onClick={onToggle}
               className="hover:bg-gray-100 p-2 rounded-lg transition-colors"
-              title="Collapse AI Assistant"
+              title="Collapse AI Operator"
             >
               <PanelRightClose className="h-4 w-4 text-gray-600" />
             </button>
@@ -1597,7 +1608,7 @@ Please extract and build the form now.`;
                   </div>
                   <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
                     <p className="text-xs text-gray-800 mb-2">
-                      👋 Hi! I'm your AI assistant. I can help you build forms, configure distribution settings, analyze data, or generate reports - just tell me what you need!
+                      👋 Hi! I'm your AI operator. I can help you build forms, configure distribution settings, analyze data, or generate reports - just tell me what you need!
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {suggestedPrompts.map((prompt, idx) => (
@@ -1658,29 +1669,22 @@ Please extract and build the form now.`;
                     <div
                       className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
                     >
+                      {/* AI Message - No icon, transparent background */}
                       {message.role === "assistant" && (
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
-                          <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                            {message.displayContent || cleanMessageForDisplay(message.content)}
+                          </p>
                         </div>
                       )}
-                      <Card
-                        className={`p-3 shadow-sm ${
-                          message.role === "user"
-                            ? "max-w-[85%] bg-white border-0"
-                            : "flex-1 bg-white border-gray-200"
-                        }`}
-                      >
-                        <p className="text-xs text-gray-800 whitespace-pre-wrap">
-                          {message.role === "assistant" 
-                            ? (message.displayContent || cleanMessageForDisplay(message.content))
-                            : message.content
-                          }
-                        </p>
-                      </Card>
+                      
+                      {/* User Message - White bubble, no icon */}
                       {message.role === "user" && (
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-200">
-                          <span className="text-xs font-medium text-gray-700">U</span>
-                        </div>
+                        <Card className="max-w-[85%] p-3 bg-white border-0 shadow-sm">
+                          <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        </Card>
                       )}
                     </div>
                   )}
@@ -1710,46 +1714,57 @@ Please extract and build the form now.`;
             />
             
             <form onSubmit={handleSubmit} className="flex gap-2">
-              {/* File Upload Buttons (only on builder page) */}
+              {/* Unified Upload Button (only on builder page) */}
               {currentPage === 'builder' && (
-                <>
-                  <Button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isLoading || isParsingFile}
-                    size="icon"
-                    className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
-                    title="Upload Excel file"
-                  >
-                    {isParsingFile && !uploadedImage ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <FileSpreadsheet className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => imageInputRef.current?.click()}
-                    disabled={isLoading || isParsingFile}
-                    size="icon"
-                    className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
-                    title="Upload image of form"
-                  >
-                    {isParsingFile && uploadedImage ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ImagePlus className="h-4 w-4" />
-                    )}
-                  </Button>
-                </>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      size="icon"
+                      disabled={isLoading || isParsingFile}
+                      className="bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90 shrink-0"
+                      title="Add attachment"
+                    >
+                      {isParsingFile ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem
+                      onClick={() => fileInputRef.current?.click()}
+                      className="cursor-pointer"
+                    >
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Upload File
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => imageInputRef.current?.click()}
+                      className="cursor-pointer"
+                    >
+                      <ImagePlus className="h-4 w-4 mr-2" />
+                      Upload Image
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               
-              <Input
+              <Textarea
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Describe your form or upload Excel..."
                 disabled={isLoading || isParsingFile}
-                className="flex-1 bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500"
+                rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                className="flex-1 min-h-[36px] max-h-[200px] resize-none overflow-y-auto bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500 py-2"
               />
               <Button
                 type="submit"
@@ -1773,7 +1788,7 @@ Please extract and build the form now.`;
         <div 
           className="absolute inset-0 cursor-pointer hover:bg-white/10 transition-colors"
           onClick={onToggle}
-          title="Open AI Assistant"
+          title="Open AI Operator"
         />
       )}
 
@@ -1789,9 +1804,9 @@ Please extract and build the form now.`;
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 mx-auto mb-4">
                 <Sparkles className="h-8 w-8 text-white/40" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">AI Assistant Disabled</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">AI Operator Disabled</h3>
               <p className="text-sm text-white/60 max-w-xs">
-                AI Assistant is only available on the Builder tab
+                AI Operator is only available on the Builder tab
               </p>
             </div>
           )}
