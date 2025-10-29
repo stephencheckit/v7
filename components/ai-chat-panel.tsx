@@ -1567,7 +1567,15 @@ Please extract and build the form now.`;
 
   const toggleVoiceInput = () => {
     if (isRecording) {
+      // Stop recording and immediately send
       stopVoiceInput();
+      
+      // Submit the transcribed text after a short delay to ensure state is updated
+      setTimeout(() => {
+        if (input.trim()) {
+          handleSubmit();
+        }
+      }, 100);
     } else {
       startVoiceInput();
     }
@@ -1847,7 +1855,7 @@ Please extract and build the form now.`;
                 onClick={toggleVoiceInput}
                 disabled={isLoading || isParsingFile}
                 className={`shrink-0 ${isRecording ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90'}`}
-                title={isRecording ? "Stop recording" : "Voice input"}
+                title={isRecording ? "Click to stop & send" : "Voice input"}
               >
                 {isRecording ? (
                   <MicOff className="h-4 w-4" />
@@ -1855,18 +1863,20 @@ Please extract and build the form now.`;
                   <Mic className="h-4 w-4" />
                 )}
               </Button>
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading || !input.trim() || isParsingFile}
-                className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] shrink-0 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
+              {!isRecording && (
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={isLoading || !input.trim() || isParsingFile}
+                  className="bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] shrink-0 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
             </form>
           </div>
         </>
