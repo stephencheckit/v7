@@ -142,6 +142,13 @@ export function AIChatPanel({
     }
   }, [autoSubmitPrompt, isMounted, isLoading]);
 
+  // Reset initial load flag when conversation ID changes (e.g., navigating between pages)
+  useEffect(() => {
+    console.log(`🔄 Conversation ID changed to: ${conversationId}, resetting isInitialLoad`);
+    isInitialLoad.current = true;
+    previousMessageCount.current = 0;
+  }, [conversationId]);
+
   // Load conversation history when conversation ID changes
   useEffect(() => {
     if (!conversationId) {
