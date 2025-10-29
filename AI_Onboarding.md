@@ -5,7 +5,81 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🔄💾 Fix Infinite Save Loop in AI Chat - October 29, 2025 (Latest)**
+### **🎨🗺️ React Flow System Canvas (MVP) - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025  
+**Commit:** 3b45dfc
+
+**Summary:**
+Introduced a groundbreaking visual "System Canvas" using React Flow that auto-generates an interactive map of your entire workspace - showing how forms, workflows, and sensors connect and interact. This is the first step toward a living, intelligent canvas for operations management.
+
+**Changes:**
+1. **React Flow Integration:**
+   - Installed `reactflow` package
+   - Created new `/canvas` page with full-screen interactive canvas
+   - Auto-generates nodes from workspace data (forms, workflows, sensors)
+   - Auto-detects and visualizes relationships between components
+
+2. **Visual Node System:**
+   - 🟢 **Green nodes** = Forms (fetched from `/api/forms`)
+   - 🔵 **Blue nodes** = Workflows (fetched from `/api/workflows`)
+   - 🔴 **Red nodes** = Sensors (fetched from `/api/sensors`)
+   - Animated edges show data flow and trigger relationships
+   - Smart positioning: Forms (left), Workflows (middle), Sensors (right)
+
+3. **Auto-Relationship Detection:**
+   - Form → Workflow: Detects when workflow triggers on `form_submitted` or `form_overdue`
+   - Sensor → Workflow: Detects when workflow triggers on `sensor_temp_exceeds` or `sensor_temp_below`
+   - Edge labels show trigger type (e.g., "overdue", "temp high")
+   - Animated edges for active data flows
+
+4. **Interactive Features:**
+   - Drag & drop nodes to reposition
+   - Pan & zoom canvas
+   - Mini-map for navigation
+   - "Auto Layout" button to reorganize nodes
+   - Legend showing node types
+   - Controls for zoom in/out, fit view
+
+5. **UI/UX:**
+   - Dark theme matching platform aesthetic
+   - Header showing node count and connection count
+   - "Ask AI" button (placeholder for future AI integration)
+   - Loading state with spinner
+   - Empty state handling
+
+6. **Navigation:**
+   - Added "Canvas" to sidebar (after "Learn")
+   - LayoutGrid icon for visual consistency
+
+**Impact:**
+- **Onboarding:** New users can instantly see how their workspace is structured
+- **Debugging:** Visual debugging of system connections and data flows
+- **Discovery:** Users can discover relationships they didn't know existed
+- **Sales:** Powerful demo tool showing platform sophistication
+- **Product Clarity:** Forces clear thinking about how features connect
+
+**Future Roadmap (Not in this release):**
+- Click node → show details panel
+- AI chat integration → "Create workflow between X and Y"
+- Org structure nodes (locations, teams, users)
+- Time-travel playback of system changes
+- Pattern detection and optimization suggestions
+- Template-based generation (QSR, healthcare, retail)
+
+**Technical Details:**
+- React Flow handles canvas rendering and interactions
+- Data fetched in parallel from 3 API endpoints
+- Smart layout algorithm positions nodes by type
+- Edge generation logic matches trigger configs to source nodes
+- Fully responsive and performant with dozens of nodes
+
+**Why This Matters:**
+This is the foundation for the "Living System Canvas" concept - a Figma-like interface for building and managing operations. It transforms abstract data relationships into visual, interactive understanding. This will become a moat feature that competitors cannot easily replicate.
+
+---
+
+### **🔄💾 Fix Infinite Save Loop in AI Chat - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025  
 **Commit:** 9ecd2db
