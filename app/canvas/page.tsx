@@ -55,7 +55,7 @@ export default function CanvasPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'workspace' | 'supply-chain'>('workspace');
+  const [activeTab, setActiveTab] = useState<'workspace' | 'supply-chain'>('supply-chain');
   const [selectedProduct, setSelectedProduct] = useState<any>(sheetzMenuItems[0]);
   const [lotCodeSearch, setLotCodeSearch] = useState('');
   const [workspaceData, setWorkspaceData] = useState<any>({
@@ -340,7 +340,7 @@ export default function CanvasPage() {
     const supplyNodes: Node[] = supplyChainSteps.map((step) => ({
       id: `${product.id}-${step.id}`,
       type: 'default',
-      position: { x: step.x, y: 300 },
+      position: { x: step.x, y: 100 },
       data: { 
         label: step.label,
       },
@@ -427,18 +427,18 @@ export default function CanvasPage() {
         <div className="border-b border-white/10 bg-[#0f0f0f] px-4">
           <TabsList className="bg-transparent border-0 h-12">
             <TabsTrigger 
-              value="workspace" 
-              className="data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-white"
-            >
-              <Network className="h-4 w-4 mr-2" />
-              Workspace Map
-            </TabsTrigger>
-            <TabsTrigger 
               value="supply-chain"
               className="data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-white"
             >
               <Factory className="h-4 w-4 mr-2" />
               Supply Chain
+            </TabsTrigger>
+            <TabsTrigger 
+              value="workspace" 
+              className="data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-white"
+            >
+              <Network className="h-4 w-4 mr-2" />
+              Workspace Map
             </TabsTrigger>
           </TabsList>
         </div>
