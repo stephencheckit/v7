@@ -46,7 +46,7 @@ async function main() {
     // Fallback to CLI if available
     try {
       console.log('Trying Vercel CLI instead...\n');
-      const output = execSync('npx vercel ls --limit 1', { encoding: 'utf-8' });
+      const output = execSync('npx vercel ls', { encoding: 'utf-8' });
       console.log(output);
     } catch (e) {
       console.log('Vercel CLI not available or not logged in');
@@ -132,7 +132,7 @@ async function main() {
     console.error('Error checking Vercel deployment:', error.message);
     console.log('\nFalling back to Vercel CLI...');
     try {
-      const output = execSync('npx vercel ls --limit 3', { encoding: 'utf-8' });
+      const output = execSync('npx vercel ls', { encoding: 'utf-8' });
       console.log(output);
     } catch (e) {
       console.log('Could not fetch deployment info');

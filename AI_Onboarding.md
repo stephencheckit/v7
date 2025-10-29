@@ -5,7 +5,58 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🔧 Fixed Workflow Action Types - October 29, 2025 (Latest)**
+### **🔧 Fixed Vercel CLI Integration Script - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025
+**Commit:** [pending]
+
+**Issue:**
+The Vercel deployment checker script was throwing errors:
+```
+Error: unknown or unexpected option: --limit
+Vercel CLI not available or not logged in
+```
+
+**Root Cause:**
+The script was using `npx vercel ls --limit 1` which is not a valid CLI flag. Vercel CLI doesn't support the `--limit` option.
+
+**Fix:**
+1. **Updated `scripts/check-vercel-deploy.js`:**
+   - Removed invalid `--limit` flags from CLI fallback commands
+   - Changed `npx vercel ls --limit 1` → `npx vercel ls`
+   - Changed `npx vercel ls --limit 3` → `npx vercel ls`
+
+2. **Created `.env.local` template file:**
+   - Added placeholder for `VERCEL_TOKEN`
+   - Provided clear setup instructions
+
+3. **Enhanced `CURSOR_VERCEL_INTEGRATION.md`:**
+   - Added detailed token setup instructions
+   - Improved troubleshooting section
+   - Explained the "VERCEL_TOKEN not set" vs CLI errors
+   - Added step-by-step guide to get token from Vercel
+
+**Files Changed:**
+- `scripts/check-vercel-deploy.js` - Removed `--limit` flags
+- `.env.local` - Created with token placeholder (not committed)
+- `CURSOR_VERCEL_INTEGRATION.md` - Enhanced documentation
+
+**How to Complete Setup:**
+1. Go to https://vercel.com/account/tokens
+2. Create token with "Read" permissions
+3. Add to `.env.local`: `VERCEL_TOKEN=vercel_xxxxx`
+4. Reload Cursor window (Cmd+Shift+P → "Reload Window")
+5. Run: `node scripts/check-vercel-deploy.js`
+
+**Result:**
+- ✅ Script runs without CLI errors
+- ✅ Graceful fallback to Vercel CLI if token not set
+- ✅ Clear instructions for users
+- ✅ Better error messages and troubleshooting
+
+---
+
+### **🔧 Fixed Workflow Action Types - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025
 **Commit:** 88907b0

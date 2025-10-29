@@ -51,25 +51,40 @@ Check your latest Vercel deployment directly in Cursor.
    node scripts/check-vercel-deploy.js
    ```
 
-### Option B: Vercel API Token (Advanced)
+### Option B: Vercel API Token (Recommended)
 
 For automated checks and better integration:
 
 1. **Get your Vercel token:**
-   - Go to: https://vercel.com/account/tokens
-   - Create new token
-   - Copy it
+   - Go to: **https://vercel.com/account/tokens**
+   - Click **"Create Token"**
+   - Name it something like `cursor-integration`
+   - Set scope to **"Read"** permissions (minimum)
+   - **Copy the token** (you'll only see it once!)
 
-2. **Add to environment:**
+2. **Create/Edit `.env.local` in project root:**
    ```bash
-   echo "VERCEL_TOKEN=your_token_here" >> .env.local
+   # Create the file if it doesn't exist
+   touch .env.local
+   
+   # Add this line (replace with your actual token):
+   VERCEL_TOKEN=vercel_your_actual_token_here
    ```
+   
+   **Important:** Replace `vercel_your_actual_token_here` with your actual token!
 
-3. **Update the script:**
-   Edit `scripts/check-vercel-deploy.js` and set your project name:
-   ```javascript
-   const PROJECT_NAME = 'v7'; // Your Vercel project name
+3. **Reload Cursor:**
+   - Press `Cmd+Shift+P` → Type "Reload Window"
+   - Or just restart Cursor
+   
+   This ensures the environment variables are loaded.
+
+4. **Test it:**
+   ```bash
+   node scripts/check-vercel-deploy.js
    ```
+   
+   You should now see your deployment status without any "VERCEL_TOKEN not set" warnings!
 
 ---
 
@@ -107,10 +122,26 @@ Quick access terminal profiles (bottom-right "+" dropdown):
 2. Make sure TypeScript is installed: `npm install -D typescript`
 3. Check that `typescript.tsdk` is set in `.vscode/settings.json`
 
-### Vercel CLI not working?
+### "VERCEL_TOKEN not set" error?
+
+1. **Create `.env.local` file** in the project root (if it doesn't exist)
+2. **Add your token:**
+   ```
+   VERCEL_TOKEN=vercel_xxxxx
+   ```
+3. **Verify the token:**
+   - Make sure it's on a single line
+   - No extra spaces or quotes
+   - Token should start with `vercel_`
+4. **Reload Cursor:** `Cmd+Shift+P` → "Reload Window"
+5. **Test:** Run `node scripts/check-vercel-deploy.js`
+
+### Vercel CLI errors ("unknown or unexpected option")?
+
+This means the CLI fallback is running. To fix:
 
 ```bash
-# Re-login
+# Re-login to Vercel
 npx vercel login
 
 # Check if you're logged in
@@ -119,6 +150,8 @@ npx vercel whoami
 # List deployments manually
 npx vercel ls
 ```
+
+**Note:** With a proper `VERCEL_TOKEN` set, you won't need CLI login!
 
 ### Can't find tasks?
 
