@@ -5,7 +5,46 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🧹🎓 Fix Empty Messages in Course AI - October 29, 2025 (Latest)**
+### **🔄💾 Fix Infinite Save Loop in AI Chat - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025  
+**Commit:** 9ecd2db
+
+**Summary:**
+Fixed infinite loop where AI chat panel continuously attempted to save the same conversation over and over. The save effect now intelligently tracks what's been saved and only triggers on actual message changes.
+
+**Changes:**
+1. **Smart Save Tracking:**
+   - Added `lastSavedMessageCount` ref to track last successfully saved message count
+   - Save effect now skips if message count hasn't changed since last save
+   - Prevents redundant saves when messages array reference changes but content is identical
+
+2. **Conversation Loading:**
+   - Reset `lastSavedMessageCount` when loading a conversation from database
+   - Initialize to loaded message count to prevent immediate re-save
+   - Reset to 0 for empty/new conversations or load failures
+
+3. **Successful Save Confirmation:**
+   - Update `lastSavedMessageCount` only after successful save completes
+   - Ensures failed saves don't incorrectly mark messages as saved
+   - Better error handling and logging
+
+**Impact:**
+- **Performance:** Eliminates hundreds of redundant save attempts per minute
+- **Network Usage:** Drastically reduces API calls to save endpoint
+- **Console Clarity:** Clean logs without infinite "scheduling save" messages
+- **Database Load:** Prevents unnecessary database writes
+- **User Experience:** No performance degradation from background loops
+
+**Technical Details:**
+- The `useEffect` with `[messages, conversationId]` dependencies was triggering on every render
+- Even though message content was the same, the array reference was changing
+- This caused the save timeout to schedule, clear, and reschedule infinitely
+- Solution: Track message count (stable value) instead of relying on array reference stability
+
+---
+
+### **🧹🎓 Fix Empty Messages in Course AI - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025  
 **Commit:** 263487b
