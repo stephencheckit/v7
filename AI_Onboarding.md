@@ -5,10 +5,52 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎨 AI Chat UX Improvements - Phase 1 - October 29, 2025 (Latest)**
+### **🔧 AI Chat Context Awareness Fix - October 29, 2025 (Latest)**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025
-**Commit:** 0c248ab
+**Commit:** eb1d483
+
+**Issue:**
+AI chat on workflows page showed:
+1. Old UI styling (sparkles icon, white bubble on welcome message)
+2. Wrong context ("I see you're on the form builder page" when on workflows)
+3. Form-specific suggested prompts instead of workflow-specific ones
+
+**Root Cause:**
+1. Welcome message was hardcoded with old styling (sparkles icon + Card component)
+2. System context was based on `currentPage` prop instead of `context` prop
+3. Suggested prompts were static, not context-aware
+
+**Fix:**
+1. **Updated Welcome Message:**
+   - Removed sparkles icon and white Card wrapper
+   - Made text context-aware: workflows vs forms
+   - Applied new transparent background styling
+
+2. **Fixed System Context:**
+   - Changed from `currentPage` to `context` prop
+   - AI now correctly identifies workflows page
+   - System message: "User is on the WORKFLOWS page. Focus on workflow triggers and actions."
+
+3. **Context-Aware Suggested Prompts:**
+   - Workflows: "Alert when temp exceeds 40°F", "Email team on form submission", "Create task when sensor offline"
+   - Forms: "Create kitchen inspection checklist", "Build temperature log form", "Make food safety audit"
+
+**Files Changed:**
+- `components/ai-chat-panel.tsx` - Welcome message styling, context awareness, suggested prompts
+
+**Result:**
+- ✅ AI chat looks correct on both pages (no sparkles, no white bubble)
+- ✅ AI knows which page it's on (workflows vs forms)
+- ✅ Suggested prompts match the context
+- ✅ All 720 tests passing
+
+---
+
+### **🎨 AI Chat UX Improvements - Phase 1 - October 29, 2025**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025
+**Commit:** 0c248ab & fc00e55
 
 **Feature:**
 Comprehensive UX improvements to the AI chat interface based on user feedback.
