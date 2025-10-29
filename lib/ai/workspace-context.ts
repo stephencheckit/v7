@@ -155,15 +155,15 @@ export async function getWorkspaceContext(
   // Fetch team members (limited info for privacy)
   const { data: members } = await supabase
     .from('workspace_members')
-    .select(`
-      role,
-      user:auth.users(email)
-    `)
+    .select('user_id, role')
     .eq('workspace_id', workspaceId);
 
   const teamContext: TeamMemberContext[] = (members || []).map(m => {
-    const email = (m as any).user?.email || 'unknown';
-    const name = email.split('@')[0];
+    // Use placeholder info since we can't easily join with auth.users
+    // This is sufficient for AI context - it knows there are team members with roles
+    const userId = m.user_id;
+    const name = `User ${userId.substring(0, 8)}`;
+    const email = `user-${userId.substring(0, 8)}@workspace`;
     return {
       name,
       email,

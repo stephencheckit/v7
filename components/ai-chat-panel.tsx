@@ -73,6 +73,10 @@ export function AIChatPanel({
   const previousFormIdRef = useRef<string | null | undefined>(undefined);
   const hasAutoSubmitted = useRef(false);
   const { workspaceId } = useAuth();
+  
+  // Track initial load to avoid reprocessing messages from database
+  const isInitialLoad = useRef(true);
+  const previousMessageCount = useRef(0);
 
   // Generate conversation ID based on context
   const getConversationId = (): string | null => {
@@ -448,8 +452,38 @@ Please extract and build the form now.`;
       return;
     }
 
+    // 🚨 CRITICAL FIX: Only process NEW messages, not messages from initial conversation load
+    // If this is the initial load (conversation just loaded from DB), mark it and skip processing
+    if (isInitialLoad.current) {
+      console.log('📂 Initial conversation load detected - skipping processing to avoid duplicates');
+      isInitialLoad.current = false;
+      previousMessageCount.current = messages.length;
+      
+      // Load processed IDs from localStorage for this conversation
+      if (conversationId) {
+        const storedIds = localStorage.getItem(`processed_${conversationId}`);
+        if (storedIds) {
+          try {
+            const ids = JSON.parse(storedIds);
+            processedMessageIds.current = new Set(ids);
+            console.log(`📋 Loaded ${ids.length} processed message IDs from storage`);
+          } catch (e) {
+            console.warn('Failed to parse stored processed IDs', e);
+          }
+        }
+      }
+      return;
+    }
+
+    // Only process if message count increased (new message arrived)
+    if (messages.length <= previousMessageCount.current) {
+      console.log('⏸️ Message count unchanged - skipping processing');
+      return;
+    }
+    previousMessageCount.current = messages.length;
+
     // Create a unique ID for this message to avoid reprocessing
-    const messageId = `${lastMessage.content.substring(0, 50)}-${messages.length}`;
+    const messageId = `${lastMessage.content.substring(0, 100)}-${messages.length}-${Date.now()}`;
 
     // Skip if we've already processed this message
     if (processedMessageIds.current.has(messageId)) {
@@ -457,11 +491,22 @@ Please extract and build the form now.`;
       return;
     }
 
-    console.log('🔄 Processing complete AI message...');
+    console.log('🔄 Processing NEW AI message...');
     console.log('📨 Last message:', lastMessage);
 
     // Mark as processed BEFORE doing any work
     processedMessageIds.current.add(messageId);
+    
+    // Persist to localStorage
+    if (conversationId) {
+      try {
+        const idsArray = Array.from(processedMessageIds.current);
+        localStorage.setItem(`processed_${conversationId}`, JSON.stringify(idsArray));
+        console.log('💾 Saved processed message ID to storage');
+      } catch (e) {
+        console.warn('Failed to save processed IDs', e);
+      }
+    }
 
     try {
       const content = lastMessage.content;
