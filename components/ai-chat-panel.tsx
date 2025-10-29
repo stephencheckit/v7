@@ -1826,6 +1826,9 @@ Please extract and build the form now.`;
                 </div>
               ))}
 
+              {/* Invisible div to mark end of messages for Cursor-style auto-scroll */}
+              <div ref={messagesEndRef} />
+
               {/* Loading handled by thinking indicators above */}
             </div>
           </div>
