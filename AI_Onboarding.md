@@ -5,7 +5,44 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🔧 Fixed Next.js 15 Build + Added Stats Cards - October 29, 2025 (Latest)**
+### **🔧 Fixed Workflow Context TypeScript + AI Panel Spacing - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION
+**Date:** October 29, 2025
+**Commit:** 72373c1
+
+**Issue 1: Build Failure - TypeScript Error**
+```
+Property 'user_id' does not exist on type 'ParserError<"Unable to parse renamed field at `user:auth.users(email)`">'
+```
+The Supabase query was trying to join with `auth.users` which caused a TypeScript parser error.
+
+**Fix:**
+- Simplified `workspace_members` query to only fetch `user_id` and `role`
+- Removed problematic `auth.users` join
+- Used placeholder emails for workflow context (email not critical for workflow display)
+
+**Issue 2: AI Panel Layout Spacing**
+Content was getting cut off when AI panel was collapsed, and too much space when expanded.
+
+**Problem:**
+- AI panel is `w-96` (384px) when open, `w-12` (48px) when closed
+- Main content was using incorrect margin: `mr-[600px]` (too much!) or no margin (too little!)
+
+**Fix:**
+- Updated main content margin to match AI panel width exactly:
+  - `mr-12` when collapsed (48px)
+  - `mr-96` when expanded (384px)
+- Added `overflow-hidden` to parent container for clean transitions
+
+**Result:**
+- ✅ Build succeeds on Vercel
+- ✅ Content properly spaced at all times
+- ✅ Smooth transitions when AI panel opens/closes
+- ✅ No cutoff or excessive spacing
+
+---
+
+### **🔧 Fixed Next.js 15 Build + Added Stats Cards - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION
 **Date:** October 29, 2025
 **Commit:** d6fad19
