@@ -1271,8 +1271,12 @@ Please extract and build the form now.`;
         formId: formId || 'new', // Include form ID for context
         currentPage, // Let AI know what page we're on
         currentFields, // Always send current form state
-        mode: aiMode === 'auto' ? detectedMode : aiMode // Send current mode
+        mode: aiMode === 'auto' ? detectedMode : aiMode, // Send current mode
+        workspaceId, // Send workspace ID for context
+        context // Send context type (forms or workflows)
       };
+      
+      console.log('📤 Request includes workspaceId:', workspaceId, 'context:', context);
       
       const response = await fetch(apiEndpoint, {
         method: 'POST',
