@@ -72,6 +72,22 @@ export function AIChatPanel({
   const hasAutoSubmitted = useRef(false);
   const { workspaceId } = useAuth();
   
+  // Generate conversation ID based on context
+  const getConversationId = (): string | null => {
+    if (context === 'workflows' && workspaceId) {
+      return `workflows_builder_${workspaceId}`;
+    }
+    if (formId && formId !== 'new') {
+      return formId; // Use actual form ID
+    }
+    if (formId === 'new' && workspaceId) {
+      return `new_form_${workspaceId}`;
+    }
+    return null;
+  };
+  
+  const conversationId = getConversationId();
+  
   // Ensure client-only rendering to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
@@ -99,67 +115,50 @@ export function AIChatPanel({
     }
   }, [autoSubmitPrompt, isMounted, isLoading]);
   
-  // Load conversation history when form ID changes
+  // Load conversation history when conversation ID changes
   useEffect(() => {
-    // Skip if formId hasn't actually changed
-    if (previousFormIdRef.current === formId) {
-      return;
-    }
-    
-    // Update the ref for next render
-    const previousFormId = previousFormIdRef.current;
-    previousFormIdRef.current = formId;
-    
-    if (!formId || formId === 'new') {
-      // Only clear messages if we're switching TO a new form (not on initial load)
-      if (previousFormId !== undefined && previousFormId !== null) {
-        console.log(`📝 Switching to new form, clearing ${messages.length} messages`);
-        setMessages([]);
-      }
+    if (!conversationId) {
+      console.log('📝 No conversation ID, skipping load');
       return;
     }
 
-    // Load existing conversation for this form
+    // Load existing conversation
     async function loadConversation() {
       try {
-        const response = await fetch(`/api/ai/conversations/${formId}`);
+        console.log(`📝 Loading conversation: ${conversationId}`);
+        const response = await fetch(`/api/ai/conversations/${conversationId}`);
         const data = await response.json();
         
         if (data.messages && data.messages.length > 0) {
-          console.log(`📝 Loaded ${data.messages.length} messages for form ${formId}`);
+          console.log(`📝 Loaded ${data.messages.length} messages for ${conversationId}`);
           setMessages(data.messages);
         } else {
-          // No saved conversation - keep existing messages if we were on a new form
-          if (previousFormId === null || previousFormId === 'new') {
-            console.log(`📝 No saved conversation for ${formId}, preserving ${messages.length} messages from new form`);
-          } else {
-            // Switching between existing forms - clear messages
-            console.log(`📝 No conversation found for form ${formId}, clearing messages`);
-            setMessages([]);
-          }
+          console.log(`📝 No saved conversation for ${conversationId}`);
+          setMessages([]);
         }
       } catch (error) {
         console.error('❌ Error loading conversation:', error);
+        setMessages([]);
       }
     }
 
     loadConversation();
-  }, [formId]);
+  }, [conversationId]);
   
   // Save conversation to database after each message exchange
   useEffect(() => {
-    console.log(`🔍 Save effect triggered - formId: ${formId}, messages: ${messages.length}`);
+    console.log(`🔍 Save effect triggered - conversationId: ${conversationId}, messages: ${messages.length}`);
     
-    if (!formId || formId === 'new' || messages.length === 0) {
-      console.log(`⏭️ Skipping save - formId: ${formId}, messages.length: ${messages.length}`);
+    if (!conversationId || messages.length === 0) {
+      console.log(`⏭️ Skipping save - conversationId: ${conversationId}, messages.length: ${messages.length}`);
       return;
     }
 
-    console.log(`⏰ Scheduling save in 1 second for form ${formId}...`);
+    console.log(`⏰ Scheduling save in 1 second for conversation ${conversationId}...`);
     
     // Debounce saves to avoid excessive writes
     const timeoutId = setTimeout(async () => {
-      console.log(`💾 Attempting to save ${messages.length} messages for form ${formId}...`);
+      console.log(`💾 Attempting to save ${messages.length} messages for conversation ${conversationId}...`);
       
       // Check if messages can be stringified
       try {
@@ -172,7 +171,7 @@ export function AIChatPanel({
       }
       
       try {
-        const response = await fetch(`/api/ai/conversations/${formId}`, {
+        const response = await fetch(`/api/ai/conversations/${conversationId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages })
@@ -185,17 +184,17 @@ export function AIChatPanel({
         }
         
         const data = await response.json();
-        console.log(`✅ Saved ${messages.length} messages for form ${formId}`, data);
+        console.log(`✅ Saved ${messages.length} messages for conversation ${conversationId}`, data);
       } catch (error) {
         console.error('❌ Error saving conversation:', error);
       }
     }, 1000); // 1 second debounce
 
     return () => {
-      console.log(`🧹 Clearing save timeout for form ${formId}`);
+      console.log(`🧹 Clearing save timeout for conversation ${conversationId}`);
       clearTimeout(timeoutId);
     };
-  }, [messages, formId]);
+  }, [messages, conversationId]);
   
   // Handle Excel file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

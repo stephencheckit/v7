@@ -13,17 +13,19 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { formId } = await params;
+  const { formId: conversationId } = await params;
   
-  // Don't load conversations for new forms
-  if (formId === 'new' || !formId) {
+  // Don't load conversations for explicitly 'new' ID
+  if (conversationId === 'new' || !conversationId) {
     return NextResponse.json({ messages: [] });
   }
+  
+  console.log(`[API GET] Loading conversation: ${conversationId} for workspace: ${workspaceId}`);
   
   const { data, error } = await supabase
     .from('ai_conversations')
     .select('messages')
-    .eq('form_id', formId)
+    .eq('form_id', conversationId) // Using form_id column for all conversation IDs
     .eq('workspace_id', workspaceId)
     .single();
 
@@ -32,6 +34,7 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  console.log(`[API GET] Loaded ${data?.messages?.length || 0} messages for ${conversationId}`);
   return NextResponse.json({ 
     messages: data?.messages || [] 
   });
@@ -48,13 +51,15 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { formId } = await params;
+  const { formId: conversationId } = await params;
   const { messages } = await request.json();
   
-  // Don't save conversations for new forms
-  if (formId === 'new' || !formId) {
+  // Don't save conversations for explicitly 'new' ID
+  if (conversationId === 'new' || !conversationId) {
     return NextResponse.json({ success: false, reason: 'new_form' });
   }
+  
+  console.log(`[API POST] Saving conversation: ${conversationId} for workspace: ${workspaceId}`);
   
   // Validate messages
   if (!messages || !Array.isArray(messages)) {
@@ -105,12 +110,12 @@ export async function POST(
     return cleaned;
   });
   
-  console.log(`[API] Saving ${cleanedMessages.length} messages for form ${formId}`);
+  console.log(`[API] Saving ${cleanedMessages.length} messages for conversation ${conversationId}`);
   console.log(`[API] First message preview:`, cleanedMessages[0] ? JSON.stringify(cleanedMessages[0]).substring(0, 200) : 'No messages');
   
   // Don't save empty conversations
   if (cleanedMessages.length === 0) {
-    console.log('[API] Skipping save - no messages');
+    console.log(`[API] Skipping save - no messages for ${conversationId}`);
     return NextResponse.json({ success: true, skipped: true });
   }
   
@@ -136,7 +141,7 @@ export async function POST(
     const testResult = await supabase
       .from('ai_conversations')
       .upsert({
-        form_id: `test_${formId}`,
+        form_id: `test_${conversationId}`,
         workspace_id: workspaceId,
         messages: [{ role: 'user', content: 'test' }],
         updated_at: new Date().toISOString()
@@ -152,9 +157,9 @@ export async function POST(
   }
   
   // Upsert: update if exists, insert if not
-  console.log(`[API] Attempting to upsert conversation for form ${formId}`);
+  console.log(`[API] Attempting to upsert conversation ${conversationId}`);
   console.log(`[API] Data to upsert:`, {
-    form_id: formId,
+    form_id: conversationId,
     messages_count: cleanedMessages.length,
     messages_sample: JSON.stringify(cleanedMessages[0] || {}).substring(0, 200)
   });
@@ -162,7 +167,7 @@ export async function POST(
   const { data, error } = await supabase
     .from('ai_conversations')
     .upsert({
-      form_id: formId,
+      form_id: conversationId, // Using form_id column for all conversation IDs
       workspace_id: workspaceId,
       messages: cleanedMessages,
       updated_at: new Date().toISOString()
@@ -190,7 +195,7 @@ export async function POST(
     return NextResponse.json({ error: error.message || 'Failed to save' }, { status: 500 });
   }
 
-  console.log(`[API] Successfully saved conversation for form ${formId}`);
+  console.log(`[API] Successfully saved conversation ${conversationId}`);
   return NextResponse.json({ success: true });
 }
 
