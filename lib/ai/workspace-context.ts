@@ -2,12 +2,14 @@
  * Workspace Context Provider for AI Assistant
  * 
  * Provides rich context about the user's workspace including:
- * - Forms & questions
- * - Recent responses
- * - Workflows
- * - Sensors
- * - Team members
- * - Locations
+ * - Forms & questions (all forms)
+ * - Recent responses (last 7 days)
+ * - Workflows (all workflows)
+ * - Sensors (all sensors)
+ * - Team members (all members)
+ * 
+ * Note: No artificial limits - fetches all data for maximum AI capability.
+ * Can add limits later if token costs or performance become an issue.
  */
 
 import { createClient } from '@/lib/supabase/server';
