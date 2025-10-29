@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { 
-  MapPin, 
-  Users, 
-  Building2, 
-  Plug, 
-  Bell, 
-  CreditCard, 
-  Shield, 
+import {
+  MapPin,
+  Users,
+  Building2,
+  Plug,
+  Bell,
+  CreditCard,
+  Shield,
   Palette,
   Plus,
   Trash2,
@@ -75,7 +75,7 @@ export default function SettingsPage() {
   const [workspaceMembers, setWorkspaceMembers] = useState<any[]>([]);
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Profile form state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -98,7 +98,7 @@ export default function SettingsPage() {
 
   const loadWorkspaceData = async () => {
     if (!workspaceId) return;
-    
+
     setIsLoadingWorkspace(true);
     try {
       // Load workspace details
@@ -109,7 +109,7 @@ export default function SettingsPage() {
         .single();
 
       if (workspaceError) throw workspaceError;
-      
+
       setWorkspace(workspaceData);
       setWorkspaceName(workspaceData.name);
 
@@ -118,7 +118,7 @@ export default function SettingsPage() {
         .rpc('get_workspace_members_with_users', { workspace_uuid: workspaceId });
 
       if (membersError) throw membersError;
-      
+
       setWorkspaceMembers(membersData || []);
     } catch (error: any) {
       console.error('Error loading workspace:', error);
@@ -139,7 +139,7 @@ export default function SettingsPage() {
         .eq('id', workspaceId);
 
       if (error) throw error;
-      
+
       setWorkspace({ ...workspace, name: workspaceName.trim() });
       toast.success('Workspace name updated successfully');
     } catch (error: any) {
@@ -168,19 +168,19 @@ export default function SettingsPage() {
   };
 
   return (
-    
-      <div className="w-full h-full overflow-auto">
-        <div className="p-4 md:p-8">
-          <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
-            <div>
-              <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
-                <SettingsIcon className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
-                Settings
-              </h1>
-              <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-                Manage your organization, users, and application preferences
-              </p>
-            </div>
+
+    <div className="w-full h-full overflow-auto">
+      <div className="p-4 md:p-8">
+        <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-white flex items-center gap-2 md:gap-3">
+              <SettingsIcon className="h-6 w-6 md:h-10 md:w-10 text-[#c4dfc4]" />
+              Settings
+            </h1>
+            <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+              Manage your organization, users, and application preferences
+            </p>
+          </div>
 
           <Tabs defaultValue="workspace" className="space-y-6">
             <TabsList className="bg-[#1a1a1a] flex flex-wrap md:flex-nowrap">
@@ -318,7 +318,7 @@ export default function SettingsPage() {
                           {workspaceMembers.map((member: any) => (
                             <TableRow key={member.id} className="border-gray-700 hover:bg-gray-800/50">
                               <TableCell className="font-medium text-white">
-                                {member.first_name && member.last_name 
+                                {member.first_name && member.last_name
                                   ? `${member.first_name} ${member.last_name}`
                                   : member.email?.split('@')[0] || 'Unknown'}
                                 {member.user_id === user?.id && (
@@ -367,22 +367,22 @@ export default function SettingsPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName" className="text-gray-300">First Name</Label>
-                      <Input 
-                        id="firstName" 
+                      <Input
+                        id="firstName"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="bg-[#1a1a1a] border-gray-700" 
+                        className="bg-[#1a1a1a] border-gray-700"
                         placeholder="First name"
                         disabled={isSaving}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName" className="text-gray-300">Last Name</Label>
-                      <Input 
-                        id="lastName" 
+                      <Input
+                        id="lastName"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="bg-[#1a1a1a] border-gray-700" 
+                        className="bg-[#1a1a1a] border-gray-700"
                         placeholder="Last name"
                         disabled={isSaving}
                       />
@@ -390,28 +390,28 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-300">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      value={user?.email || ""} 
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user?.email || ""}
                       readOnly
-                      className="bg-[#1a1a1a] border-gray-700 text-gray-400" 
+                      className="bg-[#1a1a1a] border-gray-700 text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-gray-300">Phone Number</Label>
-                    <Input 
-                      id="phone" 
+                    <Input
+                      id="phone"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 (555) 123-4567" 
+                      placeholder="+1 (555) 123-4567"
                       className="bg-[#1a1a1a] border-gray-700"
                       disabled={isSaving}
                     />
                   </div>
                   <Separator className="bg-gray-700" />
-                  <Button 
+                  <Button
                     onClick={handleSaveProfile}
                     disabled={isSaving}
                     className="bg-gradient-to-r from-[#c4dfc4] to-[#c8e0f5] text-[#0a0a0a] hover:from-[#c4dfc4]/90 hover:to-[#c8e0f5]/90"
@@ -479,43 +479,43 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto -mx-4 md:mx-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-gray-700 hover:bg-transparent">
-                        <TableHead className="text-gray-400">Name</TableHead>
-                        <TableHead className="text-gray-400">Email</TableHead>
-                        <TableHead className="text-gray-400">Role</TableHead>
-                        <TableHead className="text-gray-400">Team</TableHead>
-                        <TableHead className="text-gray-400">Status</TableHead>
-                        <TableHead className="text-right text-gray-400">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id} className="border-gray-700 hover:bg-gray-800/50">
-                          <TableCell className="font-medium text-white">{user.name}</TableCell>
-                          <TableCell className="text-gray-300">{user.email}</TableCell>
-                          <TableCell className="text-gray-300">{user.role}</TableCell>
-                          <TableCell className="text-gray-300">{user.team}</TableCell>
-                          <TableCell>
-                            <Badge variant={user.status === "Active" ? "default" : "secondary"} className={user.status === "Active" ? "bg-[#c4dfc4] text-[#0a0a0a]" : ""}>
-                              {user.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-400">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-gray-700 hover:bg-transparent">
+                          <TableHead className="text-gray-400">Name</TableHead>
+                          <TableHead className="text-gray-400">Email</TableHead>
+                          <TableHead className="text-gray-400">Role</TableHead>
+                          <TableHead className="text-gray-400">Team</TableHead>
+                          <TableHead className="text-gray-400">Status</TableHead>
+                          <TableHead className="text-right text-gray-400">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((user) => (
+                          <TableRow key={user.id} className="border-gray-700 hover:bg-gray-800/50">
+                            <TableCell className="font-medium text-white">{user.name}</TableCell>
+                            <TableCell className="text-gray-300">{user.email}</TableCell>
+                            <TableCell className="text-gray-300">{user.role}</TableCell>
+                            <TableCell className="text-gray-300">{user.team}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.status === "Active" ? "default" : "secondary"} className={user.status === "Active" ? "bg-[#c4dfc4] text-[#0a0a0a]" : ""}>
+                                {user.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-400">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 </CardContent>
               </Card>
@@ -640,7 +640,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#611f69] to-[#4a154b] flex items-center justify-center">
                         <svg className="h-7 w-7" viewBox="0 0 24 24" fill="white">
-                          <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                          <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" />
                         </svg>
                       </div>
                       <div>
@@ -814,7 +814,7 @@ export default function SettingsPage() {
                               <div>
                                 <h3 className="font-semibold text-white">{integration.name}</h3>
                                 <p className="text-sm text-gray-400 mt-1">{integration.description}</p>
-                                <Badge 
+                                <Badge
                                   variant={integration.status === "Connected" ? "default" : "secondary"}
                                   className={integration.status === "Connected" ? "bg-[#c4dfc4] text-[#0a0a0a] mt-2" : "mt-2"}
                                 >
@@ -822,11 +822,11 @@ export default function SettingsPage() {
                                 </Badge>
                               </div>
                             </div>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               className={
-                                integration.status === "Connected" 
+                                integration.status === "Connected"
                                   ? "border-red-500 text-red-400 hover:bg-red-500/10"
                                   : "border-[#c4dfc4] text-[#c4dfc4] hover:bg-[#c4dfc4]/10"
                               }
@@ -854,8 +854,8 @@ export default function SettingsPage() {
                   <p className="text-sm text-gray-400">
                     Create if/then rules to automatically send notifications, create tasks, or trigger actions when specific events occur.
                   </p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="border-[#c4dfc4] text-[#c4dfc4] hover:bg-[#c4dfc4]/10 w-full"
                     onClick={() => window.location.href = '/workflows'}
                   >
@@ -874,9 +874,9 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="webhook-url" className="text-gray-300">Webhook URL</Label>
-                    <Input 
-                      id="webhook-url" 
-                      placeholder="https://your-domain.com/webhook" 
+                    <Input
+                      id="webhook-url"
+                      placeholder="https://your-domain.com/webhook"
                       className="bg-[#1a1a1a] border-gray-700"
                     />
                   </div>
@@ -1148,9 +1148,9 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
           </Tabs>
-          </div>
         </div>
       </div>
-    
+    </div>
+
   );
 }

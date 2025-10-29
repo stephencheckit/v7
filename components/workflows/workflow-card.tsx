@@ -4,13 +4,13 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Zap, 
-  Thermometer, 
-  FileText, 
-  Clock, 
-  Mail, 
-  MessageSquare, 
+import {
+  Zap,
+  Thermometer,
+  FileText,
+  Clock,
+  Mail,
+  MessageSquare,
   CheckSquare,
   Play,
   Pause,
@@ -37,7 +37,7 @@ interface WorkflowCardProps {
 export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
   const [isToggling, setIsToggling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   const getTriggerIcon = () => {
     switch (workflow.trigger_type) {
       case 'sensor_temp_exceeds':
@@ -53,10 +53,10 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
         return <Zap className="w-4 h-4" />;
     }
   };
-  
+
   const getTriggerLabel = () => {
     const config = workflow.trigger_config as any;
-    
+
     switch (workflow.trigger_type) {
       case 'sensor_temp_exceeds':
         return `Temperature exceeds ${config.threshold}°${config.unit}${config.duration_minutes ? ` for ${config.duration_minutes} minutes` : ''}`;
@@ -74,7 +74,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
         return workflow.trigger_type;
     }
   };
-  
+
   const getActionIcon = (actionType: string) => {
     switch (actionType) {
       case 'email':
@@ -84,7 +84,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
       case 'slack':
         return (
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" />
           </svg>
         );
       case 'create_task':
@@ -93,7 +93,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
         return <Zap className="w-3 h-3" />;
     }
   };
-  
+
   const getActionLabel = (action: any) => {
     switch (action.type) {
       case 'email':
@@ -112,7 +112,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
         return action.type;
     }
   };
-  
+
   const handleToggleActive = async () => {
     try {
       setIsToggling(true);
@@ -125,7 +125,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
           is_active: !workflow.is_active,
         }),
       });
-      
+
       if (response.ok) {
         toast.success(workflow.is_active ? 'Workflow paused' : 'Workflow activated');
         onUpdate();
@@ -139,18 +139,18 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
       setIsToggling(false);
     }
   };
-  
+
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this workflow?')) {
       return;
     }
-    
+
     try {
       setIsDeleting(true);
       const response = await fetch(`/api/workflows/${workflow.id}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         toast.success('Workflow deleted');
         onUpdate();
@@ -164,7 +164,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
       setIsDeleting(false);
     }
   };
-  
+
   return (
     <Card className="bg-[#1a1a1a] border-[#2a2a2a] p-6">
       <div className="flex items-start justify-between mb-4">
@@ -179,7 +179,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
             <p className="text-sm text-muted-foreground mb-3">{workflow.description}</p>
           )}
         </div>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">
@@ -206,8 +206,8 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={handleDelete} 
+            <DropdownMenuItem
+              onClick={handleDelete}
               disabled={isDeleting}
               className="text-red-500"
             >
@@ -217,7 +217,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      
+
       {/* Trigger */}
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
@@ -228,7 +228,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
           <span className="text-sm text-white">{getTriggerLabel()}</span>
         </div>
       </div>
-      
+
       {/* Actions */}
       <div>
         <div className="flex items-center gap-2 mb-2">
@@ -236,7 +236,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
         </div>
         <div className="space-y-2">
           {workflow.actions.map((action, index) => (
-            <div 
+            <div
               key={index}
               className="flex items-center gap-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded p-3"
             >
@@ -246,7 +246,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
           ))}
         </div>
       </div>
-      
+
       {/* Stats */}
       <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex items-center gap-6 text-xs text-muted-foreground">
         <div>
