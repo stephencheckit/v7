@@ -5,8 +5,9 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Zap, Plus, Play, Thermometer } from "lucide-react";
+import { Zap, Plus, Play, Thermometer, BookOpen } from "lucide-react";
 import { WorkflowCard } from "@/components/workflows/workflow-card";
+import { WorkflowInfoDrawer } from "@/components/workflows/workflow-info-drawer";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { Workflow } from "@/lib/types/workflow";
 import { CenteredSpinner } from "@/components/loading";
@@ -16,6 +17,7 @@ export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAI, setShowAI] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   
   useEffect(() => {
     if (workspaceId && !authLoading) {
@@ -60,14 +62,26 @@ export default function WorkflowsPage() {
                   </p>
                 </div>
                 
-                <Button
-                  onClick={() => setShowAI(true)}
-                  size="sm"
-                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shrink-0"
-                >
-                  <Plus className="h-4 w-4 md:mr-2" />
-                  <span className="hidden md:inline">Create with AI</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setShowInfo(true)}
+                    variant="outline"
+                    size="sm"
+                    className="border-white/20 text-white hover:bg-white/10 shrink-0"
+                  >
+                    <BookOpen className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Learn More</span>
+                  </Button>
+                  
+                  <Button
+                    onClick={() => setShowAI(true)}
+                    size="sm"
+                    className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shrink-0"
+                  >
+                    <Plus className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">Create with AI</span>
+                  </Button>
+                </div>
               </div>
             </div>
             
