@@ -1909,7 +1909,7 @@ Please extract and build the form now.`;
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={isRecording ? "Listening..." : "Describe your form or upload Excel..."}
+                placeholder={isRecording ? "Listening..." : "Share anything"}
                 disabled={isLoading || isParsingFile}
                 rows={1}
                 onKeyDown={(e) => {
