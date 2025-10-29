@@ -27,44 +27,44 @@ export default function CanvasPage() {
   // Load workspace data and generate initial nodes
   useEffect(() => {
     if (!workspaceId) return;
-    
+
     async function loadWorkspaceData() {
       try {
         setIsLoading(true);
-        
+
         // Fetch forms
         const formsRes = await fetch(`/api/forms?workspace_id=${workspaceId}`);
         const formsData = await formsRes.json();
-        
+
         // Fetch workflows
         const workflowsRes = await fetch(`/api/workflows?workspace_id=${workspaceId}`);
         const workflowsData = await workflowsRes.json();
-        
+
         // Fetch sensors
         const sensorsRes = await fetch(`/api/sensors?workspace_id=${workspaceId}`);
         const sensorsData = await sensorsRes.json();
-        
+
         // Fetch courses
         const coursesRes = await fetch(`/api/courses?workspace_id=${workspaceId}`);
         const coursesData = await coursesRes.json();
-        
+
         // Fetch cadences (form instances)
         const cadencesRes = await fetch(`/api/instances?workspace_id=${workspaceId}&limit=5`);
         const cadencesData = await cadencesRes.json();
-        
+
         // Generate nodes from data
         const generatedNodes: Node[] = [];
         const generatedEdges: Edge[] = [];
-        
+
         let yOffset = 0;
-        
+
         // Add Forms (left column)
         formsData.forms?.slice(0, 5).forEach((form: any, idx: number) => {
           generatedNodes.push({
             id: `form-${form.id}`,
             type: 'default',
             position: { x: 50, y: yOffset + idx * 120 },
-            data: { 
+            data: {
               label: `📝 ${form.title || 'Untitled Form'}`,
             },
             style: {
@@ -77,7 +77,7 @@ export default function CanvasPage() {
             },
           });
         });
-        
+
         // Add Workflows (middle column)
         workflowsData.workflows?.slice(0, 5).forEach((workflow: any, idx: number) => {
           const workflowId = `workflow-${workflow.id}`;
@@ -85,7 +85,7 @@ export default function CanvasPage() {
             id: workflowId,
             type: 'default',
             position: { x: 350, y: yOffset + idx * 120 },
-            data: { 
+            data: {
               label: `⚡ ${workflow.name}`,
             },
             style: {
@@ -97,7 +97,7 @@ export default function CanvasPage() {
               width: 200,
             },
           });
-          
+
           // Create edge from form to workflow if trigger matches
           if (workflow.trigger_type === 'form_submitted' || workflow.trigger_type === 'form_overdue') {
             const formId = `form-${workflow.trigger_config?.form_id}`;
@@ -114,7 +114,7 @@ export default function CanvasPage() {
             }
           }
         });
-        
+
         // Add Sensors (right column)
         sensorsData.sensors?.slice(0, 5).forEach((sensor: any, idx: number) => {
           const sensorId = `sensor-${sensor.id}`;
@@ -122,7 +122,7 @@ export default function CanvasPage() {
             id: sensorId,
             type: 'default',
             position: { x: 650, y: yOffset + idx * 120 },
-            data: { 
+            data: {
               label: `🌡️ ${sensor.name}`,
             },
             style: {
@@ -134,7 +134,7 @@ export default function CanvasPage() {
               width: 200,
             },
           });
-          
+
           // Create edge from sensor to workflow if trigger matches
           workflowsData.workflows?.forEach((workflow: any) => {
             if (workflow.trigger_type === 'sensor_temp_exceeds' || workflow.trigger_type === 'sensor_temp_below') {
@@ -155,14 +155,14 @@ export default function CanvasPage() {
             }
           });
         });
-        
+
         // Add Courses (column 4)
         coursesData.courses?.slice(0, 5).forEach((course: any, idx: number) => {
           generatedNodes.push({
             id: `course-${course.id}`,
             type: 'default',
             position: { x: 950, y: yOffset + idx * 120 },
-            data: { 
+            data: {
               label: `🎓 ${course.title}`,
             },
             style: {
@@ -175,7 +175,7 @@ export default function CanvasPage() {
             },
           });
         });
-        
+
         // Add Cadences (column 5)
         cadencesData.instances?.slice(0, 5).forEach((instance: any, idx: number) => {
           const cadenceId = `cadence-${instance.id}`;
@@ -183,7 +183,7 @@ export default function CanvasPage() {
             id: cadenceId,
             type: 'default',
             position: { x: 1250, y: yOffset + idx * 120 },
-            data: { 
+            data: {
               label: `📅 ${instance.form_title || 'Scheduled Task'}`,
             },
             style: {
@@ -195,7 +195,7 @@ export default function CanvasPage() {
               width: 200,
             },
           });
-          
+
           // Create edge from form to cadence if they match
           const formId = `form-${instance.form_id}`;
           if (generatedNodes.some(n => n.id === formId)) {
@@ -209,7 +209,7 @@ export default function CanvasPage() {
             });
           }
         });
-        
+
         setNodes(generatedNodes);
         setEdges(generatedEdges);
       } catch (error) {
@@ -218,7 +218,7 @@ export default function CanvasPage() {
         setIsLoading(false);
       }
     }
-    
+
     loadWorkspaceData();
   }, [workspaceId, setNodes, setEdges]);
 
@@ -234,7 +234,7 @@ export default function CanvasPage() {
     const sensorNodes = nodes.filter(n => n.id.startsWith('sensor-'));
     const courseNodes = nodes.filter(n => n.id.startsWith('course-'));
     const cadenceNodes = nodes.filter(n => n.id.startsWith('cadence-'));
-    
+
     const newNodes = [
       ...formNodes.map((node, idx) => ({ ...node, position: { x: 50, y: idx * 120 } })),
       ...workflowNodes.map((node, idx) => ({ ...node, position: { x: 350, y: idx * 120 } })),
@@ -242,7 +242,7 @@ export default function CanvasPage() {
       ...courseNodes.map((node, idx) => ({ ...node, position: { x: 950, y: idx * 120 } })),
       ...cadenceNodes.map((node, idx) => ({ ...node, position: { x: 1250, y: idx * 120 } })),
     ];
-    
+
     setNodes(newNodes);
   };
 
@@ -302,9 +302,9 @@ export default function CanvasPage() {
           fitView
           className="bg-[#0a0a0a]"
         >
-          <Controls className="bg-white/10 border border-white/20" />
+          <Controls className="bg-white/10 border border-white/20 !bottom-6" />
           <MiniMap 
-            className="bg-white/10 border border-white/20" 
+            className="bg-white/10 border border-white/20 !bottom-6" 
             nodeColor={(node) => {
               if (node.id.startsWith('form-')) return '#c4dfc4';
               if (node.id.startsWith('workflow-')) return '#c8e0f5';
@@ -314,18 +314,18 @@ export default function CanvasPage() {
               return '#666';
             }}
           />
-          <Background 
-            variant={BackgroundVariant.Dots} 
-            gap={20} 
-            size={1} 
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={20}
+            size={1}
             color="#ffffff20"
           />
         </ReactFlow>
       </div>
 
       {/* Legend */}
-      <div className="absolute top-20 left-4 bg-black/90 border border-white/20 rounded-lg p-4 backdrop-blur-sm z-10">
-        <div className="text-xs text-white space-y-2">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/90 border border-white/20 rounded-lg px-6 py-3 backdrop-blur-sm z-10">
+        <div className="flex items-center gap-6 text-xs text-white">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-[#c4dfc4]"></div>
             <span>Forms</span>
