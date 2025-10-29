@@ -1387,6 +1387,8 @@ Please extract and build the form now.`;
 
       if (context === 'workflows') {
         systemContext += `User is on the WORKFLOWS page. They want to create workflow automations. Focus on workflow triggers (sensor alerts, form events, schedules) and actions (email, SMS, create task).`;
+      } else if (context === 'courses') {
+        systemContext += `User is on the LEARN page creating training courses. Use CREATE_COURSE format with text blocks and quiz blocks (multiple_choice, true_false). Focus on educational content, not forms.`;
       } else {
         systemContext += `User is on the "${currentPage}" page.`;
 
