@@ -399,7 +399,7 @@ export default function CanvasPage() {
         <SheetContent className="bg-[#0a0a0a] border-l border-white/20 text-white w-[400px] sm:w-[540px] overflow-y-auto">
           {selectedNode && (
             <>
-              <SheetHeader className="sticky top-0 bg-[#0a0a0a] pb-4 z-10">
+              <SheetHeader className="sticky top-0 bg-[#0a0a0a] pb-6 border-b border-white/10 z-10">
                 <SheetTitle className="text-white flex items-center gap-2">
                   {selectedNode.type === 'form' && <FileText className="h-5 w-5 text-[#c4dfc4]" />}
                   {selectedNode.type === 'workflow' && <Zap className="h-5 w-5 text-[#c8e0f5]" />}
@@ -408,12 +408,12 @@ export default function CanvasPage() {
                   {selectedNode.type === 'cadence' && <Calendar className="h-5 w-5 text-[#ffe4b5]" />}
                   {selectedNode.data.title || selectedNode.data.name || 'Details'}
                 </SheetTitle>
-                <SheetDescription className="text-gray-400">
+                <SheetDescription className="text-gray-400 mt-2">
                   {selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1)} details and quick actions
                 </SheetDescription>
               </SheetHeader>
 
-              <div className="mt-6 space-y-4 pb-6">
+              <div className="mt-6 space-y-6 pb-8">
                 {/* Form Details */}
                 {selectedNode.type === 'form' && (
                   <>
