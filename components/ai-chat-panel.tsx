@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2, Plus, Mic, MicOff } from "lucide-react";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2, Plus, Mic, MicOff, RotateCcw } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
 import { toast } from "sonner";
@@ -1374,6 +1374,36 @@ Please extract and build the form now.`;
     }
   }, [messages, isLoading, currentPage, onFormUpdate, currentFields]);
 
+  // Handle starting a new chat (clear conversation history)
+  const handleNewChat = () => {
+    if (messages.length === 0) {
+      toast.info('Chat is already empty');
+      return;
+    }
+
+    // Clear messages locally
+    setMessages([]);
+    setInput('');
+    
+    // Reset tracking refs
+    isInitialLoad.current = true;
+    previousMessageCount.current = 0;
+    lastSavedMessageCount.current = 0;
+    processedMessageIds.current = new Set();
+    
+    // Clear processed IDs from localStorage
+    if (conversationId) {
+      localStorage.removeItem(`processed_${conversationId}`);
+    }
+    
+    // Note: We don't delete from database - conversation history is preserved
+    // User can still access it by reloading the page if needed
+    
+    toast.success('Started new chat', {
+      description: 'Previous conversation is saved'
+    });
+  };
+
   const handleSubmit = async (e?: React.FormEvent | null, customPrompt?: string) => {
     if (e) e.preventDefault();
     const messageContent = customPrompt || input.trim();
@@ -1793,13 +1823,22 @@ Please extract and build the form now.`;
                 </p>
               </div>
             </div>
-            <button
-              onClick={onToggle}
-              className="hover:bg-gray-100 p-2 rounded-lg transition-colors"
-              title="Collapse AI Operator"
-            >
-              <PanelRightClose className="h-4 w-4 text-gray-600" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleNewChat}
+                className="hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                title="Start new chat"
+              >
+                <RotateCcw className="h-4 w-4 text-gray-600" />
+              </button>
+              <button
+                onClick={onToggle}
+                className="hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                title="Collapse AI Operator"
+              >
+                <PanelRightClose className="h-4 w-4 text-gray-600" />
+              </button>
+            </div>
           </>
         ) : (
           <div className="p-2">
