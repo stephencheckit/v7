@@ -16,32 +16,64 @@ export default function WorkflowsPage() {
   const { workspaceId, isLoading: authLoading } = useAuth();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Initialize AI chat state from localStorage - runs once on mount
   const [showAI, setShowAI] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  
+
+  // Load initial chat state from localStorage after mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('workflows-ai-chat-open');
+      if (saved === 'true') {
+        setShowAI(true);
+      }
+    }
+  }, []);
+
+  // Save AI chat state to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('workflows-ai-chat-open', String(showAI));
+    }
+  }, [showAI]);
+
   useEffect(() => {
     if (workspaceId && !authLoading) {
       loadWorkflows();
     }
   }, [workspaceId, authLoading]);
-  
+
   const loadWorkflows = async () => {
+    if (!workspaceId) {
+      console.log('No workspaceId yet, skipping workflow load');
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(`/api/workflows?workspace_id=${workspaceId}`);
+
+      if (!response.ok) {
+        console.error('Failed to load workflows:', response.status, response.statusText);
+        setWorkflows([]);
+        return;
+      }
+
       const data = await response.json();
       setWorkflows(data.workflows || []);
     } catch (error) {
       console.error('Error loading workflows:', error);
+      setWorkflows([]);
     } finally {
       setLoading(false);
     }
   };
-  
+
   if (authLoading || loading) {
     return <CenteredSpinner />;
   }
-  
+
   return (
     <div className="flex w-full h-full overflow-hidden">
       {/* Main Content */}
@@ -61,7 +93,7 @@ export default function WorkflowsPage() {
                     Automate actions with sensor alerts • Coming soon: form events & schedules
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Button
                     onClick={() => setShowInfo(true)}
@@ -72,7 +104,7 @@ export default function WorkflowsPage() {
                     <BookOpen className="h-4 w-4 md:mr-2" />
                     <span className="hidden md:inline">Learn More</span>
                   </Button>
-                  
+
                   <Button
                     onClick={() => setShowAI(true)}
                     size="sm"
@@ -84,7 +116,7 @@ export default function WorkflowsPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Stats Cards */}
             <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-3">
               <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
@@ -121,15 +153,15 @@ export default function WorkflowsPage() {
                 </div>
               </Card>
             </div>
-            
+
             {/* Workflows List */}
             {workflows.length === 0 ? (
               <EmptyState onCreateAI={() => setShowAI(true)} />
             ) : (
               <div className="space-y-4">
                 {workflows.map(workflow => (
-                  <WorkflowCard 
-                    key={workflow.id} 
+                  <WorkflowCard
+                    key={workflow.id}
                     workflow={workflow}
                     onUpdate={loadWorkflows}
                   />
@@ -139,7 +171,7 @@ export default function WorkflowsPage() {
           </div>
         </div>
       </div>
-      
+
       {/* AI Chat Panel - Fixed to the right */}
       <AIChatPanel
         isOpen={showAI}
@@ -147,9 +179,9 @@ export default function WorkflowsPage() {
         context="workflows"
         onWorkflowCreated={loadWorkflows}
       />
-      
+
       {/* Info Drawer */}
-      <WorkflowInfoDrawer 
+      <WorkflowInfoDrawer
         isOpen={showInfo}
         onClose={() => setShowInfo(false)}
       />
