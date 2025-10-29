@@ -894,19 +894,22 @@ Please extract and build the form now.`;
               // Call API to create workflow (using async IIFE to handle await)
               (async () => {
                 try {
+                  const requestBody = {
+                    workspace_id: workspaceId,
+                    name: workflowData.name,
+                    description: workflowData.description || '',
+                    trigger_type: workflowData.trigger.type,
+                    trigger_config: workflowData.trigger.config,
+                    actions: workflowData.actions,
+                  };
+                  console.log('📤 Sending workflow creation request:', requestBody);
+                  
                   const response = await fetch('/api/workflows', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                      workspace_id: workspaceId,
-                      name: workflowData.name,
-                      description: workflowData.description || '',
-                      trigger_type: workflowData.trigger.type,
-                      trigger_config: workflowData.trigger.config,
-                      actions: workflowData.actions,
-                    }),
+                    body: JSON.stringify(requestBody),
                   });
                   
                   if (response.ok) {
