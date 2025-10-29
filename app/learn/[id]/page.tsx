@@ -82,7 +82,7 @@ export default function CourseViewerPage({ params }: CourseViewerPageProps) {
     };
 
     const handleBackToLibrary = () => {
-        router.push('/engage');
+        router.push('/learn');
     };
 
     if (loading || !courseId) {
