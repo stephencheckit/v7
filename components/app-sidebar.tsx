@@ -13,7 +13,7 @@ import {
   FileCheck,
   Zap,
   Brain,
-  LayoutGrid,
+  Network,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,7 +34,7 @@ const menuItems = [
   { title: "Workflows", url: "/workflows", icon: Zap },
   { title: "Cadences", url: "/cadences", icon: Calendar },
   { title: "Learn", url: "/learn", icon: Brain },
-  { title: "Canvas", url: "/canvas", icon: LayoutGrid },
+  { title: "Canvas", url: "/canvas", icon: Network },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },
   { title: "Summaries", url: "/summaries", icon: FileCheck },

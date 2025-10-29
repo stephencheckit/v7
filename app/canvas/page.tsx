@@ -16,7 +16,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '@/components/ui/button';
-import { Sparkles, LayoutGrid, RefreshCw } from 'lucide-react';
+import { Sparkles, Network, RefreshCw } from 'lucide-react';
 
 export default function CanvasPage() {
   const { workspaceId } = useAuth();
@@ -43,6 +43,14 @@ export default function CanvasPage() {
         // Fetch sensors
         const sensorsRes = await fetch(`/api/sensors?workspace_id=${workspaceId}`);
         const sensorsData = await sensorsRes.json();
+        
+        // Fetch courses
+        const coursesRes = await fetch(`/api/courses?workspace_id=${workspaceId}`);
+        const coursesData = await coursesRes.json();
+        
+        // Fetch cadences (form instances)
+        const cadencesRes = await fetch(`/api/instances?workspace_id=${workspaceId}&limit=5`);
+        const cadencesData = await cadencesRes.json();
         
         // Generate nodes from data
         const generatedNodes: Node[] = [];
@@ -148,6 +156,60 @@ export default function CanvasPage() {
           });
         });
         
+        // Add Courses (column 4)
+        coursesData.courses?.slice(0, 5).forEach((course: any, idx: number) => {
+          generatedNodes.push({
+            id: `course-${course.id}`,
+            type: 'default',
+            position: { x: 950, y: yOffset + idx * 120 },
+            data: { 
+              label: `🎓 ${course.title}`,
+            },
+            style: {
+              background: '#e8d4ff',
+              color: '#0a0a0a',
+              border: '2px solid #d0b4ff',
+              borderRadius: '8px',
+              padding: '10px',
+              width: 200,
+            },
+          });
+        });
+        
+        // Add Cadences (column 5)
+        cadencesData.instances?.slice(0, 5).forEach((instance: any, idx: number) => {
+          const cadenceId = `cadence-${instance.id}`;
+          generatedNodes.push({
+            id: cadenceId,
+            type: 'default',
+            position: { x: 1250, y: yOffset + idx * 120 },
+            data: { 
+              label: `📅 ${instance.form_title || 'Scheduled Task'}`,
+            },
+            style: {
+              background: '#ffe4b5',
+              color: '#0a0a0a',
+              border: '2px solid #ffd485',
+              borderRadius: '8px',
+              padding: '10px',
+              width: 200,
+            },
+          });
+          
+          // Create edge from form to cadence if they match
+          const formId = `form-${instance.form_id}`;
+          if (generatedNodes.some(n => n.id === formId)) {
+            generatedEdges.push({
+              id: `${formId}-${cadenceId}`,
+              source: formId,
+              target: cadenceId,
+              type: 'smoothstep',
+              style: { stroke: '#ffd485', strokeWidth: 2 },
+              label: 'scheduled',
+            });
+          }
+        });
+        
         setNodes(generatedNodes);
         setEdges(generatedEdges);
       } catch (error) {
@@ -170,11 +232,15 @@ export default function CanvasPage() {
     const formNodes = nodes.filter(n => n.id.startsWith('form-'));
     const workflowNodes = nodes.filter(n => n.id.startsWith('workflow-'));
     const sensorNodes = nodes.filter(n => n.id.startsWith('sensor-'));
+    const courseNodes = nodes.filter(n => n.id.startsWith('course-'));
+    const cadenceNodes = nodes.filter(n => n.id.startsWith('cadence-'));
     
     const newNodes = [
       ...formNodes.map((node, idx) => ({ ...node, position: { x: 50, y: idx * 120 } })),
       ...workflowNodes.map((node, idx) => ({ ...node, position: { x: 350, y: idx * 120 } })),
       ...sensorNodes.map((node, idx) => ({ ...node, position: { x: 650, y: idx * 120 } })),
+      ...courseNodes.map((node, idx) => ({ ...node, position: { x: 950, y: idx * 120 } })),
+      ...cadenceNodes.map((node, idx) => ({ ...node, position: { x: 1250, y: idx * 120 } })),
     ];
     
     setNodes(newNodes);
@@ -198,8 +264,8 @@ export default function CanvasPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <LayoutGrid className="h-6 w-6 text-[#c4dfc4]" />
-              System Canvas
+              <Network className="h-6 w-6 text-[#c4dfc4]" />
+              Canvas
             </h1>
             <p className="text-sm text-gray-400 mt-1">
               Visual map of your workspace - {nodes.length} nodes, {edges.length} connections
@@ -211,7 +277,7 @@ export default function CanvasPage() {
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10"
             >
-              <LayoutGrid className="h-4 w-4 mr-2" />
+              <Network className="h-4 w-4 mr-2" />
               Auto Layout
             </Button>
             <Button
@@ -243,6 +309,8 @@ export default function CanvasPage() {
               if (node.id.startsWith('form-')) return '#c4dfc4';
               if (node.id.startsWith('workflow-')) return '#c8e0f5';
               if (node.id.startsWith('sensor-')) return '#ffd4d4';
+              if (node.id.startsWith('course-')) return '#e8d4ff';
+              if (node.id.startsWith('cadence-')) return '#ffe4b5';
               return '#666';
             }}
           />
@@ -256,7 +324,7 @@ export default function CanvasPage() {
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-24 left-4 bg-black/80 border border-white/20 rounded-lg p-3">
+      <div className="absolute bottom-28 left-4 bg-black/90 border border-white/20 rounded-lg p-4 backdrop-blur-sm">
         <div className="text-xs text-white space-y-2">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-[#c4dfc4]"></div>
@@ -269,6 +337,14 @@ export default function CanvasPage() {
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-[#ffd4d4]"></div>
             <span>Sensors</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-[#e8d4ff]"></div>
+            <span>Courses</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-[#ffe4b5]"></div>
+            <span>Cadences</span>
           </div>
         </div>
       </div>
