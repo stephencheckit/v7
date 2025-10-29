@@ -79,6 +79,71 @@ This is the foundation for the "Living System Canvas" concept - a Figma-like int
 
 ---
 
+### **🎨✨ Canvas UX Enhancements - October 29, 2025**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025  
+**Commits:** 60a5603, 66c1edb, 93ecd1b, 38dc612, 49310d9, 10b2cf9, 3688870
+
+**Summary:**
+Polished the Canvas experience with additional node types, improved layout, better icon choice, and optimal UI positioning for all controls. The canvas now shows a complete view of workspace operations.
+
+**Changes:**
+1. **Expanded Node Types (5 total):**
+   - 🟢 Green = Forms
+   - 🔵 Blue = Workflows
+   - 🔴 Red = Sensors
+   - 🟣 Purple (#e8d4ff) = Courses (NEW!)
+   - 🟡 Peach (#ffe4b5) = Cadences (NEW!)
+
+2. **New Relationships:**
+   - Form → Cadence: Shows scheduled form instances
+   - Edge label: "scheduled"
+   - All relationships are 100% real based on actual database configurations
+
+3. **Icon & Branding:**
+   - Changed from `LayoutGrid` to `Network` icon for uniqueness
+   - Renamed "System Canvas" → "Canvas" (cleaner, simpler)
+   - Updated in both page and sidebar
+
+4. **Legend Redesign:**
+   - Changed from vertical to horizontal layout
+   - Positioned at bottom center (`bottom-6 left-1/2`)
+   - Added backdrop blur for visibility
+   - Increased z-index to z-50 to ensure visibility above controls
+   - Shows all 5 node types with color indicators
+
+5. **Control Spacing:**
+   - Uniform `bottom-6` spacing for all bottom UI elements
+   - Controls (zoom buttons) at bottom-left
+   - Mini-map at bottom-right
+   - Legend centered at bottom
+   - Clean, professional layout with breathing room
+
+6. **Layout Algorithm:**
+   - 5-column layout: Forms (x:50) → Workflows (x:350) → Sensors (x:650) → Courses (x:950) → Cadences (x:1250)
+   - Auto-layout button reorganizes nodes by type
+   - Smart positioning maintains visual hierarchy
+
+**Impact:**
+- **Completeness:** Canvas now shows full operational picture including training and scheduling
+- **Clarity:** Horizontal legend is easier to scan, doesn't obstruct workspace
+- **Polish:** Professional spacing and layout makes it demo-ready
+- **Scalability:** 5 node types cover most operational concepts; easy to add more
+
+**User Feedback Implemented:**
+- Multiple legend position iterations based on user preference
+- Icon change for better visual distinction
+- Spacing adjustments for optimal viewing experience
+- All real relationships (no dummy data)
+
+**Technical Details:**
+- Added API calls for `/api/courses` and `/api/instances`
+- Updated mini-map colors for new node types
+- Flexible positioning system supports easy adjustments
+- Z-index layering ensures proper control visibility
+
+---
+
 ### **🔄💾 Fix Infinite Save Loop in AI Chat - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025  
