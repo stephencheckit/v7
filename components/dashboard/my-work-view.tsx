@@ -9,35 +9,16 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import type { FormInstance } from "@/lib/types/cadence";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth/auth-context";
 
 export function MyWorkView() {
   const router = useRouter();
+  const { workspaceId, user, isLoading: authLoading } = useAuth();
   const [instances, setInstances] = useState<Array<FormInstance & {
     form?: { id: string; title: string; description?: string };
     cadence?: { id: string; name: string };
   }>>([]);
   const [loading, setLoading] = useState(true);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-
-  // Fetch workspace ID first
-  useEffect(() => {
-    async function fetchWorkspace() {
-      try {
-        // Get user's workspace from a simple endpoint or auth context
-        // For now, we'll try to fetch any instances and extract workspace_id
-        const response = await fetch('/api/instances?limit=1');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.instances && data.instances.length > 0) {
-            setWorkspaceId(data.instances[0].workspace_id);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching workspace:', error);
-      }
-    }
-    fetchWorkspace();
-  }, []);
 
   // Fetch work instances
   const fetchMyWork = async () => {
@@ -64,14 +45,20 @@ export function MyWorkView() {
   };
 
   useEffect(() => {
+    if (authLoading) {
+      return; // Wait for auth to load
+    }
+    
     if (workspaceId) {
       fetchMyWork();
       
       // Auto-refresh every 30 seconds
       const interval = setInterval(fetchMyWork, 30000);
       return () => clearInterval(interval);
+    } else {
+      setLoading(false); // No workspace found
     }
-  }, [workspaceId]);
+  }, [workspaceId, authLoading]);
 
   // Group instances by status
   const grouped = useMemo(() => {
@@ -102,7 +89,7 @@ export function MyWorkView() {
   const totalWork = grouped.overdue.length + grouped.incomplete.length + grouped.due.length;
   const hasNoWork = totalWork === 0 && grouped.upNext.length === 0;
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-[#c4dfc4]" />
