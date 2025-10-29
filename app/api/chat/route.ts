@@ -91,6 +91,18 @@ export async function POST(req: Request) {
       console.log('[API] Base64 data length:', base64Data.length);
       
       // Call Anthropic API directly
+      // Filter out empty assistant messages before sending to API
+      const filteredHistoryMessages = messages.slice(0, -1).filter((msg: any) => {
+        if (msg.role === 'assistant' && (!msg.content || msg.content.trim() === '')) {
+          console.log('[API] ⚠️ Filtering out empty assistant message from image flow');
+          return false;
+        }
+        return true;
+      }).map((msg: any) => ({
+        role: msg.role,
+        content: typeof msg.content === 'string' ? msg.content : msg.content,
+      }));
+      
       const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -103,10 +115,7 @@ export async function POST(req: Request) {
           max_tokens: 4096,
           system: enhancedSystemPrompt,
           messages: [
-            ...messages.slice(0, -1).map((msg: any) => ({
-              role: msg.role,
-              content: typeof msg.content === 'string' ? msg.content : msg.content,
-            })),
+            ...filteredHistoryMessages,
             {
               role: lastMessage.role,
               content: [
@@ -165,10 +174,21 @@ export async function POST(req: Request) {
 
     // Normal text-only flow using AI SDK
     console.log('[API] Starting streamText with Anthropic...');
+    
+    // Filter out empty messages (they cause API errors)
+    const filteredMessages = messages.filter((msg: any) => {
+      if (msg.role === 'assistant' && (!msg.content || msg.content.trim() === '')) {
+        console.log('[API] ⚠️ Filtering out empty assistant message');
+        return false;
+      }
+      return true;
+    });
+    console.log('[API] Filtered messages:', filteredMessages.length, 'of', messages.length);
+    
     const result = streamText({
       model: anthropic('claude-3-7-sonnet-20250219'),
       system: enhancedSystemPrompt,
-      messages: messages,
+      messages: filteredMessages,
       // TOOLS DISABLED - Using text parsing workaround for Phase 1
       /*tools: {
       // ====================================================================
