@@ -129,12 +129,12 @@ export default function LearnPage() {
             </div>
 
             {/* AI Chat Panel */}
-      <AIChatPanel
-        isOpen={showAI}
-        onToggle={() => setShowAI(!showAI)}
-        context="courses"
-        onCourseCreated={loadCourses}
-      />
+            <AIChatPanel
+                isOpen={showAI}
+                onToggle={() => setShowAI(!showAI)}
+                context="courses"
+                onCourseCreated={loadCourses}
+            />
         </div>
     );
 }

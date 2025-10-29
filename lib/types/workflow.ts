@@ -42,6 +42,15 @@ export interface SMSAction {
     };
 }
 
+export interface SlackAction {
+    type: 'slack';
+    config: {
+        channel: string; // e.g., '#kitchen-alerts'
+        message: string;
+        mention?: string; // e.g., 'on-call-manager' (without @)
+    };
+}
+
 export interface CreateTaskAction {
     type: 'create_task';
     config: {
@@ -52,7 +61,7 @@ export interface CreateTaskAction {
     };
 }
 
-export type WorkflowAction = EmailAction | SMSAction | CreateTaskAction;
+export type WorkflowAction = EmailAction | SMSAction | SlackAction | CreateTaskAction;
 
 export interface Workflow {
     id: string;

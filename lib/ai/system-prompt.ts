@@ -402,7 +402,11 @@ CREATE_WORKFLOW:
 2. **sms** - Send SMS notification
    Config: { "recipients": ["current_user"] or ["user:uuid"], "message": "SMS text" }
    
-3. **create_task** - Create a new form instance (task)
+3. **slack** - Post message to Slack channel
+   Config: { "channel": "#kitchen-alerts" or "#safety-inspections" or "#equipment-alerts" or "#daily-ops", "message": "Alert message", "mention": "on-call-manager" (optional) }
+   Available channels: #kitchen-alerts, #safety-inspections, #equipment-alerts, #daily-ops, #regional-managers, #compliance-team
+   
+4. **create_task** - Create a new form instance (task)
    Config: { "form_id": "uuid", "assign_to": "current_user" or "user:uuid", "due_minutes": 60, "priority": "low" | "medium" | "high" }
 
 **Special Values:**

@@ -632,18 +632,129 @@ export default function SettingsPage() {
             </TabsContent>
 
             {/* Integrations Tab */}
-            <TabsContent value="integrations" className="space-y-6 relative">
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center pointer-events-auto">
-                <Card className="bg-[#1a1a1a] border-[#c4dfc4]/30 p-8 mx-4">
-                  <div className="text-center space-y-3">
-                    <Plug className="h-12 w-12 text-[#c4dfc4] mx-auto" />
-                    <h3 className="text-xl font-bold text-white">Integrations</h3>
-                    <p className="text-gray-400 max-w-sm">
-                      This feature is coming soon. You'll be able to connect with Slack, webhooks, and other third-party services.
-                    </p>
+            <TabsContent value="integrations" className="space-y-6">
+              {/* Slack Integration Card */}
+              <Card className="shadow-lg border-gray-700">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#611f69] to-[#4a154b] flex items-center justify-center">
+                        <svg className="h-7 w-7" viewBox="0 0 24 24" fill="white">
+                          <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <CardTitle className="text-white">Slack Integration</CardTitle>
+                        <CardDescription>
+                          Send alerts, notifications, and summaries to Slack channels
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
+                      Connected
+                    </Badge>
                   </div>
-                </Card>
-              </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Connection Info */}
+                  <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-white">Workspace: Sheetz Operations</p>
+                        <p className="text-xs text-gray-400">Connected on Oct 29, 2025</p>
+                      </div>
+                      <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                        Reconnect
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Available Channels */}
+                  <div className="space-y-3">
+                    <Label className="text-gray-300">Available Channels</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 flex items-center gap-3">
+                        <div className="text-2xl">#</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">kitchen-alerts</p>
+                          <p className="text-xs text-gray-400">142 members</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">Active</Badge>
+                      </div>
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 flex items-center gap-3">
+                        <div className="text-2xl">#</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">safety-inspections</p>
+                          <p className="text-xs text-gray-400">89 members</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">Active</Badge>
+                      </div>
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 flex items-center gap-3">
+                        <div className="text-2xl">#</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">equipment-alerts</p>
+                          <p className="text-xs text-gray-400">67 members</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">Active</Badge>
+                      </div>
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 flex items-center gap-3">
+                        <div className="text-2xl">#</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">daily-ops</p>
+                          <p className="text-xs text-gray-400">234 members</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">Active</Badge>
+                      </div>
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 flex items-center gap-3">
+                        <div className="text-2xl">#</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">regional-managers</p>
+                          <p className="text-xs text-gray-400">45 members</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">Active</Badge>
+                      </div>
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 flex items-center gap-3">
+                        <div className="text-2xl">#</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">compliance-team</p>
+                          <p className="text-xs text-gray-400">28 members</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">Active</Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Usage Stats */}
+                  <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-4">
+                    <p className="text-sm font-medium text-white mb-3">Integration Activity</p>
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-2xl font-bold text-[#c4dfc4]">127</p>
+                        <p className="text-xs text-gray-400">Messages Today</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-[#c4dfc4]">12</p>
+                        <p className="text-xs text-gray-400">Active Workflows</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-[#c4dfc4]">6</p>
+                        <p className="text-xs text-gray-400">Channels Used</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="flex gap-3">
+                    <Button className="flex-1 bg-[#611f69] hover:bg-[#4a154b] text-white">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Channel
+                    </Button>
+                    <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                      View Slack Logs
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
               <Card className="shadow-lg border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white">API Keys</CardTitle>
