@@ -5,7 +5,79 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎨🗺️ React Flow System Canvas (MVP) - October 29, 2025 (Latest)**
+### **🎯📂 Canvas Interactive Node Drawer - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025  
+**Commit:** 5d4fd8c
+
+**Summary:**
+Added interactive drawer that slides out when clicking any node on the canvas, showing preview data and quick actions. Each node type has custom content with relevant metrics and an "Open in new tab" button to access the full editor.
+
+**Changes:**
+1. **Click-to-View Drawer:**
+   - Click any node → Slide-out drawer from right side
+   - Shows node-specific preview data
+   - Smooth animation and dark theme
+   - "Open in new tab" button for each node type
+
+2. **Form Node Drawer:**
+   - Shows description, question count, response count
+   - Displays first 3 sample questions as badges
+   - "Open in Form Builder" button → `/forms/builder?formId={id}`
+   - Green accent color matching node
+
+3. **Workflow Node Drawer:**
+   - Shows description, active/inactive status
+   - Displays trigger type and action count
+   - "Open in Workflows" button → `/workflows`
+   - Blue accent color matching node
+
+4. **Sensor Node Drawer:**
+   - Shows type, location, current reading
+   - Displays temperature with unit (°F/°C)
+   - "Open in Sensors" button → `/sensors`
+   - Red accent color matching node
+
+5. **Course Node Drawer:**
+   - Shows description, estimated time, total points
+   - Displays block count
+   - "Open Course" button → `/learn/{id}`
+   - Purple accent color matching node
+
+6. **Cadence Node Drawer:**
+   - Shows form title, status (completed/pending/missed)
+   - Displays scheduled time
+   - "Open Form" button → `/f/{form_id}?source=canvas`
+   - Peach accent color matching node
+
+7. **Technical Implementation:**
+   - Added `onNodeClick` handler to React Flow
+   - Store full workspace data objects (not just nodes)
+   - Smart node ID parsing (`{type}-{id}`)
+   - Sheet component for drawer UI
+   - Color-coded icons and buttons per node type
+
+**Impact:**
+- **Discoverability:** Users can quickly explore their workspace without leaving the canvas
+- **Navigation:** Direct links to edit/view any component
+- **Context:** Preview key metrics before diving deep
+- **Speed:** No need to search for items in different pages
+- **UX Polish:** Professional slide-out drawer interaction
+
+**User Experience:**
+1. User sees visual map on canvas
+2. Clicks any node (form, workflow, sensor, etc.)
+3. Drawer slides out from right
+4. Shows preview data and stats
+5. Click "Open in [page]" → Opens full editor in new tab
+6. User can explore multiple nodes quickly
+
+**Why This Matters:**
+The canvas is now not just a visualization tool, but an active navigation and discovery interface. Users can explore their workspace visually and dive into details on demand. This creates a "Google Maps for operations" experience.
+
+---
+
+### **🎨🗺️ React Flow System Canvas (MVP) - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025  
 **Commit:** 3b45dfc
