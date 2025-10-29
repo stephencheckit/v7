@@ -324,7 +324,7 @@ export default function CanvasPage() {
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-4 right-40 bg-black/90 border border-white/20 rounded-lg p-4 backdrop-blur-sm z-10">
+      <div className="absolute top-4 right-4 bg-black/90 border border-white/20 rounded-lg p-4 backdrop-blur-sm z-10">
         <div className="text-xs text-white space-y-2">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-[#c4dfc4]"></div>
