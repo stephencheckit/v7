@@ -45,9 +45,11 @@ export async function POST(req: NextRequest) {
     }
     
     const body = await req.json();
+    console.log('Received workflow creation request:', body);
     const { workspace_id, name, description, trigger_type, trigger_config, actions, is_active } = body;
     
     if (!workspace_id || !name || !trigger_type || !trigger_config || !actions) {
+      console.error('Missing required fields:', { workspace_id, name, trigger_type, trigger_config, actions });
       return NextResponse.json(
         { error: 'Missing required fields: workspace_id, name, trigger_type, trigger_config, actions' },
         { status: 400 }

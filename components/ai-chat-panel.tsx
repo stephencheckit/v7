@@ -919,9 +919,16 @@ Please extract and build the form now.`;
                       onWorkflowCreated();
                     }
                   } else {
-                    const error = await response.json();
-                    console.error('Failed to create workflow:', error);
-                    toast.error(`Failed to create workflow: ${error.error}`);
+                    const errorText = await response.text();
+                    console.error('Failed to create workflow. Status:', response.status);
+                    console.error('Response:', errorText);
+                    
+                    try {
+                      const error = JSON.parse(errorText);
+                      toast.error(`Failed to create workflow: ${error.error || 'Unknown error'}`);
+                    } catch {
+                      toast.error(`Failed to create workflow (${response.status}). Check console for details.`);
+                    }
                   }
                 } catch (error) {
                   console.error('Failed to create workflow:', error);
