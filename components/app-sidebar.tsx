@@ -30,8 +30,8 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Forms", url: "/forms", icon: FileText },
-  { title: "Cadences", url: "/cadences", icon: Calendar },
   { title: "Workflows", url: "/workflows", icon: Zap },
+  { title: "Cadences", url: "/cadences", icon: Calendar },
   { title: "Learn", url: "/learn", icon: Brain },
   { title: "Labeling", url: "/labeling", icon: Tag },
   { title: "Sensors", url: "/sensors", icon: Thermometer },

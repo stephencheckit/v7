@@ -1927,7 +1927,15 @@ Please extract and build the form now.`;
               )}
 
               {/* Chat Messages */}
-              {isMounted && messages.map((message: any, idx: number) => (
+              {isMounted && messages
+                .filter((message: any) => {
+                  // Skip empty assistant messages (failed API responses)
+                  if (message.role === 'assistant' && (!message.content || message.content.trim() === '')) {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((message: any, idx: number) => (
                 <div key={idx}>
                   {/* Thinking indicators with MODE badge - OUTSIDE bubble, sticky status */}
                   {message.thinking && message.thinking.length > 0 && (
