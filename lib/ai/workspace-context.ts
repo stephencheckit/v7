@@ -74,8 +74,7 @@ export async function getWorkspaceContext(
     .from('simple_forms')
     .select('id, title, description, fields, created_at')
     .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false })
-    .limit(20);
+    .order('created_at', { ascending: false });
 
   const formsContext: FormContext[] = (forms || []).map(form => {
     const fields = Array.isArray(form.fields) ? form.fields : [];
@@ -109,8 +108,7 @@ export async function getWorkspaceContext(
       `)
       .eq('workspace_id', workspaceId)
       .gte('submitted_at', sevenDaysAgo.toISOString())
-      .order('submitted_at', { ascending: false })
-      .limit(10);
+      .order('submitted_at', { ascending: false });
 
     responsesContext = (responses || []).map(r => ({
       form_title: (r as any).simple_forms.title,
@@ -124,8 +122,7 @@ export async function getWorkspaceContext(
     .from('workflows')
     .select('id, name, trigger, actions, is_active')
     .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false })
-    .limit(10);
+    .order('created_at', { ascending: false });
 
   const workflowsContext: WorkflowContext[] = (workflows || []).map(w => ({
     id: w.id,
@@ -140,8 +137,7 @@ export async function getWorkspaceContext(
     .from('sensors')
     .select('id, name, sensor_type, location, current_reading, status')
     .eq('workspace_id', workspaceId)
-    .order('name')
-    .limit(20);
+    .order('name');
 
   const sensorsContext: SensorContext[] = (sensors || []).map(s => ({
     id: s.id,
@@ -159,8 +155,7 @@ export async function getWorkspaceContext(
       role,
       user:auth.users(email)
     `)
-    .eq('workspace_id', workspaceId)
-    .limit(20);
+    .eq('workspace_id', workspaceId);
 
   const teamContext: TeamMemberContext[] = (members || []).map(m => {
     const email = (m as any).user?.email || 'unknown';
