@@ -503,8 +503,9 @@ Please extract and build the form now.`;
     }
     previousMessageCount.current = messages.length;
 
-    // Create a unique ID for this message to avoid reprocessing
-    const messageId = `${lastMessage.content.substring(0, 100)}-${messages.length}-${Date.now()}`;
+    // Create a stable unique ID for this message to avoid reprocessing
+    // Use content hash instead of timestamp for stability across renders
+    const messageId = `${lastMessage.content.substring(0, 150)}-${messages.length}`;
 
     // Skip if we've already processed this message
     if (processedMessageIds.current.has(messageId)) {
