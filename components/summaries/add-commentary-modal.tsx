@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mic, Send } from "lucide-react";
 import { SummaryReport } from "@/lib/types/summary";
 import { toast } from "sonner";
 
@@ -19,15 +19,115 @@ interface AddCommentaryModalProps {
 export function AddCommentaryModal({ open, onClose, summary, onSuccess }: AddCommentaryModalProps) {
   const [loading, setLoading] = useState(false);
   const [commentary, setCommentary] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (open) {
       setCommentary("");
+      setIsRecording(false);
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
     }
   }, [open]);
 
+  const startVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast.error('Voice input not supported', {
+        description: 'Please use Chrome, Edge, or Safari for voice input.'
+      });
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+    
+    recognition.onresult = (event: any) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      
+      // Update the commentary with both final and interim results
+      if (finalTranscript) {
+        setCommentary(prev => (prev + ' ' + finalTranscript).trim());
+      }
+    };
+    
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      setIsRecording(false);
+      
+      if (event.error === 'no-speech') {
+        toast.error('No speech detected', {
+          description: 'Please try again and speak clearly.'
+        });
+      } else if (event.error === 'not-allowed') {
+        toast.error('Microphone permission denied', {
+          description: 'Please allow microphone access in your browser settings.'
+        });
+      }
+    };
+    
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+    
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+  
+  const stopVoiceInput = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+  
+  const toggleVoiceInput = () => {
+    if (isRecording) {
+      stopVoiceInput();
+    } else {
+      startVoiceInput();
+    }
+  };
+
+  const cleanupCommentary = (text: string): string => {
+    // Clean up common speech-to-text artifacts
+    let cleaned = text.trim();
+    
+    // Capitalize first letter of sentences
+    cleaned = cleaned.replace(/(^\w|[.!?]\s+\w)/g, (match) => match.toUpperCase());
+    
+    // Remove multiple spaces
+    cleaned = cleaned.replace(/\s+/g, ' ');
+    
+    // Fix common punctuation issues
+    cleaned = cleaned.replace(/\s+([,.!?])/g, '$1');
+    
+    return cleaned;
+  };
+
   const handleSubmit = async () => {
-    if (!commentary.trim()) {
+    const cleanedCommentary = cleanupCommentary(commentary);
+    
+    if (!cleanedCommentary.trim()) {
       toast.error("Please enter some commentary");
       return;
     }
@@ -39,7 +139,7 @@ export function AddCommentaryModal({ open, onClose, summary, onSuccess }: AddCom
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           parent_summary_id: summary.id,
-          user_commentary: commentary,
+          user_commentary: cleanedCommentary,
           name: `${summary.name} (with Commentary)`
         })
       });
@@ -71,16 +171,41 @@ export function AddCommentaryModal({ open, onClose, summary, onSuccess }: AddCom
 
         <div className="space-y-4 py-4">
           <div>
-            <Label>Your Commentary</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Your Commentary</Label>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={toggleVoiceInput}
+                disabled={loading}
+                className={`border-gray-700 ${isRecording ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse' : ''}`}
+              >
+                {isRecording ? (
+                  <>
+                    <Mic className="h-3 w-3 mr-1.5" />
+                    Stop Recording
+                  </>
+                ) : (
+                  <>
+                    <Mic className="h-3 w-3 mr-1.5" />
+                    Voice Input
+                  </>
+                )}
+              </Button>
+            </div>
             <Textarea
               value={commentary}
               onChange={(e) => setCommentary(e.target.value)}
-              placeholder="Example: I noticed that morning checklists are often missed on Mondays. Can you analyze why this might be happening and provide specific recommendations?"
+              placeholder={isRecording ? "Listening..." : "Example: I noticed that morning checklists are often missed on Mondays. Can you analyze why this might be happening and provide specific recommendations?"}
               className="bg-[#1a1a1a] border-gray-700 min-h-[150px]"
               rows={6}
+              disabled={isRecording}
             />
             <p className="text-xs text-gray-500 mt-2">
-              Your commentary will guide the AI to focus on specific aspects of the data
+              {isRecording 
+                ? "🎤 Speak your commentary... The AI will clean up and structure your input."
+                : "Your commentary will guide the AI to focus on specific aspects of the data. Use voice input for hands-free entry."}
             </p>
           </div>
 

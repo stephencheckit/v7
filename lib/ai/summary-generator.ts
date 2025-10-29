@@ -314,7 +314,7 @@ function buildPrompt(
   let prompt = `You are preparing an executive compliance report for the period ${dateRange}. This report will be presented to senior leadership, board members, and investors. Provide authoritative analysis with actionable insights.\n\n`;
   
   if (userCommentary) {
-    prompt += `**Executive Focus Areas**: ${userCommentary}\n\n`;
+    prompt += `**🎯 EXECUTIVE DIRECTIVE** (User Request - Address Directly):\n"${userCommentary}"\n\nThis directive must be incorporated throughout your analysis. Reference this request explicitly in your executive summary and ensure your insights and recommendations directly address these concerns.\n\n`;
   }
 
   prompt += `**Cadences**: ${cadenceNames}\n\n`;
@@ -347,18 +347,31 @@ function buildPrompt(
   }
 
   prompt += `\n**Analysis Requirements**:\n`;
-  prompt += `1. Write an executive summary that presents key findings, business impact, and critical actions. Focus on what the data reveals about operational performance and risk.\n`;
+  prompt += `1. Write an executive summary that presents key findings, business impact, and critical actions. Focus on what the data reveals about operational performance and risk.`;
+  if (userCommentary) {
+    prompt += ` CRITICAL: Begin your executive summary by directly addressing the user's specific request/question stated above. Your first sentence should reference their concern.\n`;
+  } else {
+    prompt += `\n`;
+  }
   prompt += `2. Identify 3-5 data-driven insights with clear business implications. Each insight should:\n`;
   prompt += `   - State a specific finding with supporting data\n`;
   prompt += `   - Explain the business impact or risk\n`;
   prompt += `   - Be actionable by leadership\n`;
+  if (userCommentary) {
+    prompt += `   - At least 2-3 insights must directly relate to the user's directive\n`;
+  }
   prompt += `3. Provide 3-5 specific, implementable recommendations that:\n`;
   prompt += `   - Address identified issues or opportunities\n`;
   prompt += `   - Include expected business outcomes\n`;
   prompt += `   - Can be acted upon immediately\n`;
+  if (userCommentary) {
+    prompt += `   - Prioritize recommendations that solve the problems raised in the user's directive\n`;
+  }
   prompt += `4. Use authoritative, confident language suitable for board presentations.\n`;
   prompt += `5. Never discuss the report itself, data limitations, or suggest future analyses.\n`;
-  prompt += `6. If user commentary is provided, incorporate those concerns directly into your analysis.\n`;
+  if (userCommentary) {
+    prompt += `6. MANDATORY: The user has provided specific concerns/questions. Your analysis MUST directly address these throughout the report.\n`;
+  }
   prompt += `7. For images: acknowledge their presence but note visual content analysis is not available.\n`;
 
   return prompt;
