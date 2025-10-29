@@ -41,9 +41,9 @@ export default function WorkflowsPage() {
   }
   
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full h-full overflow-hidden">
       {/* Main Content */}
-      <div className={`flex-1 h-full overflow-auto transition-all duration-300 ${showAI ? 'mr-[600px]' : ''}`}>
+      <div className={`flex-1 h-full overflow-auto transition-all duration-300 ${showAI ? 'mr-96' : 'mr-12'}`}>
         <div className="p-4 md:p-8">
           <div className="mx-auto max-w-[1600px] space-y-6 md:space-y-8">
             {/* Header */}

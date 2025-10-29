@@ -48,11 +48,7 @@ export async function getWorkflowContext(workspaceId: string): Promise<WorkflowC
     // Fetch workspace members with user details
     const { data: members } = await supabase
       .from('workspace_members')
-      .select(`
-        user_id,
-        role,
-        user:auth.users(email)
-      `)
+      .select('user_id, role')
       .eq('workspace_id', workspaceId);
     
     // Format sensors
@@ -69,10 +65,10 @@ export async function getWorkflowContext(workspaceId: string): Promise<WorkflowC
       title: f.title
     }));
     
-    // Format users
+    // Format users - just use role info (email not needed for workflow context)
     const formattedUsers = (members || []).map(m => ({
       id: m.user_id,
-      email: (m.user as any)?.email || 'Unknown',
+      email: `user-${m.user_id.substring(0, 8)}`, // Placeholder
       role: m.role
     }));
     
