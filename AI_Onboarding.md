@@ -5,7 +5,59 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🔌 Added Cursor/Vercel Integration - October 29, 2025 (Latest)**
+### **🔧 Fixed Workflow Action Types - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025
+**Commit:** 88907b0
+
+**Issue:**
+```
+./lib/workflows/executor.ts:125:37
+Type error: Property 'config' does not exist on type 'EmailAction'.
+```
+
+Vercel build was failing because workflow action types (`EmailAction`, `SMSAction`, `CreateTaskAction`) didn't have a `config` property, but the executor code was trying to access `action.config`.
+
+**Root Cause:**
+The TypeScript types were defined with properties directly on the action object:
+```typescript
+// ❌ OLD - Missing config wrapper
+interface EmailAction {
+  type: 'email';
+  recipients: string[];
+  subject: string;
+  message: string;
+}
+```
+
+But the database stores actions with a nested `config` object, and the executor expects this structure.
+
+**Fix:**
+Updated all action type definitions to include the `config` property:
+```typescript
+// ✅ NEW - Correct structure
+interface EmailAction {
+  type: 'email';
+  config: {
+    recipients: string[];
+    subject: string;
+    message: string;
+  };
+}
+```
+
+**Files Changed:**
+- `lib/types/workflow.ts` - Added `config` property to `EmailAction`, `SMSAction`, `CreateTaskAction`
+
+**Result:**
+- ✅ TypeScript compilation successful
+- ✅ Vercel builds pass
+- ✅ Types match actual database structure
+- ✅ Executor code works correctly
+
+---
+
+### **🔌 Added Cursor/Vercel Integration - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025
 **Commit:** bdf9791
