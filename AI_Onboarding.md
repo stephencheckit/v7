@@ -5,7 +5,54 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **💾 AI Chat Conversation Persistence - October 29, 2025 (Latest)**
+### **🎤🧠 AI Chat Voice Input & Workspace Context - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025
+**Commit:** 4359b7a
+
+**Summary:**
+Major AI chat enhancement with voice input and workspace context awareness. The AI can now:
+- Accept voice input via Web Speech API (hands-free dictation)
+- Access actual workspace data (forms, workflows, sensors, team)
+- Provide personalized, data-driven recommendations
+
+**Changes:**
+1. **🎤 Voice Input:**
+   - Added microphone button with Web Speech API
+   - Real-time transcription with visual feedback (pulsing red mic)
+   - Browser compatibility check (Chrome/Edge recommended)
+   - Error handling for no-speech, permissions, etc.
+   - Placeholder updates to "Listening..." during recording
+
+2. **🧠 Workspace Context Integration:**
+   - Created `lib/ai/workspace-context.ts` provider
+   - Fetches: Forms (20 max), Workflows (10 max), Sensors (20 max), Team members (20 max), Recent responses (10 max, 7 days)
+   - Context formatted for AI understanding with IDs and names
+   - Privacy-aware (responses only if explicitly enabled)
+
+3. **🔗 API Integration:**
+   - Enhanced chat API to inject workspace context into system prompts
+   - Both image and text flows include context
+   - Graceful fallback if context fetch fails
+   - Frontend sends `workspaceId` and `context` type to API
+
+**Impact:**
+- **Frontline workers:** Voice input enables hands-free form creation (ideal for kitchens, warehouses)
+- **AI intelligence:** Transformed from generic assistant to workspace-aware operator
+- **Personalization:** AI references specific forms ("Your 'Kitchen Inspection' form"), workflows ("Active workflow 'Daily Temp Alert'"), and sensors by name
+- **Workflow creation:** AI can suggest workflows based on actual forms and sensors in workspace
+
+**Example:**
+Before: "I can help you create a workflow with sensor triggers..."
+After: "I see you have a 'Walk-in Cooler' sensor (currently 38°F). I can create a workflow to alert you if it exceeds 40°F, using your existing 'Temperature Log' form."
+
+**Technical Notes:**
+- Edge runtime compatible (dynamic imports for Supabase client)
+- Workspace context cached per request (not per session)
+- Voice input uses browser's native speech recognition (Chrome Web Speech API)
+- Context includes both active and paused workflows for full visibility
+
+### **💾 AI Chat Conversation Persistence - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025
 **Commit:** 9c20553
