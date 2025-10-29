@@ -5,7 +5,33 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **✨ Workflow UX Polish & Improvements - October 29, 2025 (Latest)**
+### **🔧 Fixed Next.js 15 Build + Added Stats Cards - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION
+**Date:** October 29, 2025
+**Commit:** d6fad19
+
+**Issue:**
+Vercel build was failing with: `Route "app/api/workflows/[id]/route.ts" has an invalid "GET" export: Type "{ params: { id: string; }; }" is not a valid type`. This is because Next.js 15 changed dynamic route params to be async Promises.
+
+**Fix:**
+- Updated all route handlers (GET, PATCH, DELETE) in `/api/workflows/[id]/route.ts`
+- Changed params type from `{ params: { id: string } }` to `{ params: Promise<{ id: string }> }`
+- Added `const { id } = await params;` at the start of each handler
+- Fixed missing `apiRateLimit` parameter in `checkRateLimit` calls
+
+**Additional Improvements:**
+- Restructured workflows page to match Forms page spacing (using `space-y-6 md:space-y-8`)
+- Added 3 stats cards: Total Workflows, Active, Total Triggers
+- Gradient cards matching Forms design (green, blue, red)
+- Proper responsive spacing and button sizing
+- Better header alignment and tracking
+
+**Result:**
+Build now succeeds on Vercel. Workflows page has consistent spacing and visual hierarchy matching the rest of the app.
+
+---
+
+### **✨ Workflow UX Polish & Improvements - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION
 **Date:** October 29, 2025
 **Commit:** d583e19
