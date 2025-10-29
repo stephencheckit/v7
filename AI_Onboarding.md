@@ -5,7 +5,40 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🔧 Fixed Rate Limiter Bug in Workflow Creation - October 29, 2025 (Latest)**
+### **✨ Workflow UX Polish & Improvements - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION
+**Date:** October 29, 2025
+**Commit:** d583e19
+
+**What Was Improved:**
+Significant UX enhancements based on user feedback to make workflows more presentable and user-friendly.
+
+**Key Changes:**
+1. **Responsive Layout** - AI panel now pushes content to the left instead of overlaying it, preventing cutoff
+2. **Removed Manual Builder** - Simplified to AI-only creation for MVP
+3. **Human-Readable Formatting:**
+   - Cron expressions converted to readable text ("at 9:00 AM on weekdays" vs "09 * * * 1-5")
+   - Recipients shown by name instead of count ("Email Current User" vs "Email 1 recipient(s)")
+4. **Edit Button Added** - Placeholder in dropdown menu with "Coming soon" message
+5. **Feature Status Messaging:**
+   - Added "Preview" badge to Workflows header
+   - Updated description to clarify what works now (sensor alerts) vs. what's coming (forms, schedules)
+   - EmptyState messaging highlights available features
+6. **Better Action Display** - Shows priority for tasks, clearer recipient formatting
+7. **Layout Polish** - Content properly responds to AI panel open/close with smooth transitions
+
+**Files Created:**
+- `lib/utils/cron-formatter.ts` - Utility for converting cron to human-readable text and formatting recipients
+
+**User Experience:**
+- More polished and professional workflow cards
+- Clear messaging about feature availability
+- Better visual hierarchy and spacing
+- Smoother interactions with AI panel
+
+---
+
+### **🔧 Fixed Rate Limiter Bug in Workflow Creation - October 29, 2025**
 **Status:** ✅ BUG FIXED
 **Date:** October 29, 2025
 **Commit:** abfadf5
