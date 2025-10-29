@@ -1236,20 +1236,26 @@ Please extract and build the form now.`;
       const apiEndpoint = '/api/chat';
       console.log(`Making API call to ${apiEndpoint}...`);
       
-      // Build context based on current page
-      let systemContext = `\n\n**Current Context:**\nUser is on the "${currentPage}" page.`;
+      // Build context based on context prop (forms vs workflows)
+      let systemContext = `\n\n**Current Context:**\n`;
       
-      // Add form ID context
-      if (formId) {
-        systemContext += `\nForm ID: ${formId} (editing existing form)`;
+      if (context === 'workflows') {
+        systemContext += `User is on the WORKFLOWS page. They want to create workflow automations. Focus on workflow triggers (sensor alerts, form events, schedules) and actions (email, SMS, create task).`;
       } else {
-        systemContext += `\nNew form (not yet saved)`;
-      }
-      
-      if (currentPage === 'builder' && currentFields.length > 0) {
-        systemContext += `\n\n**Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
-      } else if (currentPage === 'distribution') {
-        systemContext += `\n\n**Distribution Settings:**\nUser is configuring WHO/WHEN/WHERE/HOW settings for form distribution.`;
+        systemContext += `User is on the "${currentPage}" page.`;
+        
+        // Add form ID context
+        if (formId) {
+          systemContext += `\nForm ID: ${formId} (editing existing form)`;
+        } else {
+          systemContext += `\nNew form (not yet saved)`;
+        }
+        
+        if (currentPage === 'builder' && currentFields.length > 0) {
+          systemContext += `\n\n**Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
+        } else if (currentPage === 'distribution') {
+          systemContext += `\n\n**Distribution Settings:**\nUser is configuring WHO/WHEN/WHERE/HOW settings for form distribution.`;
+        }
       }
       
       const contextualMessage = {
@@ -1498,7 +1504,11 @@ Please extract and build the form now.`;
   };
 
   // Static prompts - consistent across all tabs for persistent experience
-  const suggestedPrompts = [
+  const suggestedPrompts = context === 'workflows' ? [
+    "Alert when temp exceeds 40°F",
+    "Email team on form submission",
+    "Create task when sensor offline",
+  ] : [
     "Create kitchen inspection checklist",
     "Build temperature log form",
     "Make food safety audit",
@@ -1602,26 +1612,21 @@ Please extract and build the form now.`;
             <div className="space-y-4">
               {/* Welcome Message */}
               {messages.length === 0 && (
-                <div className="flex gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#c4dfc4] to-[#c8e0f5]">
-                    <Sparkles className="h-4 w-4 text-[#0a0a0a]" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-800 leading-relaxed mb-3">
+                    👋 Hi! I'm your AI operator. I can help you {context === 'workflows' ? 'create workflow automations, trigger actions based on events' : 'build forms, configure distribution settings, analyze data, or generate reports'} - just tell me what you need!
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestedPrompts.map((prompt, idx) => (
+                      <Badge
+                        key={idx}
+                        onClick={() => handleSuggestedPrompt(prompt)}
+                        className="cursor-pointer bg-white/80 text-gray-700 hover:bg-white border-0 text-xs"
+                      >
+                        {prompt}
+                      </Badge>
+                    ))}
                   </div>
-                  <Card className="flex-1 p-3 bg-white border-gray-200 shadow-sm">
-                    <p className="text-xs text-gray-800 mb-2">
-                      👋 Hi! I'm your AI operator. I can help you build forms, configure distribution settings, analyze data, or generate reports - just tell me what you need!
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {suggestedPrompts.map((prompt, idx) => (
-                        <Badge
-                          key={idx}
-                          onClick={() => handleSuggestedPrompt(prompt)}
-                          className="cursor-pointer bg-gray-100 text-gray-700 hover:bg-gray-200 border-0 text-xs"
-                        >
-                          {prompt}
-                        </Badge>
-                      ))}
-                    </div>
-                  </Card>
                 </div>
               )}
 
