@@ -424,7 +424,11 @@ export default function CanvasPage() {
                     <div className="flex gap-4">
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Questions</p>
-                        <p className="text-2xl font-bold text-[#c4dfc4]">{selectedNode.data.schema?.length || 0}</p>
+                        <p className="text-2xl font-bold text-[#c4dfc4]">
+                          {Array.isArray(selectedNode.data.schema) 
+                            ? selectedNode.data.schema.length 
+                            : (selectedNode.data.schema?.fields?.length || 0)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Responses</p>
@@ -434,11 +438,16 @@ export default function CanvasPage() {
                     <div>
                       <p className="text-xs text-gray-400 mb-2">Sample Questions</p>
                       <div className="space-y-1">
-                        {selectedNode.data.schema?.slice(0, 3).map((field: any, idx: number) => (
-                          <Badge key={idx} variant="outline" className="text-xs text-gray-300 border-white/20">
-                            {field.label}
-                          </Badge>
-                        ))}
+                        {(() => {
+                          const fields = Array.isArray(selectedNode.data.schema) 
+                            ? selectedNode.data.schema 
+                            : (selectedNode.data.schema?.fields || []);
+                          return fields.slice(0, 3).map((field: any, idx: number) => (
+                            <Badge key={idx} variant="outline" className="text-xs text-gray-300 border-white/20">
+                              {field.label}
+                            </Badge>
+                          ));
+                        })()}
                       </div>
                     </div>
                     <Button
