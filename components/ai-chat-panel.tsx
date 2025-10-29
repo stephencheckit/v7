@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2, Plus } from "lucide-react";
+import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2, Plus, Mic, MicOff } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
 import { toast } from "sonner";
@@ -58,6 +58,7 @@ export function AIChatPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,6 +66,7 @@ export function AIChatPanel({
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isParsingFile, setIsParsingFile] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const processedMessageIds = useRef<Set<string>>(new Set());
   const [aiMode, setAiMode] = useState<AIMode | 'auto'>('auto'); // auto, strategy, or execution
   const [detectedMode, setDetectedMode] = useState<AIMode>('strategy');
@@ -316,6 +318,8 @@ Please extract and build the form now.`;
               image: base64Image, // Send image data
               currentPage,
               currentFields,
+              workspaceId, // Send workspace ID for context
+              context, // Send context type (forms or workflows)
             }),
           });
           
@@ -1502,6 +1506,73 @@ Please extract and build the form now.`;
     setInput(prompt);
   };
 
+  // Voice input handlers
+  const startVoiceInput = () => {
+    // Check for browser support
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      toast.error("Voice input not supported in this browser. Try Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      console.log('🎤 Voice recording started');
+      setIsRecording(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0].transcript)
+        .join('');
+      
+      console.log('🎤 Transcript:', transcript);
+      setInput(transcript);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('🎤 Speech recognition error:', event.error);
+      setIsRecording(false);
+      
+      if (event.error === 'no-speech') {
+        toast.error('No speech detected. Please try again.');
+      } else if (event.error === 'not-allowed') {
+        toast.error('Microphone access denied. Please allow microphone access.');
+      } else {
+        toast.error('Voice input error. Please try again.');
+      }
+    };
+
+    recognition.onend = () => {
+      console.log('🎤 Voice recording ended');
+      setIsRecording(false);
+    };
+
+    recognition.start();
+    recognitionRef.current = recognition;
+  };
+
+  const stopVoiceInput = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    setIsRecording(false);
+  };
+
+  const toggleVoiceInput = () => {
+    if (isRecording) {
+      stopVoiceInput();
+    } else {
+      startVoiceInput();
+    }
+  };
+
   // Static prompts - consistent across all tabs for persistent experience
   const suggestedPrompts = context === 'workflows' ? [
     "Alert when temp exceeds 40°F",
@@ -1759,7 +1830,7 @@ Please extract and build the form now.`;
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Describe your form or upload Excel..."
+                placeholder={isRecording ? "Listening..." : "Describe your form or upload Excel..."}
                 disabled={isLoading || isParsingFile}
                 rows={1}
                 onKeyDown={(e) => {
@@ -1770,6 +1841,20 @@ Please extract and build the form now.`;
                 }}
                 className="flex-1 min-h-[36px] max-h-[200px] resize-none overflow-y-auto bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500 py-2"
               />
+              <Button
+                type="button"
+                size="icon"
+                onClick={toggleVoiceInput}
+                disabled={isLoading || isParsingFile}
+                className={`shrink-0 ${isRecording ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-white/80 border border-white/30 text-gray-700 hover:bg-white/90'}`}
+                title={isRecording ? "Stop recording" : "Voice input"}
+              >
+                {isRecording ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
               <Button
                 type="submit"
                 size="icon"

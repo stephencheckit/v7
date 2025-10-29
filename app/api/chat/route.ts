@@ -20,10 +20,37 @@ let currentForm: FormSchema | null = null;
 
 export async function POST(req: Request) {
   try {
-    const { messages, image } = await req.json();
+    const { messages, image, workspaceId, context } = await req.json();
 
     console.log('[API] Received messages:', JSON.stringify(messages, null, 2));
     if (image) console.log('[API] Received image data');
+    if (workspaceId) console.log('[API] Received workspaceId:', workspaceId);
+    if (context) console.log('[API] Context type:', context);
+
+    // Fetch workspace context if available (for both image and text flows)
+    let enhancedSystemPrompt = FORM_BUILDER_SYSTEM_PROMPT;
+    if (workspaceId) {
+      try {
+        console.log('[API] Fetching workspace context...');
+        // Note: Edge runtime limitation - need to import the module properly
+        const { getWorkspaceContext, formatContextForAI } = await import('@/lib/ai/workspace-context');
+        
+        // Get user from Supabase
+        const { createClient } = await import('@/lib/supabase/server');
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const workspaceContext = await getWorkspaceContext(workspaceId, user.id, false);
+          const contextString = formatContextForAI(workspaceContext);
+          enhancedSystemPrompt = FORM_BUILDER_SYSTEM_PROMPT + '\n\n' + contextString;
+          console.log('[API] Enhanced system prompt with workspace context');
+        }
+      } catch (error) {
+        console.error('[API] Failed to fetch workspace context:', error);
+        // Continue without context
+      }
+    }
 
     // If an image is provided, call Anthropic API directly
     if (image && messages.length > 0) {
@@ -55,7 +82,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           model: 'claude-3-7-sonnet-20250219',
           max_tokens: 4096,
-          system: FORM_BUILDER_SYSTEM_PROMPT,
+          system: enhancedSystemPrompt,
           messages: [
             ...messages.slice(0, -1).map((msg: any) => ({
               role: msg.role,
@@ -121,7 +148,7 @@ export async function POST(req: Request) {
     console.log('[API] Starting streamText with Anthropic...');
     const result = streamText({
       model: anthropic('claude-3-7-sonnet-20250219'),
-      system: FORM_BUILDER_SYSTEM_PROMPT,
+      system: enhancedSystemPrompt,
       messages: messages,
       // TOOLS DISABLED - Using text parsing workaround for Phase 1
       /*tools: {
