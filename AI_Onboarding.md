@@ -5,7 +5,58 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🎤🧠 AI Chat Voice Input & Workspace Context - October 29, 2025 (Latest)**
+### **🎤📊 Voice Input for Summary Commentary - October 29, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 29, 2025  
+**Commit:** 8048309
+
+**Summary:**
+Enhanced the "Add Commentary & Regenerate" feature in Summaries with voice input capability and intelligent text cleanup. User commentary now drives AI-generated summaries with guaranteed prominence.
+
+**Changes:**
+1. **Voice Input Integration:**
+   - Added microphone button to commentary modal
+   - Real-time Web Speech API transcription
+   - Visual feedback: Pulsing red button during recording, disabled textarea
+   - Browser compatibility checks with helpful error messages
+   - Auto-stop on error with clear user guidance
+
+2. **Text Cleanup & Processing:**
+   - Auto-capitalization of sentence beginnings
+   - Removal of multiple spaces and speech artifacts
+   - Proper punctuation spacing
+   - `cleanupCommentary()` function runs before submission
+   - Transcribed text appended smoothly without duplicates
+
+3. **Enhanced AI Prompt Engineering:**
+   - User commentary labeled as "🎯 EXECUTIVE DIRECTIVE" in AI context
+   - Mandatory first-paragraph reference to user's concern
+   - AI required to address commentary in 2-3 insights
+   - Recommendations prioritized to solve user-raised issues
+   - Commentary well-structured throughout generated summary
+
+4. **UX Improvements:**
+   - Dynamic help text based on recording state
+   - "Listening..." placeholder during voice input
+   - Clear visual distinction between recording/idle states
+   - Textarea disabled during recording to prevent confusion
+
+**Impact:**
+- **Executives:** Can now speak their questions/concerns hands-free while reviewing data
+- **AI Quality:** Generated summaries directly answer user questions with guaranteed prominence
+- **Accessibility:** Voice input makes commentary entry faster and more accessible
+- **Clarity:** Cleaned-up transcription ensures professional, readable input to AI
+
+**Example Flow:**
+1. User clicks "Voice Input" while reviewing a summary
+2. Speaks: "why are Monday morning checklists always late I need specific recommendations"
+3. Text auto-cleaned to: "Why are Monday morning checklists always late? I need specific recommendations."
+4. AI generates summary starting with: "Analysis of Monday morning checklist delays reveals three primary factors..."
+5. Recommendations specifically address Monday timing issues
+
+---
+
+### **🎤🧠 AI Chat Voice Input & Workspace Context - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025
 **Commit:** 4359b7a
