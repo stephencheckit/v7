@@ -31,25 +31,44 @@ export async function POST(req: Request) {
     let enhancedSystemPrompt = FORM_BUILDER_SYSTEM_PROMPT;
     if (workspaceId) {
       try {
-        console.log('[API] Fetching workspace context...');
+        console.log('[API] 🔍 Fetching workspace context for workspaceId:', workspaceId);
         // Note: Edge runtime limitation - need to import the module properly
         const { getWorkspaceContext, formatContextForAI } = await import('@/lib/ai/workspace-context');
         
         // Get user from Supabase
         const { createClient } = await import('@/lib/supabase/server');
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+          console.error('[API] ❌ Auth error:', authError);
+        }
         
         if (user) {
+          console.log('[API] ✅ User authenticated:', user.id);
           const workspaceContext = await getWorkspaceContext(workspaceId, user.id, false);
+          console.log('[API] 📊 Workspace context fetched:', {
+            forms: workspaceContext.forms.length,
+            workflows: workspaceContext.workflows.length,
+            sensors: workspaceContext.sensors.length,
+            teamMembers: workspaceContext.teamMembers.length,
+            responses: workspaceContext.recentResponses.length
+          });
           const contextString = formatContextForAI(workspaceContext);
+          console.log('[API] 📝 Context string length:', contextString.length, 'characters');
           enhancedSystemPrompt = FORM_BUILDER_SYSTEM_PROMPT + '\n\n' + contextString;
-          console.log('[API] Enhanced system prompt with workspace context');
+          console.log('[API] ✅ Enhanced system prompt with workspace context');
+        } else {
+          console.log('[API] ⚠️ No user found in auth');
         }
       } catch (error) {
-        console.error('[API] Failed to fetch workspace context:', error);
+        console.error('[API] ❌ Failed to fetch workspace context:', error);
+        console.error('[API] Error details:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('[API] Stack:', error instanceof Error ? error.stack : 'No stack');
         // Continue without context
       }
+    } else {
+      console.log('[API] ⚠️ No workspaceId provided in request');
     }
 
     // If an image is provided, call Anthropic API directly

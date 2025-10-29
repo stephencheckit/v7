@@ -41,13 +41,13 @@ interface AIChatPanelProps {
   onWorkflowCreated?: () => void;  // Callback when workflow is created
 }
 
-export function AIChatPanel({ 
-  isOpen, 
-  onToggle, 
+export function AIChatPanel({
+  isOpen,
+  onToggle,
   formId,
   currentPage = 'builder',
   context = 'forms',
-  onFormUpdate, 
+  onFormUpdate,
   currentFields = [],
   disabled = false,
   autoSubmitPrompt,
@@ -73,7 +73,7 @@ export function AIChatPanel({
   const previousFormIdRef = useRef<string | null | undefined>(undefined);
   const hasAutoSubmitted = useRef(false);
   const { workspaceId } = useAuth();
-  
+
   // Generate conversation ID based on context
   const getConversationId = (): string | null => {
     if (context === 'workflows' && workspaceId) {
@@ -87,14 +87,14 @@ export function AIChatPanel({
     }
     return null;
   };
-  
+
   const conversationId = getConversationId();
-  
+
   // Ensure client-only rendering to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  
+
   // Auto-resize textarea as user types
   useEffect(() => {
     if (textareaRef.current) {
@@ -102,13 +102,13 @@ export function AIChatPanel({
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
     }
   }, [input]);
-  
+
   // Auto-submit prompt if provided (for "Let AI Build Draft" flow)
   useEffect(() => {
     if (autoSubmitPrompt && isMounted && !hasAutoSubmitted.current && !isLoading) {
       console.log('🤖 Auto-submitting AI prompt:', autoSubmitPrompt);
       hasAutoSubmitted.current = true;
-      
+
       // Wait a moment for the component to fully render
       setTimeout(() => {
         handleSubmit(null, autoSubmitPrompt);
@@ -116,7 +116,7 @@ export function AIChatPanel({
       }, 500);
     }
   }, [autoSubmitPrompt, isMounted, isLoading]);
-  
+
   // Load conversation history when conversation ID changes
   useEffect(() => {
     if (!conversationId) {
@@ -130,7 +130,7 @@ export function AIChatPanel({
         console.log(`📝 Loading conversation: ${conversationId}`);
         const response = await fetch(`/api/ai/conversations/${conversationId}`);
         const data = await response.json();
-        
+
         if (data.messages && data.messages.length > 0) {
           console.log(`📝 Loaded ${data.messages.length} messages for ${conversationId}`);
           setMessages(data.messages);
@@ -146,22 +146,22 @@ export function AIChatPanel({
 
     loadConversation();
   }, [conversationId]);
-  
+
   // Save conversation to database after each message exchange
   useEffect(() => {
     console.log(`🔍 Save effect triggered - conversationId: ${conversationId}, messages: ${messages.length}`);
-    
+
     if (!conversationId || messages.length === 0) {
       console.log(`⏭️ Skipping save - conversationId: ${conversationId}, messages.length: ${messages.length}`);
       return;
     }
 
     console.log(`⏰ Scheduling save in 1 second for conversation ${conversationId}...`);
-    
+
     // Debounce saves to avoid excessive writes
     const timeoutId = setTimeout(async () => {
       console.log(`💾 Attempting to save ${messages.length} messages for conversation ${conversationId}...`);
-      
+
       // Check if messages can be stringified
       try {
         const testStringify = JSON.stringify({ messages });
@@ -171,20 +171,20 @@ export function AIChatPanel({
         console.error(`❌ Cannot stringify messages:`, stringifyError);
         return;
       }
-      
+
       try {
         const response = await fetch(`/api/ai/conversations/${conversationId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages })
         });
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`❌ Save failed with status ${response.status}:`, errorText);
           return;
         }
-        
+
         const data = await response.json();
         console.log(`✅ Saved ${messages.length} messages for conversation ${conversationId}`, data);
       } catch (error) {
@@ -197,12 +197,12 @@ export function AIChatPanel({
       clearTimeout(timeoutId);
     };
   }, [messages, conversationId]);
-  
+
   // Handle Excel file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     // Check if it's an Excel file
     const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv');
     if (!isExcel) {
@@ -211,28 +211,28 @@ export function AIChatPanel({
       });
       return;
     }
-    
+
     setUploadedFile(file);
     setIsParsingFile(true);
-    
+
     try {
       // Parse the Excel file
       const parsedData = await parseExcelFile(file);
       console.log('📊 Parsed Excel data:', parsedData);
-      
+
       // Generate a prompt for the AI
       const prompt = generateFormPrompt(parsedData);
       console.log('🤖 Generated prompt:', prompt);
-      
+
       // Add user message showing file upload
       setMessages(prev => [...prev, {
         role: 'user',
         content: `📎 Uploaded: ${file.name}\n\n${prompt}`
       }]);
-      
+
       // Auto-submit to AI
       await handleSubmit(null, prompt);
-      
+
     } catch (error) {
       console.error('Failed to parse Excel file:', error);
       toast.error('Failed to parse Excel file', {
@@ -246,7 +246,7 @@ export function AIChatPanel({
       }
     }
   };
-  
+
   const handleRemoveFile = () => {
     setUploadedFile(null);
     if (fileInputRef.current) {
@@ -258,7 +258,7 @@ export function AIChatPanel({
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     // Check if it's an image file
     const isImage = file.type.startsWith('image/');
     if (!isImage) {
@@ -267,25 +267,25 @@ export function AIChatPanel({
       });
       return;
     }
-    
+
     setUploadedImage(file);
     setIsParsingFile(true);
-    
+
     try {
       console.log('📸 Processing image:', file.name, file.type, file.size);
-      
+
       // Convert image to base64
       const reader = new FileReader();
       reader.onerror = (error) => {
         console.error('FileReader error:', error);
         throw new Error('Failed to read image file');
       };
-      
+
       reader.onload = async (e) => {
         try {
           const base64Image = e.target?.result as string;
           console.log('✅ Image converted to base64, size:', base64Image.length);
-          
+
           // Create a prompt for Claude Vision to analyze the image
           const prompt = `I've uploaded an image of a form or checklist. Please analyze this image and extract all the questions/fields you can see. Then create a digital form with those fields.
 
@@ -297,15 +297,15 @@ export function AIChatPanel({
 5. Create the form using CREATE_FORM with all fields
 
 Please extract and build the form now.`;
-          
+
           // Add user message showing image upload
           setMessages(prev => [...prev, {
             role: 'user',
             content: `🖼️ Uploaded image: ${file.name}`
           }]);
-          
+
           console.log('🚀 Sending image to API...');
-          
+
           // Send to API with image data
           const response = await fetch('/api/chat', {
             method: 'POST',
@@ -322,28 +322,28 @@ Please extract and build the form now.`;
               context, // Send context type (forms or workflows)
             }),
           });
-          
+
           console.log('📡 API response status:', response.status);
-          
+
           if (!response.ok) {
             const errorText = await response.text();
             console.error('API error response:', errorText);
             throw new Error(`API error: ${response.status} - ${errorText}`);
           }
-          
+
           const responseReader = response.body?.getReader();
           const decoder = new TextDecoder();
           let aiResponse = '';
-          
+
           if (responseReader) {
             console.log('📖 Reading streamed response...');
             while (true) {
               const { done, value } = await responseReader.read();
               if (done) break;
-              
+
               const chunk = decoder.decode(value);
               const lines = chunk.split('\n');
-              
+
               for (const line of lines) {
                 if (line.startsWith('0:')) {
                   const content = line.slice(2).trim().replace(/^"|"$/g, '');
@@ -355,7 +355,7 @@ Please extract and build the form now.`;
             }
             console.log('✅ Response complete, length:', aiResponse.length);
           }
-          
+
           setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
           setIsParsingFile(false);
           setUploadedImage(null);
@@ -364,9 +364,9 @@ Please extract and build the form now.`;
           throw innerError;
         }
       };
-      
+
       reader.readAsDataURL(file);
-      
+
     } catch (error) {
       console.error('❌ Failed to process image:', error);
       toast.error('Failed to process image', {
@@ -388,19 +388,19 @@ Please extract and build the form now.`;
       imageInputRef.current.value = '';
     }
   };
-  
+
   // Clean message for display (doesn't modify state, just for rendering)
   const cleanMessageForDisplay = (msg: string) => {
     // Remove tool call blocks (all formats)
     let cleaned = msg.replace(/<tool name="[^"]*">\s*\{[\s\S]*?\}\s*<\/tool>/g, '');
     cleaned = cleaned.replace(/```\s*(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\([^)]*\{[\s\S]*?\}\s*\)\s*```/g, '');
     cleaned = cleaned.replace(/(?:add_field|create_form|update_field|remove_field|move_field|validate_form_schema)\s*\(\s*\{[\s\S]*?\}\s*\)/g, '');
-    
+
     // Remove mode announcements (redundant with badge)
     cleaned = cleaned.replace(/⚡\s*EXECUTION\s*Mode:?\s*/gi, '');
     cleaned = cleaned.replace(/🎯\s*STRATEGY\s*Mode:?\s*/gi, '');
     cleaned = cleaned.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
-    
+
     // Remove form operations - use same flexible regex as parser
     // This handles compact JSON without newlines and nested braces
     cleaned = cleaned.replace(/CREATE_FORM:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
@@ -411,23 +411,23 @@ Please extract and build the form now.`;
     cleaned = cleaned.replace(/MOVE_FIELD:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
     cleaned = cleaned.replace(/CLEAR_FORM:\s*\{\s*\}/g, '');
     cleaned = cleaned.replace(/CREATE_WORKFLOW:\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g, '');
-    
+
     // Remove reporting operations
     cleaned = cleaned.replace(/ADD_CHART:\s*```json[\s\S]*?```/g, '');
     cleaned = cleaned.replace(/ADD_INSIGHT:\s*```json[\s\S]*?```/g, '');
     cleaned = cleaned.replace(/UPDATE_SECTION:\s*```json[\s\S]*?```/g, '');
     cleaned = cleaned.replace(/REMOVE_SECTION:\s*```json[\s\S]*?```/g, '');
     cleaned = cleaned.replace(/GENERATE_REPORT:\s*```json[\s\S]*?```/g, '');
-    
+
     // Clean up extra whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
-    
+
     // Only return fallback if message is completely empty
     // Allow short conversational responses through
     if (cleaned.length === 0 || cleaned === '') {
       return '✓ Done';
     }
-    
+
     return cleaned;
   };
 
@@ -442,38 +442,38 @@ Please extract and build the form now.`;
   // Only run when a COMPLETE message is received (not during streaming)
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    
+
     // Skip if no message, not from assistant, or currently loading (streaming)
     if (!lastMessage || lastMessage.role !== 'assistant' || isLoading) {
       return;
     }
-    
+
     // Create a unique ID for this message to avoid reprocessing
     const messageId = `${lastMessage.content.substring(0, 50)}-${messages.length}`;
-    
+
     // Skip if we've already processed this message
     if (processedMessageIds.current.has(messageId)) {
       console.log('⏭️ Already processed this message, skipping...');
       return;
     }
-    
+
     console.log('🔄 Processing complete AI message...');
     console.log('📨 Last message:', lastMessage);
-    
+
     // Mark as processed BEFORE doing any work
     processedMessageIds.current.add(messageId);
-    
+
     try {
       const content = lastMessage.content;
       console.log('📝 Parsing complete message (length:', content.length, ')');
       console.log('🎯 Current Page:', currentPage);
-      
+
       // FORM MODE: Parse form operations
       // Extract create_form calls from multiple formats:
       // Format 1: CREATE_FORM:\n{...} (capture until we find a closing brace at the start of a line or followed by narrative text)
       // Format 2: <tool name="create_form">{...}</tool>
       // Format 3: create_form({...})
-      
+
       // Better regex: capture from CREATE_FORM: to the end of the JSON object
       // Match CREATE_FORM: followed by JSON, handling various formatting scenarios
       // This handles: text before CREATE_FORM:, compact JSON, and formatted JSON
@@ -484,24 +484,24 @@ Please extract and build the form now.`;
       if (!createFormMatch) {
         createFormMatch = content.match(/create_form\s*\(\s*(\{[\s\S]*?\})\s*\)/);
       }
-      
+
       if (createFormMatch) {
         let jsonStr = createFormMatch[1];
         console.log('Found create_form JSON (raw):', jsonStr.substring(0, 100) + '...');
-        
+
         // Unescape JSON if it was escaped by the streaming format
         // The streaming format wraps content in quotes and escapes inner quotes
         if (jsonStr.includes('\\"')) {
           jsonStr = jsonStr.replace(/\\"/g, '"');
           console.log('Unescaped JSON:', jsonStr.substring(0, 100) + '...');
         }
-        
+
         try {
           try {
             // Try to parse the JSON
             const formData = JSON.parse(jsonStr);
             console.log('Parsed form data:', formData);
-          
+
             // Convert field names to IDs and map to backend format
             const backendForm = {
               id: `form-${Date.now()}`,
@@ -521,7 +521,7 @@ Please extract and build the form now.`;
                     return opt; // Already in correct format
                   });
                 }
-                
+
                 // Clean up label - remove very long text
                 let label = field.label;
                 if (label && label.length > 150) {
@@ -529,7 +529,7 @@ Please extract and build the form now.`;
                   const firstSentence = label.match(/^[^.!?]+[.!?]/);
                   label = firstSentence ? firstSentence[0] : label.substring(0, 100) + '...';
                 }
-                
+
                 // Get widget metadata for this field type
                 const getWidgetMetadata = (type: string) => {
                   const widgetMap: Record<string, { name: string; color: string }> = {
@@ -552,9 +552,9 @@ Please extract and build the form now.`;
                   };
                   return widgetMap[type] || { name: type, color: '#c4dfc4' };
                 };
-                
+
                 const widgetMeta = getWidgetMetadata(field.type);
-                
+
                 return {
                   id: field.name || field.id || `field-${Date.now()}-${Math.random()}`,
                   type: field.type,
@@ -572,7 +572,7 @@ Please extract and build the form now.`;
               createdAt: new Date().toISOString(),
               version: 1,
             };
-          
+
             console.log('Backend form:', backendForm);
             const { fields, title, description } = convertBackendFormToFrontend(backendForm);
             console.log('Frontend fields:', fields);
@@ -582,7 +582,7 @@ Please extract and build the form now.`;
             console.error('Failed to parse form JSON on first attempt:', firstParseError);
             console.error('JSON string (first 500 chars):', jsonStr.substring(0, 500));
             console.error('JSON string (last 500 chars):', jsonStr.substring(Math.max(0, jsonStr.length - 500)));
-            
+
             // Show user-friendly error
             setMessages(prev => [...prev, {
               role: 'assistant',
@@ -592,373 +592,373 @@ Please extract and build the form now.`;
         } catch (parseError) {
           console.error('Failed to parse form JSON:', parseError);
         }
-        } else {
-          console.log('✅ No create_form - checking for update operations...');
-          
-          // First check for UPDATE_FORM_META (update form title/description)
-          const updateFormMetaRegex = /UPDATE_FORM_META:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
-          const formMetaMatches = Array.from(content.matchAll(updateFormMetaRegex));
-          
-          if (formMetaMatches.length > 0) {
-            console.log(`📝 Found ${formMetaMatches.length} UPDATE_FORM_META match(es)`);
-            
-            for (const match of formMetaMatches) {
-              try {
-                const jsonStr = match[1].trim();
-                const metaData = JSON.parse(jsonStr);
-                console.log('Found update_form_meta:', metaData);
-                
-                // Call onFormUpdate with current fields but updated metadata
-                const formMeta: { title?: string; description?: string } = {};
-                if (metaData.title) formMeta.title = metaData.title;
-                if (metaData.description) formMeta.description = metaData.description;
-                
-                console.log('✅ Updating form metadata:', formMeta);
-                onFormUpdate?.(currentFields, formMeta);
-                
-                // Continue processing other operations (don't return)
-              } catch (e) {
-                console.error('Failed to parse update_form_meta JSON:', e);
-              }
-            }
-          }
-          
-          // Check for UPDATE_FIELD
-          // Match UPDATE_FIELD: {...} - capture until closing brace followed by newline or end
-          const updateFieldRegex = /UPDATE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
-          const updateMatches = Array.from(content.matchAll(updateFieldRegex));
-          
-          console.log(`🔍 Checking for UPDATE_FIELD... found ${updateMatches.length} match(es)`);
-          if (updateMatches.length > 0) {
-            console.log('📋 UPDATE_FIELD matches:', updateMatches.map((m, i) => `Match ${i+1}: ${m[0].substring(0, 150)}...`));
-            
-            for (const match of updateMatches) {
-              try {
-                const jsonStr = match[1].trim();
-                const updateData = JSON.parse(jsonStr);
-                console.log('Found update_field:', updateData);
-                
-                const fieldId = updateData.id;
-                const existingFieldIndex = currentFields.findIndex(f => f.id === fieldId);
-                
-                if (existingFieldIndex === -1) {
-                  console.warn('⚠️ Field not found for update:', fieldId);
-                  continue;
-                }
-                
-                // Convert options if needed
-                let options = undefined;
-                if (updateData.options && Array.isArray(updateData.options)) {
-                  options = updateData.options.map((opt: any) => {
-                    if (typeof opt === 'string') {
-                      return {
-                        label: opt,
-                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-                      };
-                    }
-                    return opt;
-                  });
-                }
-                
-                // Create updated field by merging existing with updates
-                const updatedFields = [...currentFields];
-                const existingField = currentFields[existingFieldIndex];
-                
-                console.log('🔄 BEFORE update:', existingField);
-                console.log('📝 UPDATE data:', updateData);
-                console.log('📋 Converted options:', options);
-                
-                updatedFields[existingFieldIndex] = {
-                  ...existingField,
-                  ...updateData,
-                  options,
-                };
-                
-                console.log('✅ AFTER update:', updatedFields[existingFieldIndex]);
-                console.log('📊 Changed properties:', {
-                  type: existingField.type !== updatedFields[existingFieldIndex].type,
-                  label: existingField.label !== updatedFields[existingFieldIndex].label,
-                  options: JSON.stringify(existingField.options) !== JSON.stringify(updatedFields[existingFieldIndex].options),
-                  required: existingField.required !== updatedFields[existingFieldIndex].required,
-                });
-                
-                // Convert to backend format and update
-                const backendForm = {
-                  id: `form-${Date.now()}`,
-                  title: 'Food Safety Form',
-                  description: '',
-                  fields: updatedFields.map((field: any) => {
-                    let fieldOptions = field.options;
-                    if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
-                      fieldOptions = fieldOptions.map((opt: string) => ({
-                        label: opt,
-                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-                      }));
-                    }
-                    
-                    return {
-                      id: field.id,
-                      type: field.type,
-                      label: field.label,
-                      placeholder: field.placeholder,
-                      description: field.description,
-                      required: field.required !== false,
-                      options: fieldOptions,
-                    };
-                  }),
-                  submitButton: { label: 'Submit' },
-                  createdAt: new Date().toISOString(),
-                  version: 1,
-                };
-                
-                const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-                onFormUpdate?.(fields, { title, description });
-                
-                // Don't process add_field if we updated
-                return;
-              } catch (e) {
-                console.error('Failed to parse update_field JSON:', e);
-              }
-            }
-          }
-          
-          // Check for MOVE_FIELD (reorder fields)
-          const moveFieldRegex = /MOVE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
-          const moveMatches = Array.from(content.matchAll(moveFieldRegex));
-          
-          if (moveMatches.length > 0) {
-            console.log(`🔍 Found ${moveMatches.length} move_field match(es)`);
-            
-            for (const match of moveMatches) {
-              try {
-                const jsonStr = match[1].trim();
-                const moveData = JSON.parse(jsonStr);
-                console.log('Found move_field:', moveData);
-                
-                const fieldId = moveData.id;
-                const position = moveData.position;
-                const targetId = moveData.target_id;
-                
-                const fieldIndex = currentFields.findIndex(f => f.id === fieldId);
-                
-                if (fieldIndex === -1) {
-                  console.warn('⚠️ Field not found for moving:', fieldId);
-                  continue;
-                }
-                
-                // Remove the field from its current position
-                const field = currentFields[fieldIndex];
-                const updatedFields = [...currentFields];
-                updatedFields.splice(fieldIndex, 1);
-                
-                // Insert at new position
-                let newIndex = 0;
-                if (position === 'top') {
-                  newIndex = 0;
-                } else if (position === 'bottom') {
-                  newIndex = updatedFields.length;
-                } else if (position === 'before' && targetId) {
-                  newIndex = updatedFields.findIndex(f => f.id === targetId);
-                  if (newIndex === -1) newIndex = 0;
-                } else if (position === 'after' && targetId) {
-                  newIndex = updatedFields.findIndex(f => f.id === targetId) + 1;
-                  if (newIndex === 0) newIndex = updatedFields.length;
-                }
-                
-                updatedFields.splice(newIndex, 0, field);
-                
-                console.log('✅ Moved field:', fieldId, 'to position:', position, newIndex);
-                
-                // Convert to backend format and update
-                const backendForm = {
-                  id: `form-${Date.now()}`,
-                  title: 'Food Safety Form',
-                  description: '',
-                  fields: updatedFields.map((field: any) => {
-                    let fieldOptions = field.options;
-                    if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
-                      fieldOptions = fieldOptions.map((opt: string) => ({
-                        label: opt,
-                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-                      }));
-                    }
-                    
-                    return {
-                      id: field.id,
-                      type: field.type,
-                      label: field.label,
-                      placeholder: field.placeholder,
-                      description: field.description,
-                      required: field.required !== false,
-                      options: fieldOptions,
-                    };
-                  }),
-                  submitButton: { label: 'Submit' },
-                  createdAt: new Date().toISOString(),
-                  version: 1,
-                };
-                
-                const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-                onFormUpdate?.(fields, { title, description });
-                
-                // Don't process other operations if we moved
-                return;
-              } catch (e) {
-                console.error('Failed to parse move_field JSON:', e);
-              }
-            }
-          }
-          
-          // Check for REMOVE_FIELD
-          // Match REMOVE_FIELD: {...} - capture until closing brace followed by newline or end
-          const removeFieldRegex = /REMOVE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
-          const removeMatches = Array.from(content.matchAll(removeFieldRegex));
-          
-          if (removeMatches.length > 0) {
-            console.log(`🔍 Found ${removeMatches.length} remove_field match(es)`);
-            
-            for (const match of removeMatches) {
-              try {
-                const jsonStr = match[1].trim();
-                const removeData = JSON.parse(jsonStr);
-                console.log('Found remove_field:', removeData);
-                
-                const fieldId = removeData.id;
-                const updatedFields = currentFields.filter(f => f.id !== fieldId);
-                
-                if (updatedFields.length === currentFields.length) {
-                  console.warn('⚠️ Field not found for removal:', fieldId);
-                  continue;
-                }
-                
-                console.log('✅ Removed field:', fieldId);
-                
-                // Convert to backend format and update
-                const backendForm = {
-                  id: `form-${Date.now()}`,
-                  title: 'Food Safety Form',
-                  description: '',
-                  fields: updatedFields.map((field: any) => {
-                    let fieldOptions = field.options;
-                    if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
-                      fieldOptions = fieldOptions.map((opt: string) => ({
-                        label: opt,
-                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-                      }));
-                    }
-                    
-                    return {
-                      id: field.id,
-                      type: field.type,
-                      label: field.label,
-                      placeholder: field.placeholder,
-                      description: field.description,
-                      required: field.required !== false,
-                      options: fieldOptions,
-                    };
-                  }),
-                  submitButton: { label: 'Submit' },
-                  createdAt: new Date().toISOString(),
-                  version: 1,
-                };
-                
-                const { fields, title, description } = convertBackendFormToFrontend(backendForm);
-                onFormUpdate?.(fields, { title, description });
-                
-                // Don't process add_field if we removed
-                return;
-              } catch (e) {
-                console.error('Failed to parse remove_field JSON:', e);
-              }
-            }
-          }
-          
-          // Check for CLEAR_FORM (reset/clear all fields)
-          const clearFormRegex = /CLEAR_FORM:\s*\{\s*\}/g;
-          const clearMatches = Array.from(content.matchAll(clearFormRegex));
-          
-          if (clearMatches.length > 0) {
-            console.log('🧹 Found CLEAR_FORM operation');
-            
-            // Clear all fields
-            onFormUpdate?.([], { title: undefined, description: undefined });
-            
-            console.log('✅ Cleared all form fields');
-            
-            // Don't process other operations if we cleared
-            return;
-          }
-          
-          // Check for CREATE_WORKFLOW
-          const createWorkflowMatch = content.match(/CREATE_WORKFLOW:\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/);
-          
-          if (createWorkflowMatch) {
-            let jsonStr = createWorkflowMatch[1];
-            console.log('Found CREATE_WORKFLOW JSON (raw):', jsonStr.substring(0, 100) + '...');
-            
-            // Unescape JSON if it was escaped by the streaming format
-            if (jsonStr.includes('\\"')) {
-              jsonStr = jsonStr.replace(/\\"/g, '"');
-            }
-            
+      } else {
+        console.log('✅ No create_form - checking for update operations...');
+
+        // First check for UPDATE_FORM_META (update form title/description)
+        const updateFormMetaRegex = /UPDATE_FORM_META:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+        const formMetaMatches = Array.from(content.matchAll(updateFormMetaRegex));
+
+        if (formMetaMatches.length > 0) {
+          console.log(`📝 Found ${formMetaMatches.length} UPDATE_FORM_META match(es)`);
+
+          for (const match of formMetaMatches) {
             try {
-              const workflowData = JSON.parse(jsonStr);
-              console.log('Parsed workflow data:', workflowData);
-              
-              // Call API to create workflow (using async IIFE to handle await)
-              (async () => {
-                try {
-                  const requestBody = {
-                    workspace_id: workspaceId,
-                    name: workflowData.name,
-                    description: workflowData.description || '',
-                    trigger_type: workflowData.trigger.type,
-                    trigger_config: workflowData.trigger.config,
-                    actions: workflowData.actions,
-                  };
-                  console.log('📤 Sending workflow creation request:', requestBody);
-                  
-                  const response = await fetch('/api/workflows', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody),
-                  });
-                  
-                  if (response.ok) {
-                    const result = await response.json();
-                    console.log('✅ Workflow created:', result.workflow);
-                    toast.success(`Created workflow: ${workflowData.name}`);
-                    
-                    // Call onWorkflowCreated callback if provided
-                    if (onWorkflowCreated) {
-                      onWorkflowCreated();
-                    }
-                  } else {
-                    const errorText = await response.text();
-                    console.error('Failed to create workflow. Status:', response.status);
-                    console.error('Response:', errorText);
-                    
-                    try {
-                      const error = JSON.parse(errorText);
-                      toast.error(`Failed to create workflow: ${error.error || 'Unknown error'}`);
-                    } catch {
-                      toast.error(`Failed to create workflow (${response.status}). Check console for details.`);
-                    }
-                  }
-                } catch (error) {
-                  console.error('Failed to create workflow:', error);
-                  toast.error('Failed to create workflow');
-                }
-              })();
-            } catch (parseError) {
-              console.error('Failed to parse workflow JSON:', parseError);
-              toast.error('Failed to parse workflow data');
+              const jsonStr = match[1].trim();
+              const metaData = JSON.parse(jsonStr);
+              console.log('Found update_form_meta:', metaData);
+
+              // Call onFormUpdate with current fields but updated metadata
+              const formMeta: { title?: string; description?: string } = {};
+              if (metaData.title) formMeta.title = metaData.title;
+              if (metaData.description) formMeta.description = metaData.description;
+
+              console.log('✅ Updating form metadata:', formMeta);
+              onFormUpdate?.(currentFields, formMeta);
+
+              // Continue processing other operations (don't return)
+            } catch (e) {
+              console.error('Failed to parse update_form_meta JSON:', e);
             }
           }
-          
-          // Check for add_field calls in multiple formats:
+        }
+
+        // Check for UPDATE_FIELD
+        // Match UPDATE_FIELD: {...} - capture until closing brace followed by newline or end
+        const updateFieldRegex = /UPDATE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+        const updateMatches = Array.from(content.matchAll(updateFieldRegex));
+
+        console.log(`🔍 Checking for UPDATE_FIELD... found ${updateMatches.length} match(es)`);
+        if (updateMatches.length > 0) {
+          console.log('📋 UPDATE_FIELD matches:', updateMatches.map((m, i) => `Match ${i + 1}: ${m[0].substring(0, 150)}...`));
+
+          for (const match of updateMatches) {
+            try {
+              const jsonStr = match[1].trim();
+              const updateData = JSON.parse(jsonStr);
+              console.log('Found update_field:', updateData);
+
+              const fieldId = updateData.id;
+              const existingFieldIndex = currentFields.findIndex(f => f.id === fieldId);
+
+              if (existingFieldIndex === -1) {
+                console.warn('⚠️ Field not found for update:', fieldId);
+                continue;
+              }
+
+              // Convert options if needed
+              let options = undefined;
+              if (updateData.options && Array.isArray(updateData.options)) {
+                options = updateData.options.map((opt: any) => {
+                  if (typeof opt === 'string') {
+                    return {
+                      label: opt,
+                      value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                    };
+                  }
+                  return opt;
+                });
+              }
+
+              // Create updated field by merging existing with updates
+              const updatedFields = [...currentFields];
+              const existingField = currentFields[existingFieldIndex];
+
+              console.log('🔄 BEFORE update:', existingField);
+              console.log('📝 UPDATE data:', updateData);
+              console.log('📋 Converted options:', options);
+
+              updatedFields[existingFieldIndex] = {
+                ...existingField,
+                ...updateData,
+                options,
+              };
+
+              console.log('✅ AFTER update:', updatedFields[existingFieldIndex]);
+              console.log('📊 Changed properties:', {
+                type: existingField.type !== updatedFields[existingFieldIndex].type,
+                label: existingField.label !== updatedFields[existingFieldIndex].label,
+                options: JSON.stringify(existingField.options) !== JSON.stringify(updatedFields[existingFieldIndex].options),
+                required: existingField.required !== updatedFields[existingFieldIndex].required,
+              });
+
+              // Convert to backend format and update
+              const backendForm = {
+                id: `form-${Date.now()}`,
+                title: 'Food Safety Form',
+                description: '',
+                fields: updatedFields.map((field: any) => {
+                  let fieldOptions = field.options;
+                  if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
+                    fieldOptions = fieldOptions.map((opt: string) => ({
+                      label: opt,
+                      value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                    }));
+                  }
+
+                  return {
+                    id: field.id,
+                    type: field.type,
+                    label: field.label,
+                    placeholder: field.placeholder,
+                    description: field.description,
+                    required: field.required !== false,
+                    options: fieldOptions,
+                  };
+                }),
+                submitButton: { label: 'Submit' },
+                createdAt: new Date().toISOString(),
+                version: 1,
+              };
+
+              const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+              onFormUpdate?.(fields, { title, description });
+
+              // Don't process add_field if we updated
+              return;
+            } catch (e) {
+              console.error('Failed to parse update_field JSON:', e);
+            }
+          }
+        }
+
+        // Check for MOVE_FIELD (reorder fields)
+        const moveFieldRegex = /MOVE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+        const moveMatches = Array.from(content.matchAll(moveFieldRegex));
+
+        if (moveMatches.length > 0) {
+          console.log(`🔍 Found ${moveMatches.length} move_field match(es)`);
+
+          for (const match of moveMatches) {
+            try {
+              const jsonStr = match[1].trim();
+              const moveData = JSON.parse(jsonStr);
+              console.log('Found move_field:', moveData);
+
+              const fieldId = moveData.id;
+              const position = moveData.position;
+              const targetId = moveData.target_id;
+
+              const fieldIndex = currentFields.findIndex(f => f.id === fieldId);
+
+              if (fieldIndex === -1) {
+                console.warn('⚠️ Field not found for moving:', fieldId);
+                continue;
+              }
+
+              // Remove the field from its current position
+              const field = currentFields[fieldIndex];
+              const updatedFields = [...currentFields];
+              updatedFields.splice(fieldIndex, 1);
+
+              // Insert at new position
+              let newIndex = 0;
+              if (position === 'top') {
+                newIndex = 0;
+              } else if (position === 'bottom') {
+                newIndex = updatedFields.length;
+              } else if (position === 'before' && targetId) {
+                newIndex = updatedFields.findIndex(f => f.id === targetId);
+                if (newIndex === -1) newIndex = 0;
+              } else if (position === 'after' && targetId) {
+                newIndex = updatedFields.findIndex(f => f.id === targetId) + 1;
+                if (newIndex === 0) newIndex = updatedFields.length;
+              }
+
+              updatedFields.splice(newIndex, 0, field);
+
+              console.log('✅ Moved field:', fieldId, 'to position:', position, newIndex);
+
+              // Convert to backend format and update
+              const backendForm = {
+                id: `form-${Date.now()}`,
+                title: 'Food Safety Form',
+                description: '',
+                fields: updatedFields.map((field: any) => {
+                  let fieldOptions = field.options;
+                  if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
+                    fieldOptions = fieldOptions.map((opt: string) => ({
+                      label: opt,
+                      value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                    }));
+                  }
+
+                  return {
+                    id: field.id,
+                    type: field.type,
+                    label: field.label,
+                    placeholder: field.placeholder,
+                    description: field.description,
+                    required: field.required !== false,
+                    options: fieldOptions,
+                  };
+                }),
+                submitButton: { label: 'Submit' },
+                createdAt: new Date().toISOString(),
+                version: 1,
+              };
+
+              const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+              onFormUpdate?.(fields, { title, description });
+
+              // Don't process other operations if we moved
+              return;
+            } catch (e) {
+              console.error('Failed to parse move_field JSON:', e);
+            }
+          }
+        }
+
+        // Check for REMOVE_FIELD
+        // Match REMOVE_FIELD: {...} - capture until closing brace followed by newline or end
+        const removeFieldRegex = /REMOVE_FIELD:\s*(\{[\s\S]*?\})(?=\s*\n\n|\s*\n[A-Z]|\s*$)/g;
+        const removeMatches = Array.from(content.matchAll(removeFieldRegex));
+
+        if (removeMatches.length > 0) {
+          console.log(`🔍 Found ${removeMatches.length} remove_field match(es)`);
+
+          for (const match of removeMatches) {
+            try {
+              const jsonStr = match[1].trim();
+              const removeData = JSON.parse(jsonStr);
+              console.log('Found remove_field:', removeData);
+
+              const fieldId = removeData.id;
+              const updatedFields = currentFields.filter(f => f.id !== fieldId);
+
+              if (updatedFields.length === currentFields.length) {
+                console.warn('⚠️ Field not found for removal:', fieldId);
+                continue;
+              }
+
+              console.log('✅ Removed field:', fieldId);
+
+              // Convert to backend format and update
+              const backendForm = {
+                id: `form-${Date.now()}`,
+                title: 'Food Safety Form',
+                description: '',
+                fields: updatedFields.map((field: any) => {
+                  let fieldOptions = field.options;
+                  if (fieldOptions && Array.isArray(fieldOptions) && fieldOptions.length > 0 && typeof fieldOptions[0] === 'string') {
+                    fieldOptions = fieldOptions.map((opt: string) => ({
+                      label: opt,
+                      value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                    }));
+                  }
+
+                  return {
+                    id: field.id,
+                    type: field.type,
+                    label: field.label,
+                    placeholder: field.placeholder,
+                    description: field.description,
+                    required: field.required !== false,
+                    options: fieldOptions,
+                  };
+                }),
+                submitButton: { label: 'Submit' },
+                createdAt: new Date().toISOString(),
+                version: 1,
+              };
+
+              const { fields, title, description } = convertBackendFormToFrontend(backendForm);
+              onFormUpdate?.(fields, { title, description });
+
+              // Don't process add_field if we removed
+              return;
+            } catch (e) {
+              console.error('Failed to parse remove_field JSON:', e);
+            }
+          }
+        }
+
+        // Check for CLEAR_FORM (reset/clear all fields)
+        const clearFormRegex = /CLEAR_FORM:\s*\{\s*\}/g;
+        const clearMatches = Array.from(content.matchAll(clearFormRegex));
+
+        if (clearMatches.length > 0) {
+          console.log('🧹 Found CLEAR_FORM operation');
+
+          // Clear all fields
+          onFormUpdate?.([], { title: undefined, description: undefined });
+
+          console.log('✅ Cleared all form fields');
+
+          // Don't process other operations if we cleared
+          return;
+        }
+
+        // Check for CREATE_WORKFLOW
+        const createWorkflowMatch = content.match(/CREATE_WORKFLOW:\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/);
+
+        if (createWorkflowMatch) {
+          let jsonStr = createWorkflowMatch[1];
+          console.log('Found CREATE_WORKFLOW JSON (raw):', jsonStr.substring(0, 100) + '...');
+
+          // Unescape JSON if it was escaped by the streaming format
+          if (jsonStr.includes('\\"')) {
+            jsonStr = jsonStr.replace(/\\"/g, '"');
+          }
+
+          try {
+            const workflowData = JSON.parse(jsonStr);
+            console.log('Parsed workflow data:', workflowData);
+
+            // Call API to create workflow (using async IIFE to handle await)
+            (async () => {
+              try {
+                const requestBody = {
+                  workspace_id: workspaceId,
+                  name: workflowData.name,
+                  description: workflowData.description || '',
+                  trigger_type: workflowData.trigger.type,
+                  trigger_config: workflowData.trigger.config,
+                  actions: workflowData.actions,
+                };
+                console.log('📤 Sending workflow creation request:', requestBody);
+
+                const response = await fetch('/api/workflows', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(requestBody),
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log('✅ Workflow created:', result.workflow);
+                  toast.success(`Created workflow: ${workflowData.name}`);
+
+                  // Call onWorkflowCreated callback if provided
+                  if (onWorkflowCreated) {
+                    onWorkflowCreated();
+                  }
+                } else {
+                  const errorText = await response.text();
+                  console.error('Failed to create workflow. Status:', response.status);
+                  console.error('Response:', errorText);
+
+                  try {
+                    const error = JSON.parse(errorText);
+                    toast.error(`Failed to create workflow: ${error.error || 'Unknown error'}`);
+                  } catch {
+                    toast.error(`Failed to create workflow (${response.status}). Check console for details.`);
+                  }
+                }
+              } catch (error) {
+                console.error('Failed to create workflow:', error);
+                toast.error('Failed to create workflow');
+              }
+            })();
+          } catch (parseError) {
+            console.error('Failed to parse workflow JSON:', parseError);
+            toast.error('Failed to parse workflow data');
+          }
+        }
+
+        // Check for add_field calls in multiple formats:
         // Format 0: ADD_FIELD:\n{...}  (NEW EXPLICIT FORMAT)
         // Format 1: <tool name="add_field">{...}</tool>
         // Format 2: add_field({...}) or Calling add_field({...}) - need to handle nested braces
@@ -966,24 +966,24 @@ Please extract and build the form now.`;
         // Updated regex to handle nested braces (e.g., position: { "after": "..." })
         const addFieldRegex0 = /ADD_FIELD:\s*\n?\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})/g;
         const addFieldRegex1 = /<tool name="add_field">\s*\n?\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})\s*\n?\s*<\/tool>/g;
-        
+
         // Better regex for nested JSON - capture everything between add_field( and )
         // Allow optional "Calling " prefix
         // Updated to handle two levels of nested braces
         const addFieldRegex2 = /(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})\s*\)/g;
         const addFieldRegex3 = /```\s*(?:Calling\s+)?add_field\s*\(\s*(\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})\s*\)\s*```/g;
-        
+
         const matches0 = Array.from(content.matchAll(addFieldRegex0));
         const matches1 = Array.from(content.matchAll(addFieldRegex1));
         const matches2 = Array.from(content.matchAll(addFieldRegex2));
         const matches3 = Array.from(content.matchAll(addFieldRegex3));
         const allMatches = [...matches0, ...matches1, ...matches2, ...matches3];
-        
+
         console.log(`🔍 Found ${allMatches.length} add_field match(es)`);
         if (allMatches.length > 0) {
-          console.log('📋 Match details:', allMatches.map((m, i) => `Match ${i+1}: ${m[0].substring(0, 100)}...`));
+          console.log('📋 Match details:', allMatches.map((m, i) => `Match ${i + 1}: ${m[0].substring(0, 100)}...`));
         }
-        
+
         const addedFields = [];
         for (const match of allMatches) {
           try {
@@ -991,21 +991,21 @@ Please extract and build the form now.`;
             console.log('Attempting to parse add_field JSON:', jsonStr.substring(0, 200));
             const addFieldData = JSON.parse(jsonStr);
             console.log('Found add_field:', addFieldData);
-            
+
             // Handle multiple formats:
             // Format 0: ADD_FIELD: { id, type, label, ... } (direct field object, no explanation wrapper)
             // Format 1: { explanation, field: {...} }
             // Format 2: { explanation, id, type, label, ... }
             // Format 3: { explanation, field_id, type, label, ... }
             // Format 4: { explanation, field_name, field_type, ... }
-            
+
             // If it has 'explanation' key, extract the field data, otherwise use the whole object as field data
             const fieldData = addFieldData.explanation ? (addFieldData.field || addFieldData) : addFieldData;
-            
+
             // Normalize field ID and type
             const fieldId = fieldData.id || fieldData.field_id || fieldData.field_name || `field-${Date.now()}-${Math.random()}`;
             const fieldType = fieldData.type || fieldData.field_type;
-            
+
             if (fieldId && fieldType && fieldData.label) {
               // Check if this field already exists (avoid duplicates from multiple useEffect runs)
               const fieldExists = currentFields.some(f => f.id === fieldId);
@@ -1013,144 +1013,22 @@ Please extract and build the form now.`;
                 console.log('⏭️ Field already exists, skipping:', fieldId);
                 continue;
               }
-              
-                // Convert options from string array to {label, value} format if needed
-                let options = undefined;
-                if (fieldData.options && Array.isArray(fieldData.options)) {
-                  options = fieldData.options.map((opt: any) => {
-                    if (typeof opt === 'string') {
-                      return {
-                        label: opt,
-                        value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-                      };
-                    }
-                    return opt; // Already in correct format
-                  });
-                }
-                
-                // Get widget metadata for this field type
-                const getWidgetMetadata = (type: string) => {
-                  const widgetMap: Record<string, { name: string; color: string }> = {
-                    'text': { name: 'text', color: '#c4dfc4' },
-                    'single-text': { name: 'single-text', color: '#c4dfc4' },
-                    'textarea': { name: 'textarea', color: '#c4dfc4' },
-                    'email': { name: 'email', color: '#c4dfc4' },
-                    'phone': { name: 'phone', color: '#c4dfc4' },
-                    'number': { name: 'number', color: '#c4dfc4' },
-                    'dropdown': { name: 'dropdown', color: '#c8e0f5' },
-                    'checkbox': { name: 'checkbox', color: '#c8e0f5' },
-                    'radio': { name: 'radio', color: '#c8e0f5' },
-                    'binary': { name: 'binary', color: '#c8e0f5' },
-                    'thumbs': { name: 'thumbs', color: '#c8e0f5' },
-                    'matrix': { name: 'matrix', color: '#c8e0f5' },
-                    'date': { name: 'date', color: '#ddc8f5' },
-                    'file': { name: 'file', color: '#ddc8f5' },
-                    'image': { name: 'image', color: '#ddc8f5' },
-                    'signature': { name: 'signature', color: '#ddc8f5' },
-                  };
-                  return widgetMap[type] || { name: type, color: '#c4dfc4' };
-                };
-                
-                const widgetMeta = getWidgetMetadata(fieldType);
-                
-                const newField = {
-                  id: fieldId,
-                  type: fieldType,
-                  name: widgetMeta.name,
-                  label: fieldData.label,
-                  placeholder: fieldData.placeholder || fieldData.help_text,
-                  description: fieldData.description || fieldData.help_text,
-                  required: fieldData.required !== false,
-                  color: widgetMeta.color,
-                  icon: undefined, // Icon will be determined by the form builder based on type
-                  options,
-                  position: fieldData.position, // Preserve position instruction
-                };
-                console.log('✅ Adding field:', newField);
-                addedFields.push(newField);
-            } else {
-              console.warn('⚠️ Invalid field data (missing id/type/label):', { fieldId, fieldType, label: fieldData.label, fieldData });
-            }
-          } catch (e) {
-            console.error('Failed to parse add_field JSON:', e);
-            console.error('Raw match:', match[0].substring(0, 300));
-            console.error('Captured group:', match[1].substring(0, 300));
-          }
-        }
-        
-        // If we found add_field calls, merge with existing form
-          if (addedFields.length > 0) {
-            console.log('🎉 Adding fields to existing form:', addedFields);
-            console.log('📋 Current fields:', currentFields);
-            
-            // Process each added field's position
-            let updatedFields = [...currentFields];
-            
-            for (const newField of addedFields) {
-              const position = newField.position;
-              console.log(`🎯 Processing field "${newField.label}" with position:`, position);
-              console.log(`📋 Current field IDs:`, updatedFields.map(f => f.id));
-              
-              if (!position || position === 'bottom') {
-                // Default: add to end
-                console.log(`➡️ Adding "${newField.label}" to end (no position/bottom)`);
-                updatedFields.push(newField);
-              } else if (position === 'top') {
-                // Add to beginning
-                console.log(`⬆️ Adding "${newField.label}" to beginning (top)`);
-                updatedFields.unshift(newField);
-              } else if (typeof position === 'number') {
-                // Numeric position (1-based index)
-                const index = Math.max(0, Math.min(position - 1, updatedFields.length));
-                console.log(`🔢 Inserting "${newField.label}" at position ${position} (index ${index})`);
-                updatedFields.splice(index, 0, newField);
-              } else if (typeof position === 'object') {
-                if (position.after) {
-                  // Insert after specific field
-                  const afterIndex = updatedFields.findIndex(f => f.id === position.after);
-                  console.log(`🔍 Looking for field "${position.after}", found at index: ${afterIndex}`);
-                  if (afterIndex >= 0) {
-                    console.log(`✅ Inserting "${newField.label}" after index ${afterIndex}`);
-                    updatedFields.splice(afterIndex + 1, 0, newField);
-                  } else {
-                    console.log(`⚠️ Field "${position.after}" not found, adding to end`);
-                    updatedFields.push(newField); // Fallback to end
+
+              // Convert options from string array to {label, value} format if needed
+              let options = undefined;
+              if (fieldData.options && Array.isArray(fieldData.options)) {
+                options = fieldData.options.map((opt: any) => {
+                  if (typeof opt === 'string') {
+                    return {
+                      label: opt,
+                      value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+                    };
                   }
-                } else if (position.before) {
-                  // Insert before specific field
-                  const beforeIndex = updatedFields.findIndex(f => f.id === position.before);
-                  console.log(`🔍 Looking for field "${position.before}", found at index: ${beforeIndex}`);
-                  if (beforeIndex >= 0) {
-                    console.log(`✅ Inserting "${newField.label}" before index ${beforeIndex}`);
-                    updatedFields.splice(beforeIndex, 0, newField);
-                  } else {
-                    console.log(`⚠️ Field "${position.before}" not found, adding to beginning`);
-                    updatedFields.unshift(newField); // Fallback to beginning
-                  }
-                } else {
-                  console.log(`➡️ Position object has no after/before, adding to end`);
-                  updatedFields.push(newField); // Fallback
-                }
-              } else {
-                console.log(`➡️ Unknown position type, adding to end`);
-                updatedFields.push(newField); // Fallback
+                  return opt; // Already in correct format
+                });
               }
-              
-              console.log(`📋 After adding "${newField.label}", field order:`, updatedFields.map(f => f.label));
-            }
-            
-            // Clean up position property and ensure options format
-            updatedFields = updatedFields.map((field: any) => {
-              // Ensure options are in correct format
-              let options = field.options;
-              if (options && Array.isArray(options) && options.length > 0 && typeof options[0] === 'string') {
-                options = options.map((opt: string) => ({
-                  label: opt,
-                  value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-                }));
-              }
-              
-              // Preserve existing name, color, icon or use defaults
+
+              // Get widget metadata for this field type
               const getWidgetMetadata = (type: string) => {
                 const widgetMap: Record<string, { name: string; color: string }> = {
                   'text': { name: 'text', color: '#c4dfc4' },
@@ -1164,28 +1042,150 @@ Please extract and build the form now.`;
                   'radio': { name: 'radio', color: '#c8e0f5' },
                   'binary': { name: 'binary', color: '#c8e0f5' },
                   'thumbs': { name: 'thumbs', color: '#c8e0f5' },
+                  'matrix': { name: 'matrix', color: '#c8e0f5' },
                   'date': { name: 'date', color: '#ddc8f5' },
                   'file': { name: 'file', color: '#ddc8f5' },
                   'image': { name: 'image', color: '#ddc8f5' },
+                  'signature': { name: 'signature', color: '#ddc8f5' },
                 };
                 return widgetMap[type] || { name: type, color: '#c4dfc4' };
               };
-              
-              const widgetMeta = getWidgetMetadata(field.type);
-              
-              return {
-                id: field.id,
-                type: field.type,
-                name: field.name || widgetMeta.name,
-                label: field.label,
-                placeholder: field.placeholder,
-                description: field.description,
-                required: field.required !== false,
-                color: field.color || widgetMeta.color,
-                icon: field.icon || undefined,
+
+              const widgetMeta = getWidgetMetadata(fieldType);
+
+              const newField = {
+                id: fieldId,
+                type: fieldType,
+                name: widgetMeta.name,
+                label: fieldData.label,
+                placeholder: fieldData.placeholder || fieldData.help_text,
+                description: fieldData.description || fieldData.help_text,
+                required: fieldData.required !== false,
+                color: widgetMeta.color,
+                icon: undefined, // Icon will be determined by the form builder based on type
                 options,
+                position: fieldData.position, // Preserve position instruction
               };
-            });
+              console.log('✅ Adding field:', newField);
+              addedFields.push(newField);
+            } else {
+              console.warn('⚠️ Invalid field data (missing id/type/label):', { fieldId, fieldType, label: fieldData.label, fieldData });
+            }
+          } catch (e) {
+            console.error('Failed to parse add_field JSON:', e);
+            console.error('Raw match:', match[0].substring(0, 300));
+            console.error('Captured group:', match[1].substring(0, 300));
+          }
+        }
+
+        // If we found add_field calls, merge with existing form
+        if (addedFields.length > 0) {
+          console.log('🎉 Adding fields to existing form:', addedFields);
+          console.log('📋 Current fields:', currentFields);
+
+          // Process each added field's position
+          let updatedFields = [...currentFields];
+
+          for (const newField of addedFields) {
+            const position = newField.position;
+            console.log(`🎯 Processing field "${newField.label}" with position:`, position);
+            console.log(`📋 Current field IDs:`, updatedFields.map(f => f.id));
+
+            if (!position || position === 'bottom') {
+              // Default: add to end
+              console.log(`➡️ Adding "${newField.label}" to end (no position/bottom)`);
+              updatedFields.push(newField);
+            } else if (position === 'top') {
+              // Add to beginning
+              console.log(`⬆️ Adding "${newField.label}" to beginning (top)`);
+              updatedFields.unshift(newField);
+            } else if (typeof position === 'number') {
+              // Numeric position (1-based index)
+              const index = Math.max(0, Math.min(position - 1, updatedFields.length));
+              console.log(`🔢 Inserting "${newField.label}" at position ${position} (index ${index})`);
+              updatedFields.splice(index, 0, newField);
+            } else if (typeof position === 'object') {
+              if (position.after) {
+                // Insert after specific field
+                const afterIndex = updatedFields.findIndex(f => f.id === position.after);
+                console.log(`🔍 Looking for field "${position.after}", found at index: ${afterIndex}`);
+                if (afterIndex >= 0) {
+                  console.log(`✅ Inserting "${newField.label}" after index ${afterIndex}`);
+                  updatedFields.splice(afterIndex + 1, 0, newField);
+                } else {
+                  console.log(`⚠️ Field "${position.after}" not found, adding to end`);
+                  updatedFields.push(newField); // Fallback to end
+                }
+              } else if (position.before) {
+                // Insert before specific field
+                const beforeIndex = updatedFields.findIndex(f => f.id === position.before);
+                console.log(`🔍 Looking for field "${position.before}", found at index: ${beforeIndex}`);
+                if (beforeIndex >= 0) {
+                  console.log(`✅ Inserting "${newField.label}" before index ${beforeIndex}`);
+                  updatedFields.splice(beforeIndex, 0, newField);
+                } else {
+                  console.log(`⚠️ Field "${position.before}" not found, adding to beginning`);
+                  updatedFields.unshift(newField); // Fallback to beginning
+                }
+              } else {
+                console.log(`➡️ Position object has no after/before, adding to end`);
+                updatedFields.push(newField); // Fallback
+              }
+            } else {
+              console.log(`➡️ Unknown position type, adding to end`);
+              updatedFields.push(newField); // Fallback
+            }
+
+            console.log(`📋 After adding "${newField.label}", field order:`, updatedFields.map(f => f.label));
+          }
+
+          // Clean up position property and ensure options format
+          updatedFields = updatedFields.map((field: any) => {
+            // Ensure options are in correct format
+            let options = field.options;
+            if (options && Array.isArray(options) && options.length > 0 && typeof options[0] === 'string') {
+              options = options.map((opt: string) => ({
+                label: opt,
+                value: opt.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+              }));
+            }
+
+            // Preserve existing name, color, icon or use defaults
+            const getWidgetMetadata = (type: string) => {
+              const widgetMap: Record<string, { name: string; color: string }> = {
+                'text': { name: 'text', color: '#c4dfc4' },
+                'single-text': { name: 'single-text', color: '#c4dfc4' },
+                'textarea': { name: 'textarea', color: '#c4dfc4' },
+                'email': { name: 'email', color: '#c4dfc4' },
+                'phone': { name: 'phone', color: '#c4dfc4' },
+                'number': { name: 'number', color: '#c4dfc4' },
+                'dropdown': { name: 'dropdown', color: '#c8e0f5' },
+                'checkbox': { name: 'checkbox', color: '#c8e0f5' },
+                'radio': { name: 'radio', color: '#c8e0f5' },
+                'binary': { name: 'binary', color: '#c8e0f5' },
+                'thumbs': { name: 'thumbs', color: '#c8e0f5' },
+                'date': { name: 'date', color: '#ddc8f5' },
+                'file': { name: 'file', color: '#ddc8f5' },
+                'image': { name: 'image', color: '#ddc8f5' },
+              };
+              return widgetMap[type] || { name: type, color: '#c4dfc4' };
+            };
+
+            const widgetMeta = getWidgetMetadata(field.type);
+
+            return {
+              id: field.id,
+              type: field.type,
+              name: field.name || widgetMeta.name,
+              label: field.label,
+              placeholder: field.placeholder,
+              description: field.description,
+              required: field.required !== false,
+              color: field.color || widgetMeta.color,
+              icon: field.icon || undefined,
+              options,
+            };
+          });
           const backendForm = {
             id: `form-${Date.now()}`,
             title: 'Contact Form', // Keep existing title
@@ -1195,17 +1195,17 @@ Please extract and build the form now.`;
             createdAt: new Date().toISOString(),
             version: 1,
           };
-          
+
           const { fields, title, description } = convertBackendFormToFrontend(backendForm as any);
           onFormUpdate?.(fields, { title, description });
         } else {
           console.log('⚠️ No fields were added (parsing may have failed)');
         }
       }
-      
-        // Note: We don't clean the message here to avoid infinite loops
-        // The raw JSON blocks will be visible in the chat
-        // TODO: Implement a display-only cleaning mechanism that doesn't trigger re-renders
+
+      // Note: We don't clean the message here to avoid infinite loops
+      // The raw JSON blocks will be visible in the chat
+      // TODO: Implement a display-only cleaning mechanism that doesn't trigger re-renders
     } catch (error) {
       console.error("❌ Failed to process AI response:", error);
     }
@@ -1217,55 +1217,55 @@ Please extract and build the form now.`;
     console.log('=== FORM SUBMITTED ===');
     console.log('Input value:', messageContent);
     console.log('Is loading:', isLoading);
-    
+
     if (!messageContent || isLoading) {
       console.log('Rejected: empty input or loading');
       return;
     }
-    
+
     const userMessage: Message = { role: 'user', content: messageContent };
     console.log('Sending message:', userMessage);
-    
+
     // Only add message to state if it's not from Excel upload (already added)
     if (!customPrompt) {
       setMessages(prev => [...prev, userMessage]);
       setInput('');
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Use single unified API endpoint
       const apiEndpoint = '/api/chat';
       console.log(`Making API call to ${apiEndpoint}...`);
-      
+
       // Build context based on context prop (forms vs workflows)
       let systemContext = `\n\n**Current Context:**\n`;
-      
+
       if (context === 'workflows') {
         systemContext += `User is on the WORKFLOWS page. They want to create workflow automations. Focus on workflow triggers (sensor alerts, form events, schedules) and actions (email, SMS, create task).`;
       } else {
         systemContext += `User is on the "${currentPage}" page.`;
-        
+
         // Add form ID context
         if (formId) {
           systemContext += `\nForm ID: ${formId} (editing existing form)`;
         } else {
           systemContext += `\nNew form (not yet saved)`;
         }
-        
+
         if (currentPage === 'builder' && currentFields.length > 0) {
           systemContext += `\n\n**Form State:**\nThe form currently has ${currentFields.length} field(s):\n${currentFields.map(f => `- ${f.label} (${f.type})`).join('\n')}`;
         } else if (currentPage === 'distribution') {
           systemContext += `\n\n**Distribution Settings:**\nUser is configuring WHO/WHEN/WHERE/HOW settings for form distribution.`;
         }
       }
-      
+
       const contextualMessage = {
         ...userMessage,
         content: userMessage.content + systemContext
       };
-      
+
       const requestBody: any = {
         messages: [...messages, contextualMessage],
         formId: formId || 'new', // Include form ID for context
@@ -1275,82 +1275,82 @@ Please extract and build the form now.`;
         workspaceId, // Send workspace ID for context
         context // Send context type (forms or workflows)
       };
-      
+
       console.log('📤 Request includes workspaceId:', workspaceId, 'context:', context);
-      
+
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
-      
+
       console.log('Response received:', response.status, response.statusText);
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error:', errorText);
         throw new Error('Failed to get response');
       }
-      
+
       console.log('Response is OK, starting to read stream...');
-      
+
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
-      
+
       if (!reader) {
         console.error('No reader available!');
         throw new Error('No stream reader');
       }
-      
+
       console.log('Stream reader acquired, adding loading message...');
       // Add a temporary loading message
       setMessages(prev => [...prev, { role: 'assistant', content: '', thinking: [] }]);
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
           break;
         }
-          
+
         const chunk = decoder.decode(value, { stream: true });
         assistantMessage += chunk;
-        
+
         // Extract thinking/operation indicators in real-time
         const thinking: string[] = [];
-        
+
         // Detect mode based on operations
         // Start with manual mode if set, otherwise detect from operations
         let currentMode: AIMode = aiMode !== 'auto' ? (aiMode as AIMode) : 'strategy';
-        
+
         // If in AUTO mode, detect based on operations
         if (aiMode === 'auto') {
           // If we see operations, we're in EXECUTION mode
-          const hasOperations = assistantMessage.includes('CREATE_FORM:') || 
-                               assistantMessage.includes('ADD_FIELD:') ||
-                               assistantMessage.includes('UPDATE_FIELD:') ||
-                               assistantMessage.includes('REMOVE_FIELD:') ||
-                               assistantMessage.includes('UPDATE_FORM_META:') ||
-                               assistantMessage.includes('CLEAR_FORM:') ||
-                               assistantMessage.includes('CREATE_WORKFLOW:');
-          
-          if (hasOperations) {
-            currentMode = 'execution';
-            setDetectedMode('execution'); // Update state immediately
-          }
-        }
-        
-        // Build thinking indicators based on detected mode
-        if (currentMode === 'execution' || 
-            assistantMessage.includes('CREATE_FORM:') ||
+          const hasOperations = assistantMessage.includes('CREATE_FORM:') ||
             assistantMessage.includes('ADD_FIELD:') ||
             assistantMessage.includes('UPDATE_FIELD:') ||
             assistantMessage.includes('REMOVE_FIELD:') ||
             assistantMessage.includes('UPDATE_FORM_META:') ||
             assistantMessage.includes('CLEAR_FORM:') ||
-            assistantMessage.includes('CREATE_WORKFLOW:')) {
-          
+            assistantMessage.includes('CREATE_WORKFLOW:');
+
+          if (hasOperations) {
+            currentMode = 'execution';
+            setDetectedMode('execution'); // Update state immediately
+          }
+        }
+
+        // Build thinking indicators based on detected mode
+        if (currentMode === 'execution' ||
+          assistantMessage.includes('CREATE_FORM:') ||
+          assistantMessage.includes('ADD_FIELD:') ||
+          assistantMessage.includes('UPDATE_FIELD:') ||
+          assistantMessage.includes('REMOVE_FIELD:') ||
+          assistantMessage.includes('UPDATE_FORM_META:') ||
+          assistantMessage.includes('CLEAR_FORM:') ||
+          assistantMessage.includes('CREATE_WORKFLOW:')) {
+
           // EXECUTION mode - show operation indicators
           if (assistantMessage.includes('CREATE_FORM:')) {
             thinking.push('🔨 Creating form structure...');
@@ -1374,13 +1374,13 @@ Please extract and build the form now.`;
           if (assistantMessage.includes('CREATE_WORKFLOW:')) {
             thinking.push('⚡ Creating workflow...');
           }
-          
+
           // If we detected operations, make sure mode is execution
           if (thinking.length > 0) {
             currentMode = 'execution';
           }
         }
-        
+
         // If no operations detected, show STRATEGY indicator
         if (thinking.length === 0) {
           thinking.push('💭 Analyzing...');
@@ -1389,46 +1389,46 @@ Please extract and build the form now.`;
             setDetectedMode('strategy');
           }
         }
-        
+
         // Extract just the conversational text (hide JSON)
         // During streaming, JSON might be incomplete, so cut off at operation keywords
         let displayText = assistantMessage;
-        
+
         // Remove mode announcements (redundant with badge)
         displayText = displayText.replace(/⚡\s*EXECUTION\s*Mode:?\s*/gi, '');
         displayText = displayText.replace(/🎯\s*STRATEGY\s*Mode:?\s*/gi, '');
         displayText = displayText.replace(/\[?(EXECUTION|STRATEGY)\s*Mode\]?:?\s*/gi, '');
-        
+
         // Find the first occurrence of any operation keyword and truncate there
         const operationKeywords = ['CREATE_FORM:', 'ADD_FIELD:', 'UPDATE_FIELD:', 'UPDATE_FORM_META:', 'REMOVE_FIELD:', 'MOVE_FIELD:', 'CLEAR_FORM:', 'CREATE_WORKFLOW:'];
         let cutoffIndex = -1;
-        
+
         for (const keyword of operationKeywords) {
           const index = displayText.indexOf(keyword);
           if (index !== -1 && (cutoffIndex === -1 || index < cutoffIndex)) {
             cutoffIndex = index;
           }
         }
-        
+
         // If we found an operation, only show text before it
         if (cutoffIndex !== -1) {
           displayText = displayText.substring(0, cutoffIndex);
         }
-        
+
         displayText = displayText.replace(/\n{3,}/g, '\n\n').trim();
-        
+
         // Get previous message to check if we should freeze the display text
         setMessages(prev => {
           const newMessages = [...prev];
           const prevMessage = newMessages[newMessages.length - 1];
-          
+
           // Once we have displayContent set, don't let it shrink (freeze it)
           // Only update if new displayText is LONGER or if we don't have displayContent yet
-          const shouldUpdateDisplay = !prevMessage.displayContent || 
-                                       displayText.length > (prevMessage.displayContent?.length || 0);
-          
-          newMessages[newMessages.length - 1] = { 
-            role: 'assistant', 
+          const shouldUpdateDisplay = !prevMessage.displayContent ||
+            displayText.length > (prevMessage.displayContent?.length || 0);
+
+          newMessages[newMessages.length - 1] = {
+            role: 'assistant',
             content: assistantMessage,  // Store full for parsing
             displayContent: shouldUpdateDisplay ? (displayText || 'Thinking...') : prevMessage.displayContent,
             thinking: thinking.length > 0 ? thinking : ['💭 Analyzing...'],
@@ -1437,36 +1437,36 @@ Please extract and build the form now.`;
           return newMessages;
         });
       }
-      
+
       // Stream complete - final update will trigger useEffect to parse operations
       console.log('✅ Stream complete. Message length:', assistantMessage.length);
-      
+
       setMessages(prev => {
         const newMessages = [...prev];
         const prevMessage = newMessages[newMessages.length - 1];
-        
+
         // Detect final mode based on operations in the completed message
-        const hasOperations = assistantMessage.includes('CREATE_FORM:') || 
-                             assistantMessage.includes('ADD_FIELD:') ||
-                             assistantMessage.includes('UPDATE_FIELD:') ||
-                             assistantMessage.includes('REMOVE_FIELD:') ||
-                             assistantMessage.includes('UPDATE_FORM_META:') ||
-                             assistantMessage.includes('CLEAR_FORM:') ||
-                             assistantMessage.includes('CREATE_WORKFLOW:');
-        
-        const finalMode: AIMode = aiMode === 'auto' 
+        const hasOperations = assistantMessage.includes('CREATE_FORM:') ||
+          assistantMessage.includes('ADD_FIELD:') ||
+          assistantMessage.includes('UPDATE_FIELD:') ||
+          assistantMessage.includes('REMOVE_FIELD:') ||
+          assistantMessage.includes('UPDATE_FORM_META:') ||
+          assistantMessage.includes('CLEAR_FORM:') ||
+          assistantMessage.includes('CREATE_WORKFLOW:');
+
+        const finalMode: AIMode = aiMode === 'auto'
           ? (hasOperations ? 'execution' : 'strategy')
           : (aiMode as AIMode);
-        
+
         // Keep thinking indicators as a completion log, convert to past tense
         const completedThinking = prevMessage.thinking?.map(step => {
           if (step.startsWith('💭')) {
             return '✓ Analyzed';
           }
-          
+
           // Remove emoji and convert to past tense
           let completed = step.replace(/^[🔨📝✏️🗑️📋]\s*/, '');
-          
+
           // Convert present progressive to past tense
           completed = completed
             .replace(/Creating form structure\.\.\./g, 'Created form structure')
@@ -1475,12 +1475,12 @@ Please extract and build the form now.`;
             .replace(/Updating field\.\.\./g, 'Updated field')
             .replace(/Removing field\.\.\./g, 'Removed field')
             .replace(/Updating form info\.\.\./g, 'Updated form info');
-          
+
           return `✓ ${completed}`;
         });
-        
-        newMessages[newMessages.length - 1] = { 
-          role: 'assistant', 
+
+        newMessages[newMessages.length - 1] = {
+          role: 'assistant',
           content: assistantMessage,
           displayContent: undefined,  // Clear display content, will use cleaned version
           thinking: completedThinking,  // Keep as completion log
@@ -1489,15 +1489,15 @@ Please extract and build the form now.`;
         };
         return newMessages;
       });
-      
+
     } catch (error) {
       console.error('=== CHAT ERROR ===');
       console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
       console.error('Error message:', error instanceof Error ? error.message : error);
       console.error('Full error:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again.' 
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
       }]);
     } finally {
       console.log('=== FINALLY BLOCK - Setting isLoading to false ===');
@@ -1514,7 +1514,7 @@ Please extract and build the form now.`;
   const startVoiceInput = () => {
     // Check for browser support
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
+
     if (!SpeechRecognition) {
       toast.error("Voice input not supported in this browser. Try Chrome or Edge.");
       return;
@@ -1534,7 +1534,7 @@ Please extract and build the form now.`;
       const transcript = Array.from(event.results)
         .map((result: any) => result[0].transcript)
         .join('');
-      
+
       console.log('🎤 Transcript:', transcript);
       setInput(transcript);
     };
@@ -1542,7 +1542,7 @@ Please extract and build the form now.`;
     recognition.onerror = (event: any) => {
       console.error('🎤 Speech recognition error:', event.error);
       setIsRecording(false);
-      
+
       if (event.error === 'no-speech') {
         toast.error('No speech detected. Please try again.');
       } else if (event.error === 'not-allowed') {
@@ -1573,7 +1573,7 @@ Please extract and build the form now.`;
     if (isRecording) {
       // Stop recording and immediately send
       stopVoiceInput();
-      
+
       // Submit the transcribed text after a short delay to ensure state is updated
       setTimeout(() => {
         if (input.trim()) {
@@ -1598,19 +1598,17 @@ Please extract and build the form now.`;
 
   return (
     <div
-      className={`fixed top-0 right-0 h-screen border-l flex flex-col transition-all duration-300 z-50 ${
-        isOpen
+      className={`fixed top-0 right-0 h-screen border-l flex flex-col transition-all duration-300 z-50 ${isOpen
           ? "w-96 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] border-border shadow-lg"
           : "w-12 bg-gradient-to-b from-[#c4dfc4] to-[#b5d0b5] border-[#c4dfc4]"
-      }`}
+        }`}
     >
       {/* Header */}
       <div
-        className={`flex items-center transition-all duration-300 ${
-          isOpen
+        className={`flex items-center transition-all duration-300 ${isOpen
             ? "border-b border-white bg-gradient-to-r from-[#b5d0b5] to-[#c4dfc4] p-4 justify-between h-16"
             : "flex-col pt-4 pb-4 justify-center"
-        }`}
+          }`}
       >
         {isOpen ? (
           <>
@@ -1648,33 +1646,30 @@ Please extract and build the form now.`;
             <div className="flex gap-1 bg-white/40 p-0.5 rounded-md">
               <button
                 onClick={() => setAiMode('auto')}
-                className={`text-xs px-3 py-1 rounded transition-all ${
-                  aiMode === 'auto' 
-                    ? 'bg-white text-gray-900 font-semibold shadow' 
+                className={`text-xs px-3 py-1 rounded transition-all ${aiMode === 'auto'
+                    ? 'bg-white text-gray-900 font-semibold shadow'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
                 title="Auto-detect based on your request"
               >
                 🔄 Auto
               </button>
               <button
                 onClick={() => setAiMode('strategy')}
-                className={`text-xs px-3 py-1 rounded transition-all ${
-                  aiMode === 'strategy' 
-                    ? 'bg-purple-500/20 text-purple-900 font-semibold border border-purple-500/30' 
+                className={`text-xs px-3 py-1 rounded transition-all ${aiMode === 'strategy'
+                    ? 'bg-purple-500/20 text-purple-900 font-semibold border border-purple-500/30'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
                 title="Strategy mode: AI will discuss and plan"
               >
                 🎯 Strategy
               </button>
               <button
                 onClick={() => setAiMode('execution')}
-                className={`text-xs px-3 py-1 rounded transition-all ${
-                  aiMode === 'execution' 
-                    ? 'bg-blue-500/20 text-blue-900 font-semibold border border-blue-500/30' 
+                className={`text-xs px-3 py-1 rounded transition-all ${aiMode === 'execution'
+                    ? 'bg-blue-500/20 text-blue-900 font-semibold border border-blue-500/30'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
                 title="Execution mode: AI will take action immediately"
               >
                 ⚡ Execution
@@ -1723,25 +1718,24 @@ Please extract and build the form now.`;
                       ) : (
                         <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
                       )}
-                      
+
                       {/* Mode badge - only show after completion to avoid flicker */}
                       {message.completed && message.mode && (
-                        <Badge 
-                          className={`text-xs font-bold uppercase px-2 py-0.5 ${
-                            message.mode === 'execution' 
-                              ? 'bg-blue-500/20 text-blue-700 border-blue-500/30' 
+                        <Badge
+                          className={`text-xs font-bold uppercase px-2 py-0.5 ${message.mode === 'execution'
+                              ? 'bg-blue-500/20 text-blue-700 border-blue-500/30'
                               : 'bg-purple-500/20 text-purple-700 border-purple-500/30'
-                          }`}
+                            }`}
                           variant="outline"
                         >
                           {message.mode === 'execution' ? '⚡ EXECUTION' : '🎯 STRATEGY'}
                         </Badge>
                       )}
-                      
+
                       <div className="flex flex-wrap gap-1.5">
                         {message.thinking.map((step: string, i: number) => (
-                          <span 
-                            key={i} 
+                          <span
+                            key={i}
                             className={`text-xs font-medium ${message.completed ? 'text-gray-500' : 'text-gray-600'}`}
                           >
                             {step}
@@ -1750,7 +1744,7 @@ Please extract and build the form now.`;
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Only show bubble if there's actual content to display */}
                   {((message.role === "assistant" && (message.displayContent || message.content) && (message.displayContent || cleanMessageForDisplay(message.content)) !== 'Thinking...') || message.role === "user") && (
                     <div
@@ -1764,7 +1758,7 @@ Please extract and build the form now.`;
                           </p>
                         </div>
                       )}
-                      
+
                       {/* User Message - White bubble, no icon */}
                       {message.role === "user" && (
                         <Card className="max-w-[85%] p-3 bg-white border-0 shadow-sm">
@@ -1799,7 +1793,7 @@ Please extract and build the form now.`;
               onChange={handleImageUpload}
               className="hidden"
             />
-            
+
             <form onSubmit={handleSubmit} className="flex gap-2">
               {/* Unified Upload Button (only on builder page) */}
               {currentPage === 'builder' && (
@@ -1837,7 +1831,7 @@ Please extract and build the form now.`;
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              
+
               <Textarea
                 ref={textareaRef}
                 value={input}
@@ -1888,7 +1882,7 @@ Please extract and build the form now.`;
 
       {/* Clickable area for collapsed sidebar on Builder tab */}
       {!isOpen && !disabled && (
-        <div 
+        <div
           className="absolute inset-0 cursor-pointer hover:bg-white/10 transition-colors"
           onClick={onToggle}
           title="Open AI Operator"
@@ -1897,7 +1891,7 @@ Please extract and build the form now.`;
 
       {/* Disabled Overlay - shown on Settings/Publish tabs (both expanded and collapsed) */}
       {disabled && (
-        <div 
+        <div
           className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-10 cursor-pointer"
           onClick={onToggle}
           title={isOpen ? "Click to collapse" : "Disabled on this tab"}
