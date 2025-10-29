@@ -8,7 +8,7 @@ import { WorkflowCard } from "@/components/workflows/workflow-card";
 import { WorkflowBuilderModal } from "@/components/workflows/workflow-builder-modal";
 import { AIChatPanel } from "@/components/ai-chat-panel";
 import { Workflow } from "@/lib/types/workflow";
-import { LoadingSpinner } from "@/components/loading/loading-spinner";
+import { CenteredSpinner } from "@/components/loading";
 
 export default function WorkflowsPage() {
   const { workspaceId, isLoading: authLoading } = useAuth();
@@ -37,11 +37,7 @@ export default function WorkflowsPage() {
   };
   
   if (authLoading || loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <CenteredSpinner />;
   }
   
   return (
