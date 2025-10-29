@@ -32,12 +32,13 @@ export function WorkInstanceCard({
       return;
     }
     
-    // Navigate to the form
+    // Navigate to the form with source tracking
     if (!instance.form_id) {
       console.error('No form_id found for instance:', instance);
       return;
     }
-    router.push(`/f/${instance.form_id}`);
+    // Add source param so form knows to return to dashboard after completion
+    router.push(`/f/${instance.form_id}?source=dashboard&instance_id=${instance.id}`);
   };
 
   const getBadgeColor = () => {

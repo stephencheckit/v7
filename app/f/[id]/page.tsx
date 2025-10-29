@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -47,12 +47,15 @@ interface FormData {
 
 export default function PublicFormPage() {
   const params = useParams();
+  const router = useRouter();
   const formId = params.id as string;
 
-  // Check if this is a preview
+  // Check if this is a preview and track source
   const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const isPreview = searchParams.get('preview') === 'true';
   const timestamp = searchParams.get('t'); // Get timestamp for cache busting
+  const source = searchParams.get('source'); // Where did user come from (e.g., 'dashboard')
+  const instanceId = searchParams.get('instance_id'); // Which instance they're completing
 
   const [form, setForm] = useState<FormData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,6 +67,7 @@ export default function PublicFormPage() {
   const [analysisFeed, setAnalysisFeed] = useState<any[]>([]);
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
   const [cadenceInfo, setCadenceInfo] = useState<any>(null);
+  const [nextWorkItems, setNextWorkItems] = useState<any[]>([]);
 
   // Reset state when timestamp changes (new preview load)
   useEffect(() => {
@@ -80,6 +84,31 @@ export default function PublicFormPage() {
     loadForm();
     loadCadenceInfo();
   }, [formId]);
+  
+  // Load next work items after submission (for non-dashboard flows)
+  useEffect(() => {
+    if (submitted && source !== 'dashboard') {
+      loadNextWorkItems();
+    }
+  }, [submitted, source]);
+  
+  const loadNextWorkItems = async () => {
+    try {
+      const workspaceId = await getCurrentWorkspaceId();
+      if (!workspaceId) return;
+      
+      const response = await fetch(`/api/instances?workspace_id=${workspaceId}&limit=10`);
+      if (response.ok) {
+        const data = await response.json();
+        const remaining = (data.instances || []).filter((i: any) => 
+          i.status !== 'completed' && i.status !== 'skipped'
+        ).slice(0, 3);
+        setNextWorkItems(remaining);
+      }
+    } catch (error) {
+      console.error('Error loading next work items:', error);
+    }
+  };
 
   const loadForm = async () => {
     try {
@@ -162,7 +191,44 @@ export default function PublicFormPage() {
 
       setSubmitted(true);
       
-      // Start redirect countdown if configured
+      // If from dashboard, mark instance as completed and fetch next work
+      if (source === 'dashboard' && instanceId) {
+        try {
+          // Mark instance as completed
+          await fetch(`/api/instances/${instanceId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'completed' }),
+          });
+          
+          // Fetch remaining work items (async, don't wait)
+          fetch('/api/instances?workspace_id=' + (await getCurrentWorkspaceId()) + '&limit=5')
+            .then(res => res.json())
+            .then(data => {
+              const remaining = (data.instances || []).filter((i: any) => 
+                i.status !== 'completed' && i.status !== 'skipped'
+              ).slice(0, 3);
+              setNextWorkItems(remaining);
+            })
+            .catch(console.error);
+          
+          // Redirect to dashboard after brief delay with success toast
+          setTimeout(() => {
+            toast.success('Form completed!', {
+              description: nextWorkItems.length > 0 
+                ? `You have ${nextWorkItems.length} more items due.`
+                : 'Great job! All your work is complete.',
+            });
+            router.push('/dashboard');
+          }, 1500);
+          return; // Don't show thank you page for dashboard flow
+        } catch (error) {
+          console.error('Error updating instance:', error);
+          // Continue to show thank you page on error
+        }
+      }
+      
+      // Start redirect countdown if configured (for non-dashboard flows)
       const thankYouSettings = form?.thank_you_settings;
       if (thankYouSettings?.redirectUrl && thankYouSettings.redirectDelay >= 0) {
         setRedirectCountdown(thankYouSettings.redirectDelay);
@@ -172,6 +238,20 @@ export default function PublicFormPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+  
+  // Helper to get current workspace ID
+  const getCurrentWorkspaceId = async () => {
+    try {
+      const response = await fetch('/api/forms?limit=1');
+      if (response.ok) {
+        const data = await response.json();
+        return data.forms?.[0]?.workspace_id || null;
+      }
+    } catch (error) {
+      console.error('Error fetching workspace:', error);
+    }
+    return null;
   };
 
   // Handle redirect countdown
@@ -351,6 +431,26 @@ export default function PublicFormPage() {
                     );
                   })}
                 </div>
+              </div>
+            )}
+
+            {/* Next Work Items (if any) */}
+            {nextWorkItems.length > 0 && (
+              <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-left">
+                <h3 className="text-sm font-medium text-blue-400 mb-3">You have more work due:</h3>
+                <div className="space-y-2">
+                  {nextWorkItems.map((item: any) => (
+                    <div key={item.id} className="text-sm text-gray-300">
+                      • {item.instance_name}
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Go to Dashboard
+                </Button>
               </div>
             )}
 
