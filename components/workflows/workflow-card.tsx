@@ -15,10 +15,12 @@ import {
   Play,
   Pause,
   Trash2,
+  Edit,
   MoreVertical
 } from "lucide-react";
 import { Workflow } from "@/lib/types/workflow";
 import { toast } from "sonner";
+import { formatCronExpression, formatRecipients } from "@/lib/utils/cron-formatter";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,9 +59,9 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
     
     switch (workflow.trigger_type) {
       case 'sensor_temp_exceeds':
-        return `Temperature exceeds ${config.threshold}°${config.unit} for ${config.duration_minutes}min`;
+        return `Temperature exceeds ${config.threshold}°${config.unit}${config.duration_minutes ? ` for ${config.duration_minutes} minutes` : ''}`;
       case 'sensor_temp_below':
-        return `Temperature below ${config.threshold}°${config.unit} for ${config.duration_minutes}min`;
+        return `Temperature below ${config.threshold}°${config.unit}${config.duration_minutes ? ` for ${config.duration_minutes} minutes` : ''}`;
       case 'form_overdue':
         return `Form becomes overdue`;
       case 'form_submitted':
@@ -67,7 +69,7 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
       case 'form_missed':
         return `Form is missed`;
       case 'schedule':
-        return `On schedule: ${config.cron}`;
+        return formatCronExpression(config.cron);
       default:
         return workflow.trigger_type;
     }
@@ -89,11 +91,13 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
   const getActionLabel = (action: any) => {
     switch (action.type) {
       case 'email':
-        return `Email ${action.config.recipients?.length || 0} recipient(s)`;
+        const recipients = action.config.recipients || [];
+        return `Email ${formatRecipients(recipients)}`;
       case 'sms':
-        return `SMS ${action.config.recipients?.length || 0} recipient(s)`;
+        const smsRecipients = action.config.recipients || [];
+        return `SMS ${formatRecipients(smsRecipients)}`;
       case 'create_task':
-        return `Create task (${action.config.priority} priority)`;
+        return `Create ${action.config.priority} priority task`;
       default:
         return action.type;
     }
@@ -173,6 +177,11 @@ export function WorkflowCard({ workflow, onUpdate }: WorkflowCardProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => toast.info('Edit mode coming soon!')}>
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleToggleActive} disabled={isToggling}>
               {workflow.is_active ? (
                 <>
