@@ -5,7 +5,38 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **⚡ Workflow Automation System - October 29, 2025 (Latest)**
+### **🗄️ Workflow Database Migration Applied - October 29, 2025 (Latest)**
+**Status:** ✅ DATABASE MIGRATION COMPLETE
+**Date:** October 29, 2025
+**Commit:** 6776eb5
+**Migration:** `create_workflows` (applied via Supabase MCP)
+
+**What Was Done:**
+Successfully applied the workflow database migration directly to Supabase using MCP CLI tools. This fixed the 500 error users were experiencing when trying to create workflows.
+
+**Tables Created:**
+- `workflows` - Stores workflow definitions with triggers, actions, and stats
+- `workflow_executions` - Logs each workflow execution with trigger data and results
+
+**Security:**
+- RLS policies enabled on both tables
+- Workspace-based isolation (users can only access workflows in their workspace)
+- Policies for SELECT, INSERT, UPDATE, DELETE operations
+
+**Verification:**
+- Confirmed table structure via SQL query
+- All 20 columns in `workflows` table created successfully
+- All 7 columns in `workflow_executions` table created successfully
+- Indexes and constraints applied correctly
+
+**Next Steps:**
+- Users can now create workflows via AI chat
+- Workflow execution engine ready for sensor temperature triggers
+- Form and schedule triggers will be implemented in Phase 2
+
+---
+
+### **⚡ Workflow Automation System - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION
 **Date:** October 29, 2025
 **Commit:** 0117273
