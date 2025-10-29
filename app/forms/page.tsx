@@ -17,6 +17,7 @@ import { Plus, Eye, Calendar, FileText, BarChart3, Share2, Loader2, Copy, Extern
 import { useRouter } from "next/navigation";
 import { FormCreationModal } from "@/components/form-creation-modal";
 import { FormsListSkeleton } from "@/components/loading";
+import { toast } from "sonner";
 
 interface SimpleForm {
   id: string;
@@ -51,7 +52,7 @@ export default function FormsPage() {
   useEffect(() => {
     const savedColumn = localStorage.getItem('forms-sort-column');
     const savedDirection = localStorage.getItem('forms-sort-direction');
-    
+
     if (savedColumn) {
       setSortColumn(savedColumn as SortColumn);
     }
@@ -116,13 +117,20 @@ export default function FormsPage() {
         setForms(forms.filter(f => f.id !== selectedFormId));
         setShowDeleteModal(false);
         setSelectedFormId(null);
+        toast.success('Form deleted successfully', {
+          description: 'The form and all its submissions have been removed.',
+        });
       } else {
         const error = await response.json();
-        alert(`Failed to delete form: ${error.error || 'Unknown error'}`);
+        toast.error('Failed to delete form', {
+          description: error.error || 'Unknown error occurred',
+        });
       }
     } catch (error) {
       console.error('Failed to delete form:', error);
-      alert('Failed to delete form. Please try again.');
+      toast.error('Failed to delete form', {
+        description: 'Please try again or contact support.',
+      });
     } finally {
       setDeleting(false);
     }
@@ -131,13 +139,15 @@ export default function FormsPage() {
   const copyShareUrl = () => {
     if (selectedFormUrl) {
       navigator.clipboard.writeText(selectedFormUrl);
-      alert('Share URL copied to clipboard!');
+      toast.success('Link copied to clipboard!', {
+        description: 'Share this link to collect form responses.',
+      });
     }
   };
 
   const handleSort = (column: SortColumn) => {
     let newDirection: SortDirection;
-    
+
     if (sortColumn === column) {
       // Toggle direction if clicking the same column
       newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
@@ -145,10 +155,10 @@ export default function FormsPage() {
       // Set new column and default to ascending
       newDirection = 'asc';
     }
-    
+
     setSortColumn(column);
     setSortDirection(newDirection);
-    
+
     // Save to localStorage
     localStorage.setItem('forms-sort-column', column);
     localStorage.setItem('forms-sort-direction', newDirection);
@@ -235,51 +245,51 @@ export default function FormsPage() {
 
             {/* Stats Cards */}
             <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
-                  <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-8 w-8 text-[#0a0a0a]" />
-                      <div>
-                        <p className="text-sm text-[#0a0a0a]/70">Total Forms</p>
-                        <p className="text-2xl font-bold text-[#0a0a0a]">{forms.length}</p>
-                      </div>
-                    </div>
-                  </Card>
+              <Card className="bg-gradient-to-br from-[#c4dfc4] to-[#c4dfc4]/80 border-0 p-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-8 w-8 text-[#0a0a0a]" />
+                  <div>
+                    <p className="text-sm text-[#0a0a0a]/70">Total Forms</p>
+                    <p className="text-2xl font-bold text-[#0a0a0a]">{forms.length}</p>
+                  </div>
+                </div>
+              </Card>
 
-                  <Card className="bg-gradient-to-br from-[#c8e0f5] to-[#c8e0f5]/80 border-0 p-4">
-                    <div className="flex items-center gap-3">
-                      <BarChart3 className="h-8 w-8 text-[#0a0a0a]" />
-                      <div>
-                        <p className="text-sm text-[#0a0a0a]/70">Total Responses</p>
-                        <p className="text-2xl font-bold text-[#0a0a0a]">
-                          {totalResponses.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
+              <Card className="bg-gradient-to-br from-[#c8e0f5] to-[#c8e0f5]/80 border-0 p-4">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-8 w-8 text-[#0a0a0a]" />
+                  <div>
+                    <p className="text-sm text-[#0a0a0a]/70">Total Responses</p>
+                    <p className="text-2xl font-bold text-[#0a0a0a]">
+                      {totalResponses.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
 
-                  <Card className="bg-gradient-to-br from-[#f5edc8] to-[#f5edc8]/80 border-0 p-4">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-8 w-8 text-[#0a0a0a]" />
-                      <div>
-                        <p className="text-sm text-[#0a0a0a]/70">Forms Created</p>
-                        <p className="text-2xl font-bold text-[#0a0a0a]">
-                          {forms.length}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
+              <Card className="bg-gradient-to-br from-[#f5edc8] to-[#f5edc8]/80 border-0 p-4">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-8 w-8 text-[#0a0a0a]" />
+                  <div>
+                    <p className="text-sm text-[#0a0a0a]/70">Forms Created</p>
+                    <p className="text-2xl font-bold text-[#0a0a0a]">
+                      {forms.length}
+                    </p>
+                  </div>
+                </div>
+              </Card>
 
-                  <Card className="bg-gradient-to-br from-[#ddc8f5] to-[#ddc8f5]/80 border-0 p-4">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-8 w-8 text-[#0a0a0a]" />
-                      <div>
-                        <p className="text-sm text-[#0a0a0a]/70">Avg Questions</p>
-                        <p className="text-2xl font-bold text-[#0a0a0a]">
-                          {avgQuestions}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
+              <Card className="bg-gradient-to-br from-[#ddc8f5] to-[#ddc8f5]/80 border-0 p-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-8 w-8 text-[#0a0a0a]" />
+                  <div>
+                    <p className="text-sm text-[#0a0a0a]/70">Avg Questions</p>
+                    <p className="text-2xl font-bold text-[#0a0a0a]">
+                      {avgQuestions}
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </div>
 
             {/* Forms Table */}
@@ -287,185 +297,185 @@ export default function FormsPage() {
               <div className="p-4 md:p-6">
                 <h2 className="text-lg md:text-xl font-semibold mb-4 text-white">All Forms</h2>
                 <div className="overflow-x-auto -mx-4 md:mx-0 scrollbar-thin">
-                <Table className="min-w-full">
-                  <TableHeader>
-                    <TableRow className="border-gray-700 hover:bg-transparent">
-                      <TableHead className="text-gray-400 min-w-[200px]">
-                        <button
-                          onClick={() => handleSort('name')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Form Name
-                          {sortColumn === 'name' ? (
-                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                          ) : (
-                            <ArrowUpDown className="h-3 w-3 opacity-30" />
-                          )}
-                        </button>
-                      </TableHead>
-                      <TableHead className="text-gray-400 hidden lg:table-cell">
-                        <button
-                          onClick={() => handleSort('questions')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Questions
-                          {sortColumn === 'questions' ? (
-                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                          ) : (
-                            <ArrowUpDown className="h-3 w-3 opacity-30" />
-                          )}
-                        </button>
-                      </TableHead>
-                      <TableHead className="text-gray-400 hidden md:table-cell">
-                        <button
-                          onClick={() => handleSort('responses')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Responses
-                          {sortColumn === 'responses' ? (
-                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                          ) : (
-                            <ArrowUpDown className="h-3 w-3 opacity-30" />
-                          )}
-                        </button>
-                      </TableHead>
-                      <TableHead className="text-gray-400">
-                        <button
-                          onClick={() => handleSort('status')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Status
-                          {sortColumn === 'status' ? (
-                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                          ) : (
-                            <ArrowUpDown className="h-3 w-3 opacity-30" />
-                          )}
-                        </button>
-                      </TableHead>
-                      <TableHead className="text-gray-400 hidden lg:table-cell">
-                        <button
-                          onClick={() => handleSort('created')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Created
-                          {sortColumn === 'created' ? (
-                            sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                          ) : (
-                            <ArrowUpDown className="h-3 w-3 opacity-30" />
-                          )}
-                        </button>
-                      </TableHead>
-                      <TableHead className="text-right text-gray-400 min-w-[120px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedForms.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-gray-400">
-                          No forms yet. Create your first form to get started!
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      sortedForms.map((form) => {
-                        const fieldCount = form.schema?.fields?.length || 0;
-                        const stats = form.simple_form_stats?.[0];
-                        const responseCount = stats?.total_submissions || 0;
-                        const createdDate = new Date(form.created_at).toLocaleDateString();
-
-                        return (
-                          <TableRow 
-                            key={form.id} 
-                            className="border-gray-700 hover:bg-gray-800/50 cursor-pointer transition-colors"
-                            onClick={() => handleViewForm(form.id)}
+                  <Table className="min-w-full">
+                    <TableHeader>
+                      <TableRow className="border-gray-700 hover:bg-transparent">
+                        <TableHead className="text-gray-400 min-w-[200px]">
+                          <button
+                            onClick={() => handleSort('name')}
+                            className="flex items-center gap-1 hover:text-white transition-colors"
                           >
-                            <TableCell className="font-medium text-white whitespace-normal md:whitespace-nowrap">
-                              <div>
-                                <div className="text-sm md:text-base">{form.title}</div>
-                                {form.description && (
-                                  <div className="text-xs text-gray-400 mt-1 line-clamp-1">{form.description}</div>
-                                )}
-                                {/* Mobile-only: show questions and responses inline */}
-                                <div className="flex gap-3 mt-2 lg:hidden text-xs text-gray-400">
-                                  <span className="flex items-center gap-1">
-                                    <FileText className="h-3 w-3" />
-                                    {fieldCount} Q
-                                  </span>
-                                  <span className="md:hidden">{responseCount} responses</span>
+                            Form Name
+                            {sortColumn === 'name' ? (
+                              sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-gray-400 hidden lg:table-cell">
+                          <button
+                            onClick={() => handleSort('questions')}
+                            className="flex items-center gap-1 hover:text-white transition-colors"
+                          >
+                            Questions
+                            {sortColumn === 'questions' ? (
+                              sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-gray-400 hidden md:table-cell">
+                          <button
+                            onClick={() => handleSort('responses')}
+                            className="flex items-center gap-1 hover:text-white transition-colors"
+                          >
+                            Responses
+                            {sortColumn === 'responses' ? (
+                              sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-gray-400">
+                          <button
+                            onClick={() => handleSort('status')}
+                            className="flex items-center gap-1 hover:text-white transition-colors"
+                          >
+                            Status
+                            {sortColumn === 'status' ? (
+                              sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-gray-400 hidden lg:table-cell">
+                          <button
+                            onClick={() => handleSort('created')}
+                            className="flex items-center gap-1 hover:text-white transition-colors"
+                          >
+                            Created
+                            {sortColumn === 'created' ? (
+                              sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-right text-gray-400 min-w-[120px]">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedForms.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-12 text-gray-400">
+                            No forms yet. Create your first form to get started!
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        sortedForms.map((form) => {
+                          const fieldCount = form.schema?.fields?.length || 0;
+                          const stats = form.simple_form_stats?.[0];
+                          const responseCount = stats?.total_submissions || 0;
+                          const createdDate = new Date(form.created_at).toLocaleDateString();
+
+                          return (
+                            <TableRow
+                              key={form.id}
+                              className="border-gray-700 hover:bg-gray-800/50 cursor-pointer transition-colors"
+                              onClick={() => handleViewForm(form.id)}
+                            >
+                              <TableCell className="font-medium text-white whitespace-normal md:whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm md:text-base">{form.title}</div>
+                                  {form.description && (
+                                    <div className="text-xs text-gray-400 mt-1 line-clamp-1">{form.description}</div>
+                                  )}
+                                  {/* Mobile-only: show questions and responses inline */}
+                                  <div className="flex gap-3 mt-2 lg:hidden text-xs text-gray-400">
+                                    <span className="flex items-center gap-1">
+                                      <FileText className="h-3 w-3" />
+                                      {fieldCount} Q
+                                    </span>
+                                    <span className="md:hidden">{responseCount} responses</span>
+                                  </div>
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-gray-300 hidden lg:table-cell">
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4 text-gray-400" />
-                                {fieldCount}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-gray-300 hidden md:table-cell">
-                              {responseCount.toLocaleString()}
-                            </TableCell>
-                            <TableCell className="text-gray-300">
-                              <Badge 
-                                variant={form.status === 'published' ? 'default' : 'secondary'}
-                                className={form.status === 'published' 
-                                  ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-[#c4dfc4]/30 text-xs' 
-                                  : 'bg-gray-700/50 text-gray-400 border-gray-600/50 text-xs'
-                                }
-                              >
-                                {form.status === 'published' ? 'Published' : 'Draft'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-gray-300 hidden lg:table-cell">
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-gray-400" />
-                                {createdDate}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1 md:gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleShare(form.id);
-                                  }}
-                                  className="text-[#c4dfc4] hover:text-[#c4dfc4] hover:bg-[#c4dfc4]/10 px-2 md:px-3"
+                              </TableCell>
+                              <TableCell className="text-gray-300 hidden lg:table-cell">
+                                <div className="flex items-center gap-2">
+                                  <FileText className="h-4 w-4 text-gray-400" />
+                                  {fieldCount}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-gray-300 hidden md:table-cell">
+                                {responseCount.toLocaleString()}
+                              </TableCell>
+                              <TableCell className="text-gray-300">
+                                <Badge
+                                  variant={form.status === 'published' ? 'default' : 'secondary'}
+                                  className={form.status === 'published'
+                                    ? 'bg-[#c4dfc4]/20 text-[#c4dfc4] border-[#c4dfc4]/30 text-xs'
+                                    : 'bg-gray-700/50 text-gray-400 border-gray-600/50 text-xs'
+                                  }
                                 >
-                                  <Share2 className="h-4 w-4 md:mr-1" />
-                                  <span className="hidden md:inline">Share</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleReport(form.id);
-                                  }}
-                                  className="text-[#c8e0f5] hover:text-[#c8e0f5] hover:bg-[#c8e0f5]/10 px-2 md:px-3"
-                                >
-                                  <BarChart3 className="h-4 w-4 md:mr-1" />
-                                  <span className="hidden md:inline">Report</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteClick(form.id);
-                                  }}
-                                  className="text-red-400 hover:text-red-400 hover:bg-red-400/10 px-2 md:px-3"
-                                >
-                                  <Trash2 className="h-4 w-4 md:mr-1" />
-                                  <span className="hidden md:inline">Delete</span>
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
+                                  {form.status === 'published' ? 'Published' : 'Draft'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-gray-300 hidden lg:table-cell">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4 text-gray-400" />
+                                  {createdDate}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1 md:gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleShare(form.id);
+                                    }}
+                                    className="text-[#c4dfc4] hover:text-[#c4dfc4] hover:bg-[#c4dfc4]/10 px-2 md:px-3"
+                                  >
+                                    <Share2 className="h-4 w-4 md:mr-1" />
+                                    <span className="hidden md:inline">Share</span>
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleReport(form.id);
+                                    }}
+                                    className="text-[#c8e0f5] hover:text-[#c8e0f5] hover:bg-[#c8e0f5]/10 px-2 md:px-3"
+                                  >
+                                    <BarChart3 className="h-4 w-4 md:mr-1" />
+                                    <span className="hidden md:inline">Report</span>
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(form.id);
+                                    }}
+                                    className="text-red-400 hover:text-red-400 hover:bg-red-400/10 px-2 md:px-3"
+                                  >
+                                    <Trash2 className="h-4 w-4 md:mr-1" />
+                                    <span className="hidden md:inline">Delete</span>
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             </Card>
@@ -481,7 +491,7 @@ export default function FormsPage() {
               <Share2 className="w-16 h-16 text-[#c4dfc4] mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Share Form</h2>
               <p className="text-gray-400 mb-6">Anyone with this link can fill out the form:</p>
-              
+
               <div className="flex gap-2 mb-6">
                 <input
                   type="text"
@@ -489,7 +499,7 @@ export default function FormsPage() {
                   readOnly
                   className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-mono text-sm"
                 />
-                <Button 
+                <Button
                   onClick={copyShareUrl}
                   className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                 >
@@ -519,7 +529,7 @@ export default function FormsPage() {
       )}
 
       {/* Form Creation Modal */}
-      <FormCreationModal 
+      <FormCreationModal
         isOpen={showCreationModal}
         onClose={() => setShowCreationModal(false)}
       />
@@ -536,7 +546,7 @@ export default function FormsPage() {
               <p className="text-gray-400 mb-6">
                 Are you sure you want to delete this form? This action cannot be undone and will also delete all submissions.
               </p>
-              
+
               <div className="flex gap-3">
                 <Button
                   variant="outline"
