@@ -108,11 +108,17 @@ export function AIChatPanel({
     }
   }, [input]);
 
-  // Cursor-style auto-scroll: scroll new messages to TOP of visible area
+  // Cursor-style scroll: new messages appear at TOP of visible panel
   useEffect(() => {
-    if (messagesEndRef.current && messages.length > 0) {
-      // Scroll so the last message appears at the TOP of the viewport
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (messages.length > 0 && scrollRef.current) {
+      // Get the last message element (most recent)
+      const messageElements = scrollRef.current.querySelectorAll('.space-y-4 > div');
+      const lastMessage = messageElements[messageElements.length - 1];
+      
+      if (lastMessage) {
+        // Scroll so the last message appears at the TOP of the chat panel
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+      }
     }
   }, [messages.length]); // Only trigger when new messages arrive
 
@@ -1738,7 +1744,17 @@ Please extract and build the form now.`;
         <>
           <div
             ref={scrollRef}
-            className="flex-1 p-4 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] overflow-y-auto"
+            className="flex-1 p-4 bg-gradient-to-b from-[#c4dfc4] via-[#d0e8d0] to-[#b5d0b5] overflow-y-auto overscroll-contain"
+            onWheel={(e) => {
+              // Prevent scroll bleed to main page
+              const element = e.currentTarget;
+              const atTop = element.scrollTop === 0;
+              const atBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 1;
+              
+              if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+                e.preventDefault();
+              }
+            }}
           >
             <div className="space-y-4">
               {/* Welcome Message */}
