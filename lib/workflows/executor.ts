@@ -127,6 +127,15 @@ async function executeAction(action: WorkflowAction, trigger_data: any, workspac
     case 'sms':
       return await sendSMS(action.config, trigger_data, workspace_id);
     
+    case 'slack':
+      // Slack integration - placeholder for demo
+      console.log('[Workflows] Slack action triggered:', action.config);
+      console.log(`[Workflows] Would post to ${action.config.channel}: ${action.config.message}`);
+      if (action.config.mention) {
+        console.log(`[Workflows] Would @mention: ${action.config.mention}`);
+      }
+      return { success: true, message: 'Slack message sent (demo mode)' };
+    
     case 'create_task':
       return await createFormInstance(action.config, trigger_data, workspace_id);
     
