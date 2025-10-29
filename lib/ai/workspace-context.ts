@@ -74,12 +74,14 @@ export async function getWorkspaceContext(
   // Fetch forms with question count
   const { data: forms } = await supabase
     .from('simple_forms')
-    .select('id, title, description, fields, created_at')
+    .select('id, title, description, schema, created_at')
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false });
 
   const formsContext: FormContext[] = (forms || []).map(form => {
-    const fields = Array.isArray(form.fields) ? form.fields : [];
+    // schema is JSONB with { fields: [...] } structure
+    const schema = form.schema as any;
+    const fields = Array.isArray(schema?.fields) ? schema.fields : [];
     const questions = fields
       .filter((f: any) => f.label)
       .map((f: any) => f.label)
@@ -102,9 +104,9 @@ export async function getWorkspaceContext(
   let responsesContext: ResponseContext[] = [];
   if (includePrivateData) {
     const { data: responses } = await supabase
-      .from('form_responses')
+      .from('simple_form_submissions')
       .select(`
-        response_data,
+        data,
         submitted_at,
         simple_forms!inner(title)
       `)
@@ -115,21 +117,21 @@ export async function getWorkspaceContext(
     responsesContext = (responses || []).map(r => ({
       form_title: (r as any).simple_forms.title,
       submitted_at: r.submitted_at,
-      response_data: r.response_data
+      response_data: r.data
     }));
   }
 
   // Fetch workflows
   const { data: workflows } = await supabase
     .from('workflows')
-    .select('id, name, trigger, actions, is_active')
+    .select('id, name, trigger_type, trigger_config, actions, is_active')
     .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false});
 
   const workflowsContext: WorkflowContext[] = (workflows || []).map(w => ({
     id: w.id,
     name: w.name,
-    trigger_type: w.trigger.type,
+    trigger_type: w.trigger_type,
     action_count: Array.isArray(w.actions) ? w.actions.length : 0,
     is_active: w.is_active
   }));
@@ -137,17 +139,17 @@ export async function getWorkspaceContext(
   // Fetch sensors
   const { data: sensors } = await supabase
     .from('sensors')
-    .select('id, name, sensor_type, location, current_reading, status')
+    .select('id, name, type, location, last_reading_at')
     .eq('workspace_id', workspaceId)
     .order('name');
 
   const sensorsContext: SensorContext[] = (sensors || []).map(s => ({
     id: s.id,
     name: s.name,
-    sensor_type: s.sensor_type,
+    sensor_type: s.type,
     location: s.location,
-    current_reading: s.current_reading,
-    status: s.status
+    current_reading: null, // Would need to join with sensor_readings for latest reading
+    status: s.last_reading_at ? 'active' : 'inactive'
   }));
 
   // Fetch team members (limited info for privacy)
