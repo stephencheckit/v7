@@ -1,21 +1,28 @@
 ## Description
-<!-- Describe your changes -->
+<!-- Brief description of what this PR does -->
 
 ## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
+- [ ] 🐛 Bug fix
+- [ ] ✨ New feature
+- [ ] 📝 Documentation update
+- [ ] 🎨 UI/styling change
+- [ ] ♻️ Code refactoring
+- [ ] ⚡ Performance improvement
 
-## Testing
-- [ ] Tests pass locally (`npm test`)
-- [ ] New tests added for changes
-- [ ] Manual testing completed
+## Testing Checklist
+- [ ] Tests added for new functionality
+- [ ] All tests passing locally (`npm test`)
+- [ ] Build successful locally (`npm run build`)
+- [ ] Checked for console errors/warnings
 
-## Checklist
-- [ ] Code follows project style guidelines
-- [ ] Self-reviewed my code
-- [ ] Tests pass (58+ tests)
-- [ ] Documentation updated
-- [ ] No console warnings/errors
+## Test Coverage
+<!-- If adding new feature, list the tests you added -->
+- [ ] Unit tests: 
+- [ ] API tests: 
+- [ ] Integration tests: 
 
+## Related Issues
+<!-- Link to related issues, e.g., "Fixes #123" -->
+
+## Additional Notes
+<!-- Any additional context, screenshots, or information -->
