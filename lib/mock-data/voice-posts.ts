@@ -319,11 +319,13 @@ export function getVoicePosts(filters?: {
   let filtered = [...MOCK_VOICE_POSTS];
   
   if (filters?.location) {
-    filtered = filtered.filter(post => post.dc === filters.location);
+    const location = filters.location;
+    filtered = filtered.filter(post => post.dc === location);
   }
   
   if (filters?.tag) {
-    filtered = filtered.filter(post => post.tags.includes(filters.tag));
+    const tag = filters.tag;
+    filtered = filtered.filter(post => post.tags.includes(tag));
   }
   
   if (filters?.trendingOnly) {

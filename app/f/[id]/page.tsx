@@ -795,8 +795,8 @@ export default function PublicFormPage() {
                       type="button"
                       onClick={() => handleFieldChange(field.name, "up")}
                       className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "up"
-                          ? "bg-[#c4dfc4]/20 border-[#c4dfc4] text-[#c4dfc4]"
-                          : "bg-white/5 border-white/10 text-gray-400 hover:border-[#c4dfc4]/50"
+                        ? "bg-[#c4dfc4]/20 border-[#c4dfc4] text-[#c4dfc4]"
+                        : "bg-white/5 border-white/10 text-gray-400 hover:border-[#c4dfc4]/50"
                         }`}
                     >
                       👍 Yes
@@ -805,8 +805,8 @@ export default function PublicFormPage() {
                       type="button"
                       onClick={() => handleFieldChange(field.name, "down")}
                       className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "down"
-                          ? "bg-red-500/20 border-red-500 text-red-400"
-                          : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/50"
+                        ? "bg-red-500/20 border-red-500 text-red-400"
+                        : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/50"
                         }`}
                     >
                       👎 No
@@ -893,10 +893,10 @@ export default function PublicFormPage() {
                                 <Badge
                                   variant="outline"
                                   className={`text-xs ${entry.confidence?.[fieldId] >= 90
-                                      ? 'text-green-400 border-green-400/30'
-                                      : entry.confidence?.[fieldId] >= 80
-                                        ? 'text-yellow-400 border-yellow-400/30'
-                                        : 'text-gray-400 border-gray-400/30'
+                                    ? 'text-green-400 border-green-400/30'
+                                    : entry.confidence?.[fieldId] >= 80
+                                      ? 'text-yellow-400 border-yellow-400/30'
+                                      : 'text-gray-400 border-gray-400/30'
                                     }`}
                                 >
                                   {entry.confidence?.[fieldId]}% confident
