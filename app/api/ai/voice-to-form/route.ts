@@ -50,6 +50,9 @@ export async function POST(req: Request) {
       if (field.options && field.options.length > 0) {
         description += `\n   Options: ${field.options.join(', ')}`;
       }
+      if (field.type === 'checkbox') {
+        description += `\n   ⚠️ CHECKBOX: Return an ARRAY of ALL selected options`;
+      }
       return description;
     }).join('\n\n');
 
@@ -71,17 +74,24 @@ ${Object.entries(currentValues).length > 0 ? Object.entries(currentValues).map((
 4. For numbers: extract ANY numeric value mentioned
 5. For text: extract relevant phrases
 6. For multiple-choice: match to the closest option
-7. Only put things in unstructured_notes if they REALLY don't match any question
+7. For CHECKBOX fields: Return an ARRAY of ALL mentioned options (e.g., ["Shoes", "Book", "Cup"])
+8. Be creative with matching - if they say "saw shoes and a book", that matches multiple items
+9. Only put things in unstructured_notes if they REALLY don't match any question
 
 ## Output Format (JSON only):
 {
   "field_updates": {
-    "field_id": "value"
+    "field_id": "value_or_array_for_checkboxes"
   },
   "unstructured_notes": ["things that don't match any question"]
 }
 
-BE AGGRESSIVE. If someone says "temperature is 38" and there's a temperature field, fill it. If they say "everything looks good" and there's a "Status" field, put "Good". 
+## CRITICAL RULES:
+- For CHECKBOX fields: ALWAYS return an array: ["option1", "option2"]
+- For radio/select: Return a single string: "option1"
+- For text: Return a string: "The scene looks great"
+- BE AGGRESSIVE. If someone says "temperature is 38" and there's a temperature field, fill it. 
+- If they say "I see shoes, a child, a cup, and a book" → extract ALL items for checkbox field
 
 Return ONLY valid JSON, no other text.`;
 
@@ -116,7 +126,14 @@ Return ONLY valid JSON, no other text.`;
       };
     }
 
-    console.log('[Voice-to-Form] ✅ Parsed result:', result);
+    console.log('[Voice-to-Form] ✅ Parsed result:', JSON.stringify(result, null, 2));
+    console.log('[Voice-to-Form] Field updates:');
+    Object.entries(result.field_updates || {}).forEach(([fieldId, value]) => {
+      const field = formSchema.fields.find((f: any) => f.id === fieldId || f.name === fieldId);
+      if (field) {
+        console.log(`  - ${field.label} (${field.type}): ${Array.isArray(value) ? `[${value.join(', ')}]` : value}`);
+      }
+    });
 
     return Response.json(result);
   } catch (error) {

@@ -193,12 +193,24 @@ export function VoiceCommentaryCapture({
               const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
               if (field) {
                 const fieldKey = field.id || field.name;
-                console.log(`[Voice] Updating field: ${field.label} (${fieldKey}) = ${value}`);
-                onFieldUpdate(fieldKey, value);
-                // Mark as 100% complete
-                setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
-                if (onProgressUpdate) {
-                  onProgressUpdate(fieldKey, 100);
+                
+                // Validate value is meaningful
+                const hasValidValue = value !== null && 
+                                      value !== undefined && 
+                                      value !== '' && 
+                                      (Array.isArray(value) ? value.length > 0 : true);
+                
+                console.log(`[Voice] Updating field: ${field.label} (${fieldKey}) = ${JSON.stringify(value)} [valid: ${hasValidValue}]`);
+                
+                if (hasValidValue) {
+                  onFieldUpdate(fieldKey, value);
+                  // Mark as 100% complete ONLY if value is valid
+                  setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
+                  if (onProgressUpdate) {
+                    onProgressUpdate(fieldKey, 100);
+                  }
+                } else {
+                  console.warn(`[Voice] Skipping empty/invalid value for: ${field.label}`);
                 }
               } else {
                 console.warn(`[Voice] Could not find field for ID: ${fieldId}`);
@@ -256,11 +268,23 @@ export function VoiceCommentaryCapture({
             const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
             if (field) {
               const fieldKey = field.id || field.name;
-              console.log(`[Voice] Final pass - updating field: ${field.label} (${fieldKey}) = ${value}`);
-              onFieldUpdate(fieldKey, value);
-              setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
-              if (onProgressUpdate) {
-                onProgressUpdate(fieldKey, 100);
+              
+              // Validate value is meaningful
+              const hasValidValue = value !== null && 
+                                    value !== undefined && 
+                                    value !== '' && 
+                                    (Array.isArray(value) ? value.length > 0 : true);
+              
+              console.log(`[Voice] Final pass - updating field: ${field.label} (${fieldKey}) = ${JSON.stringify(value)} [valid: ${hasValidValue}]`);
+              
+              if (hasValidValue) {
+                onFieldUpdate(fieldKey, value);
+                setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
+                if (onProgressUpdate) {
+                  onProgressUpdate(fieldKey, 100);
+                }
+              } else {
+                console.warn(`[Voice] Final pass - skipping empty/invalid value for: ${field.label}`);
               }
             } else {
               console.warn(`[Voice] Final pass - could not find field for ID: ${fieldId}`);
