@@ -400,27 +400,29 @@ export function VoiceCommentaryCapture({
             </div>
           </div>
 
-          {/* Bottom row: horizontal progress bars side by side */}
-          <div className="flex gap-2">
-            {formSchema.fields.map((field, idx) => {
-              const fieldKey = field.id || field.name;
-              const progress = fieldProgress.get(fieldKey) || 0;
-              const isAnswered = progress >= 100;
+          {/* Bottom row: single overall progress bar */}
+          {(() => {
+            const totalFields = formSchema.fields.length;
+            const answeredCount = Array.from(fieldProgress.values()).filter(p => p >= 100).length;
+            const overallProgress = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
+            const isComplete = overallProgress >= 100;
 
-              return (
-                <div key={fieldKey} className="flex-1">
-                  {/* Horizontal progress bar - thin height, equal width */}
-                  <div className="w-full h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
-                    <div
-                      className={`absolute left-0 h-full transition-all duration-300 ${isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
-                        }`}
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
+            return (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                  <span>{answeredCount} of {totalFields} questions answered</span>
+                  <span>{Math.round(overallProgress)}%</span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                  <div
+                    className={`absolute left-0 h-full transition-all duration-300 ${isComplete ? 'bg-green-500' : 'bg-[#c4dfc4]'
+                      }`}
+                    style={{ width: `${overallProgress}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </Card>
       </div>
     );
