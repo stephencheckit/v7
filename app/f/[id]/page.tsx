@@ -618,22 +618,42 @@ export default function PublicFormPage() {
 
           {/* AI Vision Assistant */}
           {form && assistMode === 'vision' && (
-            <AIVisionAssistant
-              formSchema={form.schema}
-              currentValues={formValues}
-              onFieldSuggestion={handleAISuggestion}
-              onAnalysisComplete={handleAnalysisComplete}
-            />
+            <>
+              <Button
+                onClick={() => setAssistMode(null)}
+                variant="ghost"
+                size="sm"
+                className="mb-3 text-gray-400 hover:text-white"
+              >
+                ← Switch to Voice Recording
+              </Button>
+              <AIVisionAssistant
+                formSchema={form.schema}
+                currentValues={formValues}
+                onFieldSuggestion={handleAISuggestion}
+                onAnalysisComplete={handleAnalysisComplete}
+              />
+            </>
           )}
 
           {/* Voice Commentary Capture */}
           {form && assistMode === 'voice' && (
-            <VoiceCommentaryCapture
-              formSchema={form.schema}
-              currentValues={formValues}
-              onFieldUpdate={handleVoiceFieldUpdate}
-              onCommentaryCapture={handleCommentaryCapture}
-            />
+            <>
+              <Button
+                onClick={() => setAssistMode(null)}
+                variant="ghost"
+                size="sm"
+                className="mb-3 text-gray-400 hover:text-white"
+              >
+                ← Switch to AI Vision
+              </Button>
+              <VoiceCommentaryCapture
+                formSchema={form.schema}
+                currentValues={formValues}
+                onFieldUpdate={handleVoiceFieldUpdate}
+                onCommentaryCapture={handleCommentaryCapture}
+              />
+            </>
           )}
 
           {/* Error Message */}

@@ -1,10 +1,9 @@
 /**
  * Voice-to-Form Parser API
- * Parses voice transcriptions into structured form data and unstructured commentary
+ * Cleans transcript with OpenAI, then aggressively matches to form fields
  */
 
-import { anthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
+import { OpenAI } from 'openai';
 
 export const runtime = 'edge';
 export const maxDuration = 25;
@@ -15,6 +14,10 @@ interface VoiceToFormRequest {
   currentValues: Record<string, any>;
 }
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export async function POST(req: Request) {
   try {
     const { transcription, formSchema, currentValues }: VoiceToFormRequest = await req.json();
@@ -22,71 +25,84 @@ export async function POST(req: Request) {
     console.log('[Voice-to-Form] Processing transcription:', transcription.substring(0, 100) + '...');
     console.log('[Voice-to-Form] Form has', formSchema.fields.length, 'fields');
 
-    // Build AI prompt for parsing
-    const systemPrompt = `You are an AI assistant that parses voice transcriptions from workplace inspections into structured form data.
-
-Your task is to analyze the transcription and:
-1. Identify which parts answer existing form questions
-2. Extract unstructured observations, commentary, or insights that don't match any form field
-
-## Form Schema
-
-${formSchema.fields.map((field: any, idx: number) => 
-  `${idx + 1}. **${field.label}** (${field.type})${field.options ? `\n   Options: ${field.options.join(', ')}` : ''}\n   Field ID: ${field.id || field.name}`
-).join('\n\n')}
-
-## Instructions
-
-Analyze the transcription and output JSON with this structure:
-{
-  "field_updates": {
-    "field_id": "extracted_value"
-  },
-  "unstructured_notes": [
-    "observation or comment that doesn't match any field"
-  ]
-}
-
-### Matching Rules:
-- Be flexible with matching - "temp is 38" matches a temperature field
-- For multiple-choice, match the closest option
-- For yes/no fields, recognize variations like "yes", "yeah", "yep", "correct", "no", "nope", "negative"
-- For text fields, extract the relevant phrase
-- For numbers, extract the numeric value
-- If something clearly doesn't answer any field question, put it in unstructured_notes
-
-### Current Values:
-${Object.entries(currentValues).map(([key, val]) => `- ${key}: ${val}`).join('\n')}
-
-Only update fields that have NEW information in the transcription. Don't repeat existing values.
-
-Return ONLY the JSON object, no other text.`;
-
-    const userPrompt = `Transcription: "${transcription}"`;
-
-    // Call AI to parse
-    const { text } = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
+    // Step 1: Clean up the transcript using OpenAI
+    const cleanupResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: systemPrompt
+          content: 'You are a transcript cleanup assistant. Fix grammar, remove filler words (um, uh, like), capitalize properly, and make the text clear. Preserve all factual information. Return ONLY the cleaned text, no extra commentary.'
         },
         {
           role: 'user',
-          content: userPrompt
+          content: `Clean up this voice transcript: "${transcription}"`
         }
       ],
-      temperature: 0.3, // Lower temperature for more consistent parsing
+      temperature: 0.3,
     });
 
-    console.log('[Voice-to-Form] AI Response:', text);
+    const cleanedText = cleanupResponse.choices[0].message.content || transcription;
+    console.log('[Voice-to-Form] Cleaned text:', cleanedText);
+
+    // Step 2: Aggressively match cleaned text to form fields
+    const formFieldsDescription = formSchema.fields.map((field: any, idx: number) => {
+      let description = `${idx + 1}. "${field.label}" (type: ${field.type}, id: ${field.id || field.name})`;
+      if (field.options && field.options.length > 0) {
+        description += `\n   Options: ${field.options.join(', ')}`;
+      }
+      return description;
+    }).join('\n\n');
+
+    const matchingPrompt = `You are filling out an inspection form based on spoken answers. Be VERY AGGRESSIVE about matching answers to questions.
+
+## Form Questions:
+${formFieldsDescription}
+
+## Current Answers:
+${Object.entries(currentValues).length > 0 ? Object.entries(currentValues).map(([key, val]) => `- ${key}: ${val}`).join('\n') : 'None yet'}
+
+## Spoken Text (cleaned):
+"${cleanedText}"
+
+## Your Task:
+1. Match EVERY part of the spoken text to form questions if possible
+2. Extract field values even if phrasing isn't exact
+3. For yes/no: recognize "yes", "yeah", "yep", "correct", "good", "no", "nope", "negative", "not good"
+4. For numbers: extract ANY numeric value mentioned
+5. For text: extract relevant phrases
+6. For multiple-choice: match to the closest option
+7. Only put things in unstructured_notes if they REALLY don't match any question
+
+## Output Format (JSON only):
+{
+  "field_updates": {
+    "field_id": "value"
+  },
+  "unstructured_notes": ["things that don't match any question"]
+}
+
+BE AGGRESSIVE. If someone says "temperature is 38" and there's a temperature field, fill it. If they say "everything looks good" and there's a "Status" field, put "Good". 
+
+Return ONLY valid JSON, no other text.`;
+
+    const matchingResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: matchingPrompt
+        }
+      ],
+      temperature: 0.2,
+    });
+
+    const aiResponse = matchingResponse.choices[0].message.content || '{}';
+    console.log('[Voice-to-Form] Matching response:', aiResponse);
 
     // Parse JSON response
     let result;
     try {
-      // Try to extract JSON from response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0]);
       } else {
@@ -94,12 +110,13 @@ Return ONLY the JSON object, no other text.`;
       }
     } catch (parseError) {
       console.error('[Voice-to-Form] Failed to parse AI response:', parseError);
-      // Return empty result on parse failure
       result = {
         field_updates: {},
         unstructured_notes: []
       };
     }
+
+    console.log('[Voice-to-Form] ✅ Parsed result:', result);
 
     return Response.json(result);
   } catch (error) {

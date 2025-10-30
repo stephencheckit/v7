@@ -125,7 +125,7 @@ export function VoiceCommentaryCapture({
   };
 
   const processTranscriptionChunk = async (chunk: string) => {
-    // Debounce processing
+    // Debounce processing - reduced for more real-time feedback
     if (processingTimeoutRef.current) {
       clearTimeout(processingTimeoutRef.current);
     }
@@ -134,7 +134,7 @@ export function VoiceCommentaryCapture({
       setIsProcessing(true);
       
       try {
-        // Send to AI parser
+        // Send to AI parser (now uses OpenAI for cleanup + aggressive matching)
         const response = await fetch('/api/ai/voice-to-form', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -148,7 +148,10 @@ export function VoiceCommentaryCapture({
         if (response.ok) {
           const { field_updates, unstructured_notes } = await response.json();
           
-          // Update form fields
+          console.log('[Voice] Field updates:', field_updates);
+          console.log('[Voice] Unstructured notes:', unstructured_notes);
+          
+          // Update form fields IMMEDIATELY
           if (field_updates && Object.keys(field_updates).length > 0) {
             Object.entries(field_updates).forEach(([fieldId, value]) => {
               onFieldUpdate(fieldId, value);
@@ -156,7 +159,14 @@ export function VoiceCommentaryCapture({
               // Add to form answers display
               const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
               if (field) {
-                setFormAnswers(prev => [...prev, `${field.label}: ${value}`]);
+                setFormAnswers(prev => {
+                  // Avoid duplicates
+                  const existing = prev.find(a => a.startsWith(`${field.label}:`));
+                  if (existing) {
+                    return prev.map(a => a === existing ? `${field.label}: ${value}` : a);
+                  }
+                  return [...prev, `${field.label}: ${value}`];
+                });
               }
             });
           }
@@ -171,7 +181,7 @@ export function VoiceCommentaryCapture({
       } finally {
         setIsProcessing(false);
       }
-    }, 1500); // Wait 1.5s after last speech before processing
+    }, 800); // Reduced from 1500ms to 800ms for faster real-time updates
   };
 
   const formatTime = (seconds: number) => {
