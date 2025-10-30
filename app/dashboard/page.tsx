@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, Inbox, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Inbox, TrendingUp, Radio } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { CenteredSpinner } from "@/components/loading";
 import { MyWorkView } from "@/components/dashboard/my-work-view";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
+import { RealTimeFeedView } from "@/components/dashboard/real-time-feed-view";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'inbox' | 'insights'>('inbox');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'realtime' | 'insights'>('inbox');
   const { user } = useAuth();
 
   // Extract first name from user metadata or email
@@ -60,10 +61,14 @@ export default function DashboardPage() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
-            <TabsList className="grid w-full grid-cols-2 lg:w-[400px] mb-6">
+            <TabsList className="grid w-full grid-cols-3 lg:w-[600px] mb-6">
               <TabsTrigger value="inbox" className="flex items-center gap-2">
                 <Inbox className="w-4 h-4" />
                 Inbox
+              </TabsTrigger>
+              <TabsTrigger value="realtime" className="flex items-center gap-2">
+                <Radio className="w-4 h-4" />
+                Real-Time
               </TabsTrigger>
               <TabsTrigger value="insights" className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
@@ -74,6 +79,11 @@ export default function DashboardPage() {
             {/* Tab Content: Inbox */}
             <TabsContent value="inbox" className="mt-6">
               <MyWorkView />
+            </TabsContent>
+
+            {/* Tab Content: Real-Time Feed */}
+            <TabsContent value="realtime" className="mt-6">
+              <RealTimeFeedView />
             </TabsContent>
 
             {/* Tab Content: Insights */}

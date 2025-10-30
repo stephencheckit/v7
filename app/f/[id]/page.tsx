@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle2, AlertCircle, Check, BarChart3 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Check, BarChart3, Camera, Mic } from "lucide-react";
 import { AIVisionAssistant } from "@/components/ai-vision-assistant";
+import { VoiceCommentaryCapture } from "@/components/voice-commentary-capture";
 import { toast } from "sonner";
 import { SignaturePadWidget } from "@/components/signature-pad-widget";
 
@@ -68,6 +69,8 @@ export default function PublicFormPage() {
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
   const [cadenceInfo, setCadenceInfo] = useState<any>(null);
   const [nextWorkItems, setNextWorkItems] = useState<any[]>([]);
+  const [assistMode, setAssistMode] = useState<'vision' | 'voice' | null>(null); // Which AI assist is active
+  const [voiceCommentary, setVoiceCommentary] = useState<string>(''); // Captured voice commentary
 
   // Reset state when timestamp changes (new preview load)
   useEffect(() => {
@@ -84,23 +87,23 @@ export default function PublicFormPage() {
     loadForm();
     loadCadenceInfo();
   }, [formId]);
-  
+
   // Load next work items after submission (for non-dashboard flows)
   useEffect(() => {
     if (submitted && source !== 'dashboard') {
       loadNextWorkItems();
     }
   }, [submitted, source]);
-  
+
   const loadNextWorkItems = async () => {
     try {
       const workspaceId = await getCurrentWorkspaceId();
       if (!workspaceId) return;
-      
+
       const response = await fetch(`/api/instances?workspace_id=${workspaceId}&limit=10`);
       if (response.ok) {
         const data = await response.json();
-        const remaining = (data.instances || []).filter((i: any) => 
+        const remaining = (data.instances || []).filter((i: any) =>
           i.status !== 'completed' && i.status !== 'skipped'
         ).slice(0, 3);
         setNextWorkItems(remaining);
@@ -114,7 +117,7 @@ export default function PublicFormPage() {
     try {
       setLoading(true);
       const response = await fetch(`/api/forms/${formId}`);
-      
+
       if (!response.ok) {
         throw new Error('Form not found');
       }
@@ -142,7 +145,7 @@ export default function PublicFormPage() {
             const summaryResponse = await fetch(`/api/summaries?workspace_id=${cadence.workspace_id}`);
             if (summaryResponse.ok) {
               const { summaries } = await summaryResponse.json();
-              const includedSummaries = summaries.filter((s: any) => 
+              const includedSummaries = summaries.filter((s: any) =>
                 cadence.included_in_summaries.includes(s.id)
               );
               setCadenceInfo({ cadence, includedSummaries });
@@ -155,9 +158,48 @@ export default function PublicFormPage() {
     }
   };
 
+  const handleVoiceFieldUpdate = (fieldId: string, value: any) => {
+    // Find the field in the schema
+    const field = form?.schema.fields.find(f => f.id === fieldId || f.name === fieldId);
+    if (!field) return;
+
+    // Update form value
+    setFormValues(prev => ({
+      ...prev,
+      [field.name]: value
+    }));
+  };
+
+  const handleCommentaryCapture = async (commentary: string) => {
+    setVoiceCommentary(commentary);
+
+    // Save commentary to database immediately
+    if (form) {
+      try {
+        const workspaceId = await getCurrentWorkspaceId();
+        if (!workspaceId) return;
+
+        await fetch('/api/commentary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workspace_id: workspaceId,
+            form_id: formId,
+            raw_transcription: commentary,
+            location: cadenceInfo?.location || null
+          })
+        });
+
+        console.log('✅ Commentary saved');
+      } catch (error) {
+        console.error('Failed to save commentary:', error);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form) return;
 
     // Validate required fields
@@ -177,7 +219,7 @@ export default function PublicFormPage() {
       const response = await fetch(`/api/forms/${formId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           data: formValues,
           ai_metadata: aiMetadata,
           is_preview: isPreview
@@ -190,7 +232,7 @@ export default function PublicFormPage() {
       }
 
       setSubmitted(true);
-      
+
       // If from dashboard, mark instance as completed and fetch next work
       if (source === 'dashboard' && instanceId) {
         try {
@@ -200,22 +242,22 @@ export default function PublicFormPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'completed' }),
           });
-          
+
           // Fetch remaining work items (async, don't wait)
           fetch('/api/instances?workspace_id=' + (await getCurrentWorkspaceId()) + '&limit=5')
             .then(res => res.json())
             .then(data => {
-              const remaining = (data.instances || []).filter((i: any) => 
+              const remaining = (data.instances || []).filter((i: any) =>
                 i.status !== 'completed' && i.status !== 'skipped'
               ).slice(0, 3);
               setNextWorkItems(remaining);
             })
             .catch(console.error);
-          
+
           // Redirect to dashboard after brief delay with success toast
           setTimeout(() => {
             toast.success('Form completed!', {
-              description: nextWorkItems.length > 0 
+              description: nextWorkItems.length > 0
                 ? `You have ${nextWorkItems.length} more items due.`
                 : 'Great job! All your work is complete.',
             });
@@ -227,7 +269,7 @@ export default function PublicFormPage() {
           // Continue to show thank you page on error
         }
       }
-      
+
       // Start redirect countdown if configured (for non-dashboard flows)
       const thankYouSettings = form?.thank_you_settings;
       if (thankYouSettings?.redirectUrl && thankYouSettings.redirectDelay >= 0) {
@@ -239,7 +281,7 @@ export default function PublicFormPage() {
       setSubmitting(false);
     }
   };
-  
+
   // Helper to get current workspace ID
   const getCurrentWorkspaceId = async () => {
     try {
@@ -257,16 +299,16 @@ export default function PublicFormPage() {
   // Handle redirect countdown
   useEffect(() => {
     if (redirectCountdown === null) return;
-    
+
     if (redirectCountdown === 0 && form?.thank_you_settings?.redirectUrl) {
       window.location.href = form.thank_you_settings.redirectUrl;
       return;
     }
-    
+
     const timer = setTimeout(() => {
       setRedirectCountdown(prev => (prev !== null && prev > 0 ? prev - 1 : null));
     }, 1000);
-    
+
     return () => clearTimeout(timer);
   }, [redirectCountdown, form?.thank_you_settings?.redirectUrl]);
 
@@ -294,11 +336,11 @@ export default function PublicFormPage() {
     // We keep the BEST answer (highest confidence) from all snapshots.
     // The form field shows the single best answer, NOT a summary of all snapshots.
     // This ensures the most confident/accurate answer is used.
-    
+
     // Store metadata
     setAiMetadata(prev => {
       const existingMetadata = prev[fieldId];
-      
+
       // Only update if new confidence is higher, or if no existing metadata
       if (!existingMetadata || confidence > existingMetadata.confidence) {
         return {
@@ -311,7 +353,7 @@ export default function PublicFormPage() {
           }
         };
       }
-      
+
       return prev;
     });
 
@@ -323,11 +365,11 @@ export default function PublicFormPage() {
 
       const fieldName = field.name;
       const existingValue = prev[fieldName];
-      
+
       // Only auto-fill if field is empty or if new confidence is significantly higher
       const existingMetadata = aiMetadata[fieldId];
-      const shouldUpdate = !existingValue || 
-                          (existingMetadata && confidence > existingMetadata.confidence + 0.05);
+      const shouldUpdate = !existingValue ||
+        (existingMetadata && confidence > existingMetadata.confidence + 0.05);
 
       if (confidence >= 0.80 && shouldUpdate) {
         return {
@@ -335,7 +377,7 @@ export default function PublicFormPage() {
           [fieldName]: value
         };
       }
-      
+
       return prev;
     });
   };
@@ -380,7 +422,7 @@ export default function PublicFormPage() {
           <div className="text-center space-y-6">
             {/* Success Icon */}
             <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto" />
-            
+
             {/* Custom Message */}
             <p className="text-lg md:text-xl font-medium text-white whitespace-pre-wrap">
               {thankYouSettings.message}
@@ -398,9 +440,9 @@ export default function PublicFormPage() {
                       return (
                         <div key={key} className="p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
                           <div className="flex items-start gap-3">
-                            <img 
-                              src={sig.signatureData} 
-                              alt="Signature" 
+                            <img
+                              src={sig.signatureData}
+                              alt="Signature"
                               className="h-12 border border-white/20 bg-white rounded"
                               style={{ minWidth: '100px' }}
                             />
@@ -419,7 +461,7 @@ export default function PublicFormPage() {
                         </div>
                       );
                     }
-                    
+
                     // Regular response
                     return (
                       <div key={key} className="text-sm">
@@ -468,7 +510,7 @@ export default function PublicFormPage() {
                   Submit Another Response
                 </Button>
               )}
-              
+
               {thankYouSettings.showCloseButton && (
                 <Button
                   onClick={() => window.close()}
@@ -478,7 +520,7 @@ export default function PublicFormPage() {
                   Close
                 </Button>
               )}
-              
+
               {thankYouSettings.allowSocialShare && (
                 <Button
                   onClick={() => {
@@ -499,8 +541,8 @@ export default function PublicFormPage() {
             {/* Redirect Countdown */}
             {redirectCountdown !== null && thankYouSettings.redirectUrl && (
               <p className="text-sm text-gray-500 italic pt-2">
-                {redirectCountdown === 0 
-                  ? "Redirecting now..." 
+                {redirectCountdown === 0
+                  ? "Redirecting now..."
                   : `Redirecting in ${redirectCountdown} second${redirectCountdown === 1 ? '' : 's'}...`}
               </p>
             )}
@@ -524,7 +566,7 @@ export default function PublicFormPage() {
             </div>
           </div>
         )}
-        
+
         {/* Visibility Banner */}
         {cadenceInfo?.includedSummaries && cadenceInfo.includedSummaries.length > 0 && (
           <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -539,7 +581,7 @@ export default function PublicFormPage() {
             </p>
           </div>
         )}
-        
+
         <Card className="bg-[#1a1a1a] border-white/10 p-4 md:p-8">
           {/* Form Header */}
           <div className="mb-6 md:mb-8">
@@ -549,13 +591,48 @@ export default function PublicFormPage() {
             )}
           </div>
 
-          {/* AI Vision Assistant - Only show if enabled */}
-          {form && form.ai_vision_enabled && (
+          {/* AI Assist Options - Vision or Voice */}
+          {form && form.ai_vision_enabled && !assistMode && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">AI Assist Options</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => setAssistMode('vision')}
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 hover:from-[#c4dfc4]/30 hover:to-[#c8e0f5]/30 border border-[#c4dfc4]/30"
+                >
+                  <Camera className="h-6 w-6 text-[#c4dfc4]" />
+                  <span className="text-sm font-medium">AI Vision</span>
+                  <span className="text-xs text-gray-400">Use camera</span>
+                </Button>
+                <Button
+                  onClick={() => setAssistMode('voice')}
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 hover:from-[#c4dfc4]/30 hover:to-[#c8e0f5]/30 border border-[#c4dfc4]/30"
+                >
+                  <Mic className="h-6 w-6 text-[#c4dfc4]" />
+                  <span className="text-sm font-medium">Voice Recording</span>
+                  <span className="text-xs text-gray-400">Speak answers</span>
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* AI Vision Assistant */}
+          {form && assistMode === 'vision' && (
             <AIVisionAssistant
               formSchema={form.schema}
               currentValues={formValues}
               onFieldSuggestion={handleAISuggestion}
               onAnalysisComplete={handleAnalysisComplete}
+            />
+          )}
+
+          {/* Voice Commentary Capture */}
+          {form && assistMode === 'voice' && (
+            <VoiceCommentaryCapture
+              formSchema={form.schema}
+              currentValues={formValues}
+              onFieldUpdate={handleVoiceFieldUpdate}
+              onCommentaryCapture={handleCommentaryCapture}
             />
           )}
 
@@ -717,22 +794,20 @@ export default function PublicFormPage() {
                     <button
                       type="button"
                       onClick={() => handleFieldChange(field.name, "up")}
-                      className={`flex-1 py-3 rounded-lg border transition-colors ${
-                        formValues[field.name] === "up"
+                      className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "up"
                           ? "bg-[#c4dfc4]/20 border-[#c4dfc4] text-[#c4dfc4]"
                           : "bg-white/5 border-white/10 text-gray-400 hover:border-[#c4dfc4]/50"
-                      }`}
+                        }`}
                     >
                       👍 Yes
                     </button>
                     <button
                       type="button"
                       onClick={() => handleFieldChange(field.name, "down")}
-                      className={`flex-1 py-3 rounded-lg border transition-colors ${
-                        formValues[field.name] === "down"
+                      className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "down"
                           ? "bg-red-500/20 border-red-500 text-red-400"
                           : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/50"
-                      }`}
+                        }`}
                     >
                       👎 No
                     </button>
@@ -806,7 +881,7 @@ export default function PublicFormPage() {
                         </span>
                         <span className="text-xs text-gray-500">{entry.timestamp}</span>
                       </div>
-                      
+
                       {Object.keys(entry.answers).length > 0 ? (
                         <div className="space-y-2">
                           {Object.entries(entry.answers).map(([fieldId, answer]: [string, any]) => (
@@ -815,15 +890,14 @@ export default function PublicFormPage() {
                                 <span className="text-gray-400 flex-1">
                                   {getQuestionLabel(fieldId)}
                                 </span>
-                                <Badge 
-                                  variant="outline" 
-                                  className={`text-xs ${
-                                    entry.confidence?.[fieldId] >= 90 
-                                      ? 'text-green-400 border-green-400/30' 
-                                      : entry.confidence?.[fieldId] >= 80 
-                                      ? 'text-yellow-400 border-yellow-400/30'
-                                      : 'text-gray-400 border-gray-400/30'
-                                  }`}
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${entry.confidence?.[fieldId] >= 90
+                                      ? 'text-green-400 border-green-400/30'
+                                      : entry.confidence?.[fieldId] >= 80
+                                        ? 'text-yellow-400 border-yellow-400/30'
+                                        : 'text-gray-400 border-gray-400/30'
+                                    }`}
                                 >
                                   {entry.confidence?.[fieldId]}% confident
                                 </Badge>
