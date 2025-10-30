@@ -88,36 +88,41 @@ async function main() {
           stdio: 'pipe'
         });
         
-        // Parse logs for TypeScript errors and format for problem matcher
+        // Parse logs for TypeScript errors and format for Cursor problem matcher
         const lines = logs.split('\n');
-        let inError = false;
-        let errorFile = '';
+        let currentFile = '';
+        let currentLine = '';
+        let currentCol = '';
+        let currentError = '';
         
         for (const line of lines) {
-          // Match TypeScript errors like: app/api/workflows/[id]/route.ts:74:13
-          const tsErrorMatch = line.match(/^(.+\.tsx?):(\d+):(\d+)/);
+          // Match TypeScript errors: ./app/api/workflows/[id]/route.ts:74:13
+          const tsErrorMatch = line.match(/^\.?\/(.+\.tsx?):(\d+):(\d+)/);
           if (tsErrorMatch) {
-            errorFile = tsErrorMatch[1];
-            console.log(`\n${errorFile}:${tsErrorMatch[2]}:${tsErrorMatch[3]}`);
-            inError = true;
+            currentFile = tsErrorMatch[1];
+            currentLine = tsErrorMatch[2];
+            currentCol = tsErrorMatch[3];
             continue;
           }
           
           // Match "Type error:" messages
-          if (line.includes('Type error:') || line.includes('Failed to compile')) {
-            console.log(line);
-            inError = true;
+          const typeErrorMatch = line.match(/Type error:\s*(.+)$/);
+          if (typeErrorMatch && currentFile) {
+            currentError = typeErrorMatch[1];
+            // Output in standard format: file:line:column: error: message
+            console.log(`${currentFile}:${currentLine}:${currentCol}: error: ${currentError}`);
+            currentFile = '';
             continue;
           }
           
-          // Print error context
-          if (inError && line.trim()) {
-            console.log(line);
-            if (line.includes('Error:') || line.includes('exited with')) {
-              inError = false;
-            }
+          // Match other error patterns
+          if (line.includes('Failed to compile') || line.includes('Build failed')) {
+            console.log(`\n❌ ${line}\n`);
           }
         }
+        
+        console.log('\n💡 Errors above should appear in Cursor Problems panel');
+        console.log(`📊 View full logs: https://vercel.com/dashboard/deployments/${deployment.uid}`);
       } catch (logError) {
         console.log('Could not fetch detailed logs. Check Vercel dashboard:');
         console.log(`https://vercel.com/dashboard/deployments/${deployment.uid}`);

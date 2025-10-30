@@ -91,10 +91,42 @@
             "label": "🔍 Check Latest Vercel Deployment",
             "type": "shell",
             "command": "node scripts/check-vercel-deploy.js",
-            "problemMatcher": [],
+            "problemMatcher": {
+                "owner": "vercel-build",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.+):(\\d+):(\\d+):\\s*error:\\s*(.+)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
             "presentation": {
                 "reveal": "always",
-                "panel": "shared"
+                "panel": "shared",
+                "showReuseMessage": false
+            }
+        },
+        {
+            "label": "🚀 Deploy and Auto-Check Vercel",
+            "type": "shell",
+            "command": "sh scripts/deploy-and-check.sh",
+            "problemMatcher": {
+                "owner": "vercel-deploy",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.+):(\\d+):(\\d+):\\s*error:\\s*(.+)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false
             }
         }
     ],

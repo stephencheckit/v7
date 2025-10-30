@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check Vercel deployment status after push
+echo ""
+echo "🚀 Checking Vercel deployment status..."
+echo ""
+
+# Wait a few seconds for Vercel to pick up the push
+sleep 5
+
+# Run the check script
+node scripts/check-vercel-deploy.js
+

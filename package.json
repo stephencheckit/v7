@@ -11,6 +11,8 @@
     "test:ui": "vitest --ui",
     "predeploy": "npm test",
     "deploy": "git push origin main",
+    "deploy:check": "sh scripts/deploy-and-check.sh",
+    "vercel:check": "node scripts/check-vercel-deploy.js",
     "prepare": "husky"
   },
   "dependencies": {
