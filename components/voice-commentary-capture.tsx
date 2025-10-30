@@ -43,7 +43,7 @@ export function VoiceCommentaryCapture({
   const [fieldProgress, setFieldProgress] = useState<Map<string, number>>(new Map());
   const [isProcessing, setIsProcessing] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  
+
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -83,6 +83,25 @@ export function VoiceCommentaryCapture({
       }
     };
   }, [isRecording]);
+
+  // Cleanup on unmount - ensure all audio stops
+  useEffect(() => {
+    return () => {
+      // Stop speech recognition if active
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+      
+      // Clear any pending timeouts
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const startRecording = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -165,7 +184,7 @@ export function VoiceCommentaryCapture({
 
         if (response.ok) {
           const { field_updates } = await response.json();
-          
+
           // Update form fields AND track progress
           if (field_updates && Object.keys(field_updates).length > 0) {
             Object.entries(field_updates).forEach(([fieldId, value]) => {
@@ -189,7 +208,7 @@ export function VoiceCommentaryCapture({
       setIsRecording(false);
       recognitionRef.current.stop();
       recognitionRef.current = null;
-      
+
       if (!transcription || transcription.trim().length === 0) {
         toast.error('No voice input detected', {
           description: 'Please try recording again'
@@ -199,10 +218,10 @@ export function VoiceCommentaryCapture({
 
       // Process entire transcript for final cleanup
       setIsProcessing(true);
-      
+
       try {
         console.log('[Voice] Final processing of full transcript');
-        
+
         // Send ENTIRE transcript for final holistic analysis + cleanup
         const response = await fetch('/api/ai/voice-to-form', {
           method: 'POST',
@@ -219,7 +238,7 @@ export function VoiceCommentaryCapture({
         }
 
         const { field_updates } = await response.json();
-        
+
         // Apply any additional updates from final pass
         if (field_updates && Object.keys(field_updates).length > 0) {
           Object.entries(field_updates).forEach(([fieldId, value]) => {
@@ -230,21 +249,21 @@ export function VoiceCommentaryCapture({
             }
           });
         }
-        
+
         // Check for missing required fields
         const requiredFields = formSchema.fields.filter(f => f.required);
         const missingFields = requiredFields.filter(f => {
           const fieldKey = f.id || f.name;
           return !fieldProgress.has(fieldKey) && !currentValues[fieldKey];
         });
-        
+
         if (missingFields.length > 0) {
           // Notify parent of missing fields for highlighting
           const missingFieldIds = missingFields.map(f => f.id || f.name);
           if (onValidationError) {
             onValidationError(missingFieldIds);
           }
-          
+
           // Show which questions need answers
           toast.error(`⚠️ ${missingFields.length} required question${missingFields.length !== 1 ? 's' : ''} unanswered`, {
             description: missingFields.map(f => f.label).join(', '),
@@ -253,23 +272,23 @@ export function VoiceCommentaryCapture({
           setIsProcessing(false);
           return; // Don't auto-submit, let user answer manually
         }
-        
+
         // Save commentary for reverse engineering (will be saved AFTER form submit by parent)
         if (onCommentaryCapture) {
           onCommentaryCapture(transcription);
         }
-        
+
         // All required fields answered - auto-submit!
         toast.success(`✓ All questions answered!`, {
           description: 'Submitting form...'
         });
-        
+
         setTimeout(() => {
           if (onAutoSubmit) {
             onAutoSubmit();
           }
         }, 1500);
-        
+
       } catch (error) {
         console.error('[Voice] Error processing transcript:', error);
         toast.error('Failed to process voice input', {
@@ -288,15 +307,25 @@ export function VoiceCommentaryCapture({
   };
 
   const handleCancel = () => {
+    // Stop speech recognition immediately
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       recognitionRef.current = null;
     }
+    
+    // Stop any pending processing
+    if (processingTimeoutRef.current) {
+      clearTimeout(processingTimeoutRef.current);
+      processingTimeoutRef.current = null;
+    }
+    
+    // Reset all state
     setIsRecording(false);
     setTranscription('');
     setFieldProgress(new Map());
+    setCountdown(null); // Clear countdown to ensure clean unmount
     
-    // Tell parent to go back to AI assist selection
+    // Tell parent to go back to AI assist selection (this will unmount the component)
     if (onCancel) {
       onCancel();
     }
@@ -377,15 +406,14 @@ export function VoiceCommentaryCapture({
               const fieldKey = field.id || field.name;
               const progress = fieldProgress.get(fieldKey) || 0;
               const isAnswered = progress >= 100;
-              
+
               return (
                 <div key={fieldKey} className="w-1">
                   {/* Vertical progress bar - very thin */}
                   <div className="w-1 h-12 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
                     <div
-                      className={`absolute bottom-0 w-full transition-all duration-300 ${
-                        isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
-                      }`}
+                      className={`absolute bottom-0 w-full transition-all duration-300 ${isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
+                        }`}
                       style={{ height: `${progress}%` }}
                     />
                   </div>

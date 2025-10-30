@@ -13,6 +13,7 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (isRecording) {
@@ -23,13 +24,15 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
           const audioContext = new AudioContext();
           const analyser = audioContext.createAnalyser();
           const source = audioContext.createMediaStreamSource(stream);
-
+          
           analyser.fftSize = 64; // 32 frequency bins
           const bufferLength = analyser.frequencyBinCount;
           const dataArray: Uint8Array<ArrayBuffer> = new Uint8Array(bufferLength);
-
+          
           source.connect(analyser);
-
+          
+          // Store references for cleanup
+          streamRef.current = stream;
           audioContextRef.current = audioContext;
           analyserRef.current = analyser;
           dataArrayRef.current = dataArray;
@@ -66,17 +69,38 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
       initAudio();
 
       return () => {
-        // Cleanup
+        // Cleanup: Stop all audio
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
         }
         if (audioContextRef.current) {
           audioContextRef.current.close();
+          audioContextRef.current = null;
+        }
+        // CRITICAL: Stop all microphone tracks
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
         }
       };
     } else {
       // Reset to flat when not recording
       setBars(Array.from({ length: 30 }, () => 10));
+      
+      // Also cleanup any active streams when switching to not recording
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
     }
   }, [isRecording]);
 

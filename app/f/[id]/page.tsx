@@ -327,7 +327,7 @@ export default function PublicFormPage() {
       ...prev,
       [fieldName]: value,
     }));
-    
+
     // Clear missing field highlight if user starts filling it
     setMissingFieldIds(prev => prev.filter(id => id !== fieldName));
   };
@@ -651,22 +651,22 @@ export default function PublicFormPage() {
 
           {/* Voice Commentary Capture */}
           {form && assistMode === 'voice' && (
-              <VoiceCommentaryCapture
-                formSchema={form.schema}
-                currentValues={formValues}
-                onFieldUpdate={handleVoiceFieldUpdate}
-                onCommentaryCapture={handleCommentaryCapture}
-                onProgressUpdate={handleVoiceProgressUpdate}
-                onValidationError={(fieldIds) => setMissingFieldIds(fieldIds)}
-                onCancel={() => setAssistMode(null)}
-                onAutoSubmit={() => {
-                  // Trigger form submission
-                  const formElement = document.querySelector('form');
-                  if (formElement) {
-                    formElement.requestSubmit();
-                  }
-                }}
-              />
+            <VoiceCommentaryCapture
+              formSchema={form.schema}
+              currentValues={formValues}
+              onFieldUpdate={handleVoiceFieldUpdate}
+              onCommentaryCapture={handleCommentaryCapture}
+              onProgressUpdate={handleVoiceProgressUpdate}
+              onValidationError={(fieldIds) => setMissingFieldIds(fieldIds)}
+              onCancel={() => setAssistMode(null)}
+              onAutoSubmit={() => {
+                // Trigger form submission
+                const formElement = document.querySelector('form');
+                if (formElement) {
+                  formElement.requestSubmit();
+                }
+              }}
+            />
           )}
 
           {/* Error Message */}
@@ -683,21 +683,21 @@ export default function PublicFormPage() {
               const isMissing = missingFieldIds.includes(fieldKey);
 
               return (
-              <div 
-                key={field.id}
-                className={`${isMissing ? 'p-3 rounded-lg border-2 border-red-500 bg-red-500/5' : ''}`}
-              >
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
-                  <span className={isMissing ? 'text-red-400' : ''}>
-                    {field.label}
-                    {field.required && <span className="text-red-400 ml-1">*</span>}
-                  </span>
-                  {aiMetadata[field.id] && (
-                    <Check className="w-4 h-4 text-[#c4dfc4]" />
-                  )}
-                </label>
+                <div
+                  key={field.id}
+                  className={`${isMissing ? 'p-3 rounded-lg border-2 border-red-500 bg-red-500/5' : ''}`}
+                >
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+                    <span className={isMissing ? 'text-red-400' : ''}>
+                      {field.label}
+                      {field.required && <span className="text-red-400 ml-1">*</span>}
+                    </span>
+                    {aiMetadata[field.id] && (
+                      <Check className="w-4 h-4 text-[#c4dfc4]" />
+                    )}
+                  </label>
 
-                {/* Text Input */}
+                  {/* Text Input */}
                   {field.type === "text" && (
                     <Input
                       value={formValues[field.name] || ""}
