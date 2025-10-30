@@ -20,15 +20,31 @@ let currentForm: FormSchema | null = null;
 
 export async function POST(req: Request) {
   try {
-    const { messages, image, workspaceId, context } = await req.json();
+    const { messages, image, workspaceId, context, currentFields } = await req.json();
 
     console.log('[API] Received messages:', JSON.stringify(messages, null, 2));
     if (image) console.log('[API] Received image data');
     if (workspaceId) console.log('[API] Received workspaceId:', workspaceId);
     if (context) console.log('[API] Context type:', context);
+    if (currentFields) console.log('[API] Current fields count:', currentFields.length);
 
     // Fetch workspace context if available (for both image and text flows)
     let enhancedSystemPrompt = FORM_BUILDER_SYSTEM_PROMPT;
+    
+    // Add current form fields to the prompt if available
+    if (currentFields && Array.isArray(currentFields) && currentFields.length > 0) {
+      const fieldsContext = `\n\n## Current Form Fields\n\nThe form currently has ${currentFields.length} field(s):\n\n` +
+        currentFields.map((field: any, idx: number) => {
+          let fieldInfo = `${idx + 1}. **${field.label}**\n   - ID: \`${field.id}\`\n   - Type: ${field.type}\n   - Required: ${field.required ? 'Yes' : 'No'}`;
+          if (field.options && field.options.length > 0) {
+            fieldInfo += `\n   - Options: ${field.options.map((opt: any) => typeof opt === 'string' ? opt : opt.label).join(', ')}`;
+          }
+          return fieldInfo;
+        }).join('\n\n');
+      
+      enhancedSystemPrompt += fieldsContext;
+      console.log('[API] ✅ Added current fields context to prompt');
+    }
     if (workspaceId) {
       try {
         console.log('[API] 🔍 Fetching workspace context for workspaceId:', workspaceId);
