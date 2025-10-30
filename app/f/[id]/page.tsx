@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Loader2, CheckCircle2, AlertCircle, Check, BarChart3, Camera, Mic } from "lucide-react";
 import { AIVisionAssistant } from "@/components/ai-vision-assistant";
 import { VoiceCommentaryCapture } from "@/components/voice-commentary-capture";
@@ -71,6 +72,7 @@ export default function PublicFormPage() {
   const [nextWorkItems, setNextWorkItems] = useState<any[]>([]);
   const [assistMode, setAssistMode] = useState<'vision' | 'voice' | null>(null); // Which AI assist is active
   const [voiceCommentary, setVoiceCommentary] = useState<string>(''); // Captured voice commentary
+  const [voiceFieldProgress, setVoiceFieldProgress] = useState<Record<string, number>>({}); // Track progress per field (0-100)
 
   // Reset state when timestamp changes (new preview load)
   useEffect(() => {
@@ -167,6 +169,13 @@ export default function PublicFormPage() {
     setFormValues(prev => ({
       ...prev,
       [field.name]: value
+    }));
+  };
+
+  const handleVoiceProgressUpdate = (fieldId: string, progress: number) => {
+    setVoiceFieldProgress(prev => ({
+      ...prev,
+      [fieldId]: progress
     }));
   };
 
@@ -598,7 +607,7 @@ export default function PublicFormPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => setAssistMode('vision')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 hover:from-[#c4dfc4]/30 hover:to-[#c8e0f5]/30 border border-[#c4dfc4]/30"
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:ring-2 hover:ring-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
                 >
                   <Camera className="h-6 w-6 text-[#c4dfc4]" />
                   <span className="text-sm font-medium">AI Vision</span>
@@ -606,7 +615,7 @@ export default function PublicFormPage() {
                 </Button>
                 <Button
                   onClick={() => setAssistMode('voice')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 hover:from-[#c4dfc4]/30 hover:to-[#c8e0f5]/30 border border-[#c4dfc4]/30"
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:ring-2 hover:ring-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
                 >
                   <Mic className="h-6 w-6 text-[#c4dfc4]" />
                   <span className="text-sm font-medium">Voice Recording</span>
@@ -652,6 +661,7 @@ export default function PublicFormPage() {
                 currentValues={formValues}
                 onFieldUpdate={handleVoiceFieldUpdate}
                 onCommentaryCapture={handleCommentaryCapture}
+                onProgressUpdate={handleVoiceProgressUpdate}
                 onAutoSubmit={() => {
                   // Trigger form submission
                   const formElement = document.querySelector('form');
@@ -672,7 +682,12 @@ export default function PublicFormPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {form?.schema.fields.map((field) => (
+            {form?.schema.fields.map((field) => {
+              const fieldKey = field.id || field.name;
+              const fieldProgress = voiceFieldProgress[fieldKey] || 0;
+              const isFieldAnswered = fieldProgress >= 100;
+
+              return (
               <div key={field.id}>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                   <span>
@@ -683,6 +698,16 @@ export default function PublicFormPage() {
                     <Check className="w-4 h-4 text-[#c4dfc4]" />
                   )}
                 </label>
+
+                {/* Voice Recording Progress Bar */}
+                {assistMode === 'voice' && (
+                  <div className="mb-3">
+                    <Progress 
+                      value={fieldProgress} 
+                      className={`h-1.5 ${isFieldAnswered ? 'bg-green-500/20' : ''}`}
+                    />
+                  </div>
+                )}
 
                 {/* Text Input */}
                 {field.type === "text" && (
@@ -864,7 +889,8 @@ export default function PublicFormPage() {
                   />
                 )}
               </div>
-            ))}
+              );
+            })}
 
             {/* Submit Button */}
             <div className="pt-4">

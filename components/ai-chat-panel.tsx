@@ -1385,21 +1385,21 @@ Please extract and build the form now.`;
     // Clear messages locally
     setMessages([]);
     setInput('');
-    
+
     // Reset tracking refs
     isInitialLoad.current = true;
     previousMessageCount.current = 0;
     lastSavedMessageCount.current = 0;
     processedMessageIds.current = new Set();
-    
+
     // Clear processed IDs from localStorage
     if (conversationId) {
       localStorage.removeItem(`processed_${conversationId}`);
     }
-    
+
     // Note: We don't delete from database - conversation history is preserved
     // User can still access it by reloading the page if needed
-    
+
     toast.success('Started new chat', {
       description: 'Previous conversation is saved'
     });
@@ -1937,68 +1937,68 @@ Please extract and build the form now.`;
                   return true;
                 })
                 .map((message: any, idx: number) => (
-                <div key={idx}>
-                  {/* Thinking indicators with MODE badge - OUTSIDE bubble, sticky status */}
-                  {message.thinking && message.thinking.length > 0 && (
-                    <div className="mb-3 flex items-center gap-2 text-gray-600">
-                      {message.completed ? (
-                        <CheckCircle2 className="h-4 w-4 text-[#c4dfc4]" />
-                      ) : (
-                        <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
-                      )}
+                  <div key={idx}>
+                    {/* Thinking indicators with MODE badge - OUTSIDE bubble, sticky status */}
+                    {message.thinking && message.thinking.length > 0 && (
+                      <div className="mb-3 flex items-center gap-2 text-gray-600">
+                        {message.completed ? (
+                          <CheckCircle2 className="h-4 w-4 text-[#c4dfc4]" />
+                        ) : (
+                          <Loader2 className="h-4 w-4 text-[#0a0a0a] animate-spin" />
+                        )}
 
-                      {/* Mode badge - only show after completion to avoid flicker */}
-                      {message.completed && message.mode && (
-                        <Badge
-                          className={`text-xs font-bold uppercase px-2 py-0.5 ${message.mode === 'execution'
-                            ? 'bg-blue-500/20 text-blue-700 border-blue-500/30'
-                            : 'bg-purple-500/20 text-purple-700 border-purple-500/30'
-                            }`}
-                          variant="outline"
-                        >
-                          {message.mode === 'execution' ? '⚡ EXECUTION' : '🎯 STRATEGY'}
-                        </Badge>
-                      )}
-
-                      <div className="flex flex-wrap gap-1.5">
-                        {message.thinking.map((step: string, i: number) => (
-                          <span
-                            key={i}
-                            className={`text-xs font-medium ${message.completed ? 'text-gray-500' : 'text-gray-600'}`}
+                        {/* Mode badge - only show after completion to avoid flicker */}
+                        {message.completed && message.mode && (
+                          <Badge
+                            className={`text-xs font-bold uppercase px-2 py-0.5 ${message.mode === 'execution'
+                              ? 'bg-blue-500/20 text-blue-700 border-blue-500/30'
+                              : 'bg-purple-500/20 text-purple-700 border-purple-500/30'
+                              }`}
+                            variant="outline"
                           >
-                            {step}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                            {message.mode === 'execution' ? '⚡ EXECUTION' : '🎯 STRATEGY'}
+                          </Badge>
+                        )}
 
-                  {/* Only show bubble if there's actual content to display */}
-                  {((message.role === "assistant" && (message.displayContent || message.content) && (message.displayContent || cleanMessageForDisplay(message.content)) !== 'Thinking...') || message.role === "user") && (
-                    <div
-                      className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
-                    >
-                      {/* AI Message - No icon, transparent background */}
-                      {message.role === "assistant" && (
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
-                            {message.displayContent || cleanMessageForDisplay(message.content)}
-                          </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {message.thinking.map((step: string, i: number) => (
+                            <span
+                              key={i}
+                              className={`text-xs font-medium ${message.completed ? 'text-gray-500' : 'text-gray-600'}`}
+                            >
+                              {step}
+                            </span>
+                          ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {/* User Message - White bubble, no icon */}
-                      {message.role === "user" && (
-                        <Card className="max-w-[85%] p-3 bg-white border-0 shadow-sm">
-                          <p className="text-xs text-gray-800 whitespace-pre-wrap">
-                            {message.content}
-                          </p>
-                        </Card>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                    {/* Only show bubble if there's actual content to display */}
+                    {((message.role === "assistant" && (message.displayContent || message.content) && (message.displayContent || cleanMessageForDisplay(message.content)) !== 'Thinking...') || message.role === "user") && (
+                      <div
+                        className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""}`}
+                      >
+                        {/* AI Message - No icon, transparent background */}
+                        {message.role === "assistant" && (
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
+                              {message.displayContent || cleanMessageForDisplay(message.content)}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* User Message - White bubble, no icon */}
+                        {message.role === "user" && (
+                          <Card className="max-w-[85%] p-3 bg-white border-0 shadow-sm">
+                            <p className="text-xs text-gray-800 whitespace-pre-wrap">
+                              {message.content}
+                            </p>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
 
               {/* Invisible div to mark end of messages for Cursor-style auto-scroll */}
               <div ref={messagesEndRef} />

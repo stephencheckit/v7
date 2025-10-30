@@ -15,6 +15,14 @@ interface VoiceCommentaryCaptureProps {
   onFieldUpdate: (fieldId: string, value: any) => void;
   onCommentaryCapture?: (commentary: string) => void;
   onAutoSubmit?: () => void;
+  onProgressUpdate?: (fieldId: string, progress: number) => void;
+}
+
+interface FieldProgress {
+  fieldId: string;
+  label: string;
+  progress: number; // 0-100
+  isAnswered: boolean;
 }
 
 export function VoiceCommentaryCapture({
@@ -22,12 +30,13 @@ export function VoiceCommentaryCapture({
   currentValues,
   onFieldUpdate,
   onCommentaryCapture,
-  onAutoSubmit
+  onAutoSubmit,
+  onProgressUpdate
 }: VoiceCommentaryCaptureProps) {
   const [countdown, setCountdown] = useState<number | null>(3);
   const [isRecording, setIsRecording] = useState(false);
   const [transcription, setTranscription] = useState('');
-  const [answeredFields, setAnsweredFields] = useState<Set<string>>(new Set());
+  const [fieldProgress, setFieldProgress] = useState<Map<string, number>>(new Map());
   const [isProcessing, setIsProcessing] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   
@@ -35,7 +44,7 @@ export function VoiceCommentaryCapture({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Countdown effect: 3-2-1-GO then start recording
+  // Auto-start countdown on mount
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const timer = setTimeout(() => {
@@ -153,11 +162,15 @@ export function VoiceCommentaryCapture({
         if (response.ok) {
           const { field_updates } = await response.json();
           
-          // Update form fields AND track which ones are answered
+          // Update form fields AND track progress
           if (field_updates && Object.keys(field_updates).length > 0) {
             Object.entries(field_updates).forEach(([fieldId, value]) => {
               onFieldUpdate(fieldId, value);
-              setAnsweredFields(prev => new Set(prev).add(fieldId));
+              // Mark as 100% complete
+              setFieldProgress(prev => new Map(prev).set(fieldId, 100));
+              if (onProgressUpdate) {
+                onProgressUpdate(fieldId, 100);
+              }
             });
           }
         }
@@ -207,15 +220,19 @@ export function VoiceCommentaryCapture({
         if (field_updates && Object.keys(field_updates).length > 0) {
           Object.entries(field_updates).forEach(([fieldId, value]) => {
             onFieldUpdate(fieldId, value);
-            setAnsweredFields(prev => new Set(prev).add(fieldId));
+            setFieldProgress(prev => new Map(prev).set(fieldId, 100));
+            if (onProgressUpdate) {
+              onProgressUpdate(fieldId, 100);
+            }
           });
         }
         
         // Check for missing required fields
         const requiredFields = formSchema.fields.filter(f => f.required);
-        const missingFields = requiredFields.filter(f => 
-          !answeredFields.has(f.id) && !answeredFields.has(f.name) && !currentValues[f.id || f.name]
-        );
+        const missingFields = requiredFields.filter(f => {
+          const fieldKey = f.id || f.name;
+          return !fieldProgress.has(fieldKey) && !currentValues[fieldKey];
+        });
         
         if (missingFields.length > 0) {
           // Show which questions need answers
@@ -227,7 +244,7 @@ export function VoiceCommentaryCapture({
           return; // Don't auto-submit, let user answer manually
         }
         
-        // Save commentary
+        // Save commentary for reverse engineering (will be saved AFTER form submit by parent)
         if (onCommentaryCapture) {
           onCommentaryCapture(transcription);
         }
@@ -260,21 +277,27 @@ export function VoiceCommentaryCapture({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const totalFields = formSchema.fields.length;
-  const answeredCount = answeredFields.size;
-  const progressPercent = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
+  const handleCancel = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    setIsRecording(false);
+    setTranscription('');
+    setFieldProgress(new Map());
+  };
 
-  // Countdown overlay (3-2-1)
+  // Countdown display
   if (countdown !== null) {
     return (
-      <div className="w-full mb-6">
-        <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-12">
-          <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <div className="text-8xl font-bold text-[#c4dfc4] mb-4 animate-pulse">
+      <div className="w-full mb-4">
+        <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-8">
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-6xl font-bold text-[#c4dfc4] mb-2 animate-pulse">
               {countdown > 0 ? countdown : 'GO!'}
             </div>
-            <p className="text-gray-500 text-lg">
-              Get ready to start speaking...
+            <p className="text-gray-500 text-sm">
+              Get ready to speak...
             </p>
           </div>
         </Card>
@@ -282,96 +305,61 @@ export function VoiceCommentaryCapture({
     );
   }
 
-  // Recording active view with progress tracking
-  return (
-    <div className="w-full mb-6">
-      <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-6">
-        {/* Header with recording indicator */}
-        <div className="flex items-center justify-between mb-6">
+  // Compact recording bar - similar to AI Vision
+  if (isRecording) {
+    return (
+      <div className="w-full mb-4">
+        <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-3">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-red-500/20 px-4 py-2 rounded-lg border border-red-500/30">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-sm text-red-600 dark:text-red-400 font-medium">Recording</span>
+            {/* Recording indicator */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                {formatTime(timeElapsed)}
+              </span>
             </div>
-            <Badge variant="outline" className="text-base font-mono px-3 py-1">
-              {formatTime(timeElapsed)}
-            </Badge>
-          </div>
-          <Button
-            onClick={stopRecordingAndSubmit}
-            size="lg"
-            disabled={isProcessing}
-            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] font-medium"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-5 h-5 mr-2" />
-                Submit
-              </>
-            )}
-          </Button>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Questions Answered
-            </span>
-            <span className="text-sm font-medium text-[#c4dfc4]">
-              {answeredCount} / {totalFields}
-            </span>
-          </div>
-          <Progress value={progressPercent} className="h-3" />
-        </div>
+            {/* Compact Waveform */}
+            <div className="flex-1">
+              <AudioWaveform isRecording={isRecording} size="sm" />
+            </div>
 
-        {/* Audio Waveform */}
-        <div className="p-6 bg-white/50 dark:bg-black/20 rounded-lg border border-white/20 mb-6">
-          <AudioWaveform isRecording={isRecording} size="md" />
-        </div>
-
-        {/* Question Checklist */}
-        <div className="space-y-2 max-h-[200px] overflow-y-auto">
-          {formSchema.fields.map((field, idx) => {
-            const isAnswered = answeredFields.has(field.id) || answeredFields.has(field.name);
-            return (
-              <div
-                key={field.id || field.name || idx}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
-                  isAnswered
-                    ? 'bg-green-50/50 dark:bg-green-900/10 border border-green-200/30'
-                    : 'bg-gray-50/30 dark:bg-gray-800/10 border border-gray-200/20'
-                }`}
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                onClick={handleCancel}
+                size="sm"
+                variant="ghost"
+                className="text-gray-500 hover:text-gray-700"
               >
-                <div className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                  isAnswered ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
-                }`}>
-                  {isAnswered && <CheckCircle2 className="w-3 h-3 text-white" />}
-                </div>
-                <span className={`text-sm ${
-                  isAnswered
-                    ? 'text-gray-700 dark:text-gray-200 font-medium'
-                    : 'text-gray-500 dark:text-gray-400'
-                }`}>
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+                Cancel
+              </Button>
+              <Button
+                onClick={stopRecordingAndSubmit}
+                size="sm"
+                disabled={isProcessing}
+                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Processing
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    Submit
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
-          <Mic className="w-4 h-4" />
-          <span>Speak naturally - questions fill automatically as you answer them</span>
-        </div>
-      </Card>
-    </div>
-  );
+  // Not recording - return null (parent component shows the form normally)
+  return null;
 }
 
