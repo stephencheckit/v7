@@ -400,17 +400,17 @@ export function VoiceCommentaryCapture({
             </div>
           </div>
 
-          {/* Bottom row: horizontal progress bars stacked */}
-          <div className="space-y-1.5">
+          {/* Bottom row: horizontal progress bars side by side */}
+          <div className="flex gap-2">
             {formSchema.fields.map((field, idx) => {
               const fieldKey = field.id || field.name;
               const progress = fieldProgress.get(fieldKey) || 0;
               const isAnswered = progress >= 100;
 
               return (
-                <div key={fieldKey} className="w-full">
-                  {/* Horizontal progress bar - thin height, full width */}
-                  <div className="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                <div key={fieldKey} className="flex-1">
+                  {/* Horizontal progress bar - thin height, equal width */}
+                  <div className="w-full h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
                     <div
                       className={`absolute left-0 h-full transition-all duration-300 ${isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
                         }`}
