@@ -11,7 +11,7 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
   const [bars, setBars] = useState<number[]>(Array.from({ length: 30 }, () => 10));
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
           
           analyser.fftSize = 64; // 32 frequency bins
           const bufferLength = analyser.frequencyBinCount;
-          const dataArray = new Uint8Array(bufferLength);
+          const dataArray: Uint8Array<ArrayBuffer> = new Uint8Array(bufferLength);
           
           source.connect(analyser);
           
