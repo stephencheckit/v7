@@ -184,7 +184,7 @@ export function RealTimeFeedView() {
           </Card>
         ) : (
           posts.map((post) => (
-            <Card key={post.id} className="p-5 hover:shadow-md transition-shadow">
+            <Card key={post.id} className="p-5 hover:shadow-lg hover:border-[#c4dfc4]/30 transition-all duration-200">
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-3">
@@ -236,7 +236,7 @@ export function RealTimeFeedView() {
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="text-xs cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700"
+                      className="text-xs cursor-pointer hover:bg-[#c4dfc4] hover:text-[#0a0a0a] dark:hover:bg-[#c4dfc4] dark:hover:text-[#0a0a0a] transition-colors"
                       onClick={() => setTagFilter(tag)}
                     >
                       #{tag}
