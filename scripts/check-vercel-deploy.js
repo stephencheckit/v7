@@ -59,16 +59,16 @@ async function main() {
   // API approach has team scope issues
   try {
     console.log('🔍 Checking latest Vercel deployment...\n');
-    const listOutput = execSync('npx vercel ls --yes', { 
+    const listOutput = execSync('npx vercel ls --yes', {
       encoding: 'utf-8',
       stdio: 'pipe'
     });
-    
+
     // Parse the table to find latest deployment
     const lines = listOutput.split('\n');
     let latestDeployment = null;
     let latestStatus = null;
-    
+
     for (const line of lines) {
       // Match table rows with deployment URLs
       const match = line.match(/https:\/\/(v7-[a-z0-9]+-[a-z0-9]+\.vercel\.app)\s+●\s+(\w+)/);
@@ -78,33 +78,33 @@ async function main() {
         break;
       }
     }
-    
+
     if (!latestDeployment) {
       console.log('No deployments found');
       return;
     }
-    
+
     console.log(`📦 Latest Deployment: https://${latestDeployment}`);
     console.log(`📊 Status: ${latestStatus === 'Ready' ? '✅ READY' : latestStatus === 'Error' ? '❌ ERROR' : '⏳ ' + latestStatus}`);
     console.log('');
-    
+
     // If error or building, fetch logs for details
     if (latestStatus === 'Error') {
       console.log('📋 Fetching build error details...\n');
-      
+
       try {
-        const logs = execSync(`npx vercel logs ${latestDeployment} --yes`, { 
+        const logs = execSync(`npx vercel logs ${latestDeployment} --yes`, {
           encoding: 'utf-8',
           stdio: 'pipe'
         });
-        
+
         // Parse for TypeScript errors and format for Cursor
         const logLines = logs.split('\n');
         let foundError = false;
-        
+
         for (let i = 0; i < logLines.length; i++) {
           const line = logLines[i];
-          
+
           // Match: ./path/file.ts:line:col or Type error:
           const fileMatch = line.match(/^\.?\/(.+\.tsx?):(\d+):(\d+)/);
           if (fileMatch) {
@@ -117,13 +117,13 @@ async function main() {
               foundError = true;
             }
           }
-          
+
           // Also show "Failed to compile" messages
           if (line.includes('Failed to compile')) {
             console.log(`\n❌ ${line}`);
           }
         }
-        
+
         if (foundError) {
           console.log('\n💡 Errors above should appear in Cursor Problems panel');
           console.log(`🔗 Full logs: https://vercel.com/${latestDeployment}`);
@@ -139,7 +139,7 @@ async function main() {
     } else if (latestStatus === 'Building') {
       console.log('⏳ Deployment in progress... run this command again in 1-2 minutes');
     }
-    
+
     return;
   } catch (e) {
     console.log('❌ Vercel CLI not available or not logged in');

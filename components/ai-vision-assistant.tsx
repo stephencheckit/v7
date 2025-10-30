@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, X, SwitchCamera, ChevronUp, ChevronDown, Upload } from 'lucide-react';
+import { Camera, X, SwitchCamera, ChevronUp, ChevronDown } from 'lucide-react';
 import { useVideoRecording } from '@/hooks/use-video-recording';
 import { Badge } from '@/components/ui/badge';
 
@@ -29,7 +29,6 @@ export function AIVisionAssistant({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const snapshotCountRef = useRef(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const {
     isCameraOn,
@@ -179,25 +178,6 @@ export function AIVisionAssistant({
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const imageBase64 = event.target?.result as string;
-      snapshotCountRef.current += 1;
-      setSnapshotCount(snapshotCountRef.current);
-      await analyzeSnapshot(imageBase64, snapshotCountRef.current);
-    };
-    reader.readAsDataURL(file);
-    
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -214,30 +194,13 @@ export function AIVisionAssistant({
   if (!isActive && !isCameraOn) {
     return (
       <div className="w-full">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            onClick={handleStart}
-            className="flex-1 bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] h-12"
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            Start AI Vision
-          </Button>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            variant="outline"
-            className="flex-1 border-[#c4dfc4]/30 hover:bg-[#c4dfc4]/10 h-12"
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Photo
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-        </div>
+        <Button
+          onClick={handleStart}
+          className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] h-12"
+        >
+          <Camera className="w-4 h-4 mr-2" />
+          Start AI Vision
+        </Button>
       </div>
     );
   }
@@ -323,31 +286,14 @@ export function AIVisionAssistant({
 
         {/* Camera Controls Overlay */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-          <div className="flex gap-2">
-            <Button
-              onClick={handleFlipCamera}
-              size="sm"
-              className="bg-black/70 hover:bg-black/80 border border-white/20"
-            >
-              <SwitchCamera className="w-4 h-4 mr-1.5" />
-              Flip
-            </Button>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              size="sm"
-              className="bg-black/70 hover:bg-black/80 border border-white/20"
-            >
-              <Upload className="w-4 h-4 mr-1.5" />
-              Upload
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-          </div>
+          <Button
+            onClick={handleFlipCamera}
+            size="sm"
+            className="bg-black/70 hover:bg-black/80 border border-white/20"
+          >
+            <SwitchCamera className="w-4 h-4 mr-1.5" />
+            Flip
+          </Button>
           <div className="flex gap-2">
             <Button
               onClick={() => setIsCollapsed(true)}
