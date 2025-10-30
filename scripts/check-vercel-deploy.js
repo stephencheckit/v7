@@ -55,21 +55,95 @@ function makeRequest(path) {
 }
 
 async function main() {
-  if (!VERCEL_TOKEN) {
-    console.log('\n⚠️  VERCEL_TOKEN not set in environment variables');
-    console.log('To enable Vercel integration:');
-    console.log('1. Get token from: https://vercel.com/account/tokens');
-    console.log('2. Add to .env.local: VERCEL_TOKEN=your_token_here\n');
-
-    // Fallback to CLI if available
-    try {
-      console.log('Trying Vercel CLI instead...\n');
-      const output = execSync('npx vercel ls', { encoding: 'utf-8' });
-      console.log(output);
-    } catch (e) {
-      console.log('Vercel CLI not available or not logged in');
-      console.log('Run: npx vercel login');
+  // Use Vercel CLI for simplicity (already authenticated)
+  // API approach has team scope issues
+  try {
+    console.log('🔍 Checking latest Vercel deployment...\n');
+    const listOutput = execSync('npx vercel ls --yes', { 
+      encoding: 'utf-8',
+      stdio: 'pipe'
+    });
+    
+    // Parse the table to find latest deployment
+    const lines = listOutput.split('\n');
+    let latestDeployment = null;
+    let latestStatus = null;
+    
+    for (const line of lines) {
+      // Match table rows with deployment URLs
+      const match = line.match(/https:\/\/(v7-[a-z0-9]+-[a-z0-9]+\.vercel\.app)\s+●\s+(\w+)/);
+      if (match && !latestDeployment) {
+        latestDeployment = match[1];
+        latestStatus = match[2];
+        break;
+      }
     }
+    
+    if (!latestDeployment) {
+      console.log('No deployments found');
+      return;
+    }
+    
+    console.log(`📦 Latest Deployment: https://${latestDeployment}`);
+    console.log(`📊 Status: ${latestStatus === 'Ready' ? '✅ READY' : latestStatus === 'Error' ? '❌ ERROR' : '⏳ ' + latestStatus}`);
+    console.log('');
+    
+    // If error or building, fetch logs for details
+    if (latestStatus === 'Error') {
+      console.log('📋 Fetching build error details...\n');
+      
+      try {
+        const logs = execSync(`npx vercel logs ${latestDeployment} --yes`, { 
+          encoding: 'utf-8',
+          stdio: 'pipe'
+        });
+        
+        // Parse for TypeScript errors and format for Cursor
+        const logLines = logs.split('\n');
+        let foundError = false;
+        
+        for (let i = 0; i < logLines.length; i++) {
+          const line = logLines[i];
+          
+          // Match: ./path/file.ts:line:col or Type error:
+          const fileMatch = line.match(/^\.?\/(.+\.tsx?):(\d+):(\d+)/);
+          if (fileMatch) {
+            // Look ahead for the error message
+            const nextLine = logLines[i + 1] || '';
+            const errorMatch = nextLine.match(/Type error:\s*(.+)$/);
+            if (errorMatch) {
+              // Output in Cursor-friendly format
+              console.log(`${fileMatch[1]}:${fileMatch[2]}:${fileMatch[3]}: error: ${errorMatch[1]}`);
+              foundError = true;
+            }
+          }
+          
+          // Also show "Failed to compile" messages
+          if (line.includes('Failed to compile')) {
+            console.log(`\n❌ ${line}`);
+          }
+        }
+        
+        if (foundError) {
+          console.log('\n💡 Errors above should appear in Cursor Problems panel');
+          console.log(`🔗 Full logs: https://vercel.com/${latestDeployment}`);
+        } else {
+          console.log('Could not parse error details from logs');
+          console.log(`🔗 View in dashboard: https://vercel.com/${latestDeployment}`);
+        }
+      } catch (logErr) {
+        console.log('Could not fetch logs. Check Vercel dashboard.');
+      }
+    } else if (latestStatus === 'Ready') {
+      console.log('✅ Deployment successful!');
+    } else if (latestStatus === 'Building') {
+      console.log('⏳ Deployment in progress... run this command again in 1-2 minutes');
+    }
+    
+    return;
+  } catch (e) {
+    console.log('❌ Vercel CLI not available or not logged in');
+    console.log('Run: npx vercel login');
     return;
   }
 
@@ -86,7 +160,7 @@ async function main() {
     }
 
     // Find deployments for this project
-    const projectDeployments = deploymentsData.deployments.filter(d => 
+    const projectDeployments = deploymentsData.deployments.filter(d =>
       d.name === PROJECT_NAME || d.meta?.githubRepo === 'v7' || d.url?.includes('v7-')
     );
 
