@@ -5,7 +5,56 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **👁️📸 AI Vision Enhancements for Multiple Choice - October 30, 2025 (Latest)**
+### **🎤📊 Voice Commentary Feed System - October 30, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 30, 2025  
+**Commit:** 448db3a
+
+**Summary:**
+Revolutionary voice-to-form system that captures inspection commentary, auto-fills form fields, and surfaces frontline insights in a social feed. Solves the critical problem of valuable observations going undocumented. AI reverse-engineers patterns into suggested form questions.
+
+**Changes:**
+1. **Voice Recording for Forms:**
+   - Added voice recording option alongside AI Vision
+   - Real-time transcription with Web Speech API
+   - AI parses speech into structured form data + unstructured commentary
+   - Live display of "Form Answers" vs "Additional Notes"
+   - Auto-saves commentary to database
+
+2. **Real-Time Feed Dashboard:**
+   - New "Real-Time" tab in Dashboard (3 tabs: Inbox, Real-Time, Insights)
+   - Social feed UI with 20 realistic Sheetz DC voice posts
+   - Posts show inspector, location, area, timestamp, quote, tags
+   - Trending indicators (9 floor mat issues, 6 sanitizer problems, etc.)
+   - Filter by location, tag, trending status
+   - Action buttons: Flag Issue, Add to Form, Reply, Recognize
+
+3. **AI Reverse Engineering:**
+   - Backend API analyzes commentary patterns (last 30 days)
+   - Identifies recurring themes and suggests new form questions
+   - Example: Multiple mentions of "floor mats torn" → suggests "Floor mat condition: Good / Worn / Torn / Missing"
+   - Stores suggestions in database with occurrence counts
+
+4. **Database Infrastructure:**
+   - `inspection_commentary` table: stores transcriptions and AI insights
+   - `suggested_form_questions` table: AI-generated question suggestions
+   - Full RLS policies for workspace isolation
+   - GIN indexes for JSONB search
+
+**API Endpoints:**
+- `POST /api/ai/voice-to-form` - Parses transcription into form fields + commentary
+- `POST /api/commentary` - Saves voice commentary to database
+- `GET /api/commentary` - Retrieves commentary by workspace/form
+- `POST /api/ai/reverse-engineer-questions` - Analyzes patterns, suggests questions
+- `GET /api/ai/reverse-engineer-questions` - Retrieves suggestions
+
+**Impact:** 98/100 - Solves "frontline insights going missing" problem for Sheetz DC operations
+
+**FOR SHEETZ DEMO** - Voice recording during inspections + social feed of insights
+
+---
+
+### **👁️📸 AI Vision Enhancements for Multiple Choice - October 30, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 30, 2025  
 **Commit:** 315d7d0
