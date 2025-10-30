@@ -18,19 +18,20 @@ fi
 echo ""
 echo "✅ Pushed to GitHub"
 echo ""
-echo "⏳ Waiting 10 seconds for Vercel to start build..."
+echo "⏳ Waiting 15 seconds for Vercel to start build..."
 echo ""
 
 # Wait for Vercel to pick up the push and start building
-sleep 10
+sleep 15
 
 echo "🔍 Checking Vercel deployment status..."
 echo ""
 
-# Check deployment status
-node scripts/check-vercel-deploy.js
+# Show deployment list directly (simplest approach)
+npx vercel ls --yes | head -25
 
 echo ""
-echo "💡 Tip: If build fails, errors will appear in Problems panel"
+echo "💡 To check for errors: npm run vercel:check"
+echo "💡 Or view in Vercel dashboard"
 echo ""
 
