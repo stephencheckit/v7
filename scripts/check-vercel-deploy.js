@@ -76,15 +76,27 @@ async function main() {
   try {
     console.log('🔍 Checking latest Vercel deployment...\n');
 
-    // Get latest deployments - use app name filter instead of project ID
-    const deploymentsData = await makeRequest(`/v6/deployments?app=${PROJECT_NAME}&limit=5`);
+    // Get latest deployments (all projects, then filter client-side)
+    const deploymentsData = await makeRequest(`/v6/deployments?limit=20`);
 
     if (!deploymentsData.deployments || deploymentsData.deployments.length === 0) {
       console.log('No deployments found');
+      console.log('API Response:', JSON.stringify(deploymentsData, null, 2));
       return;
     }
 
-    const deployment = deploymentsData.deployments[0];
+    // Find deployments for this project
+    const projectDeployments = deploymentsData.deployments.filter(d => 
+      d.name === PROJECT_NAME || d.meta?.githubRepo === 'v7' || d.url?.includes('v7-')
+    );
+
+    if (projectDeployments.length === 0) {
+      console.log(`No deployments found for project "${PROJECT_NAME}"`);
+      console.log('Found deployments for:', deploymentsData.deployments.map(d => d.name).slice(0, 5).join(', '));
+      return;
+    }
+
+    const deployment = projectDeployments[0];
     const status = deployment.state;
     const url = `https://${deployment.url}`;
     const createdAt = new Date(deployment.created).toLocaleString();
