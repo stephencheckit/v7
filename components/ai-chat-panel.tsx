@@ -1016,7 +1016,7 @@ Please extract and build the form now.`;
 
           // Clear all fields
           onFormUpdate?.([], { title: undefined, description: undefined });
-          
+
           // Track result
           finalFieldCount = 0;
           operationResults.push('Cleared all form fields');
@@ -1570,6 +1570,8 @@ Please extract and build the form now.`;
       console.log('Stream reader acquired, adding loading message...');
       // Add a temporary loading message
       setMessages(prev => [...prev, { role: 'assistant', content: '', thinking: [] }]);
+      // Mark that we're adding a NEW message, not loading from DB
+      isInitialLoad.current = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -1770,6 +1772,8 @@ Please extract and build the form now.`;
     } finally {
       console.log('=== FINALLY BLOCK - Setting isLoading to false ===');
       setIsLoading(false);
+      // Mark that we've processed a new message - not an initial load
+      isInitialLoad.current = false;
     }
   };
 
