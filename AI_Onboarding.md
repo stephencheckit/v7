@@ -5,7 +5,37 @@
 ## Deployment Log
 *Most recent deployments listed first*
 
-### **🏭📦 Supply Chain Canvas - FSMA 204 Visualization - October 29, 2025 (Latest)**
+### **👁️📸 AI Vision Enhancements for Multiple Choice - October 30, 2025 (Latest)**
+**Status:** ✅ DEPLOYED TO PRODUCTION  
+**Date:** October 30, 2025  
+**Commit:** 315d7d0
+
+**Summary:**
+Enhanced AI vision to properly detect and extract multiple choice options from images. Removed image upload from form filling (camera-only). AI now automatically extracts ALL visible options when it sees checkboxes, radio buttons, or numbered lists in images.
+
+**Changes:**
+1. **Removed Image Upload from Form Filling:**
+   - AIVisionAssistant now camera-only (no "Upload Photo" button)
+   - Simplified UX: single "Start AI Vision" button
+   - Image upload still available in form builder AI chat
+   - Cleaned up unused imports and refs
+
+2. **Enhanced AI Multiple Choice Detection:**
+   - Added explicit instructions in system prompt for extracting options
+   - Detects checkboxes, radio buttons, numbered/lettered lists (A, B, C or 1, 2, 3)
+   - Automatically generates complete options arrays for multiple-choice fields
+   - Example: If image shows "□ Email □ Phone □ Text" → outputs all 3 options
+
+3. **Improved Option Updates:**
+   - AI now includes full option arrays when adding new options
+   - Prevents partial option updates that would lose existing choices
+   - Example: Adding "Maybe" to ["Yes", "No"] → outputs ["Yes", "No", "Maybe"]
+
+**Impact:** 95/100 - Critical for form creation from paper forms and images
+
+---
+
+### **🏭📦 Supply Chain Canvas - FSMA 204 Visualization - October 29, 2025**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 29, 2025  
 **Commit:** 6da433d
