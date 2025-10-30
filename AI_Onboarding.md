@@ -8,10 +8,17 @@
 ### **🎤📊 Voice Commentary Feed System - October 30, 2025 (Latest)**
 **Status:** ✅ DEPLOYED TO PRODUCTION  
 **Date:** October 30, 2025  
-**Commit:** 448db3a
+**Commit:** f852acf (improved), 448db3a (initial)
 
 **Summary:**
-Revolutionary voice-to-form system that captures inspection commentary, auto-fills form fields, and surfaces frontline insights in a social feed. Solves the critical problem of valuable observations going undocumented. AI reverse-engineers patterns into suggested form questions.
+Revolutionary voice-to-form system that captures inspection commentary, auto-fills form fields in REAL-TIME, and surfaces frontline insights in a social feed. Uses OpenAI to clean transcripts and aggressively match spoken answers to form questions. Solves the critical problem of valuable observations going undocumented.
+
+**CRITICAL IMPROVEMENTS (f852acf):**
+- ✅ **Switch between modes**: Can now toggle between AI Vision and Voice Recording
+- ✅ **OpenAI transcript cleanup**: Removes filler words (um, uh), fixes grammar, capitalizes properly
+- ✅ **AGGRESSIVE matching**: AI now fills form fields even with imperfect phrasing
+- ✅ **Real-time updates**: Reduced debounce from 1.5s to 800ms for faster field filling
+- ✅ **Better duplicate handling**: Form answers update in place instead of duplicating
 
 **Changes:**
 1. **Voice Recording for Forms:**
