@@ -92,7 +92,7 @@ export function VoiceCommentaryCapture({
         recognitionRef.current.stop();
         recognitionRef.current = null;
       }
-      
+
       // Clear any pending timeouts
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -312,19 +312,19 @@ export function VoiceCommentaryCapture({
       recognitionRef.current.stop();
       recognitionRef.current = null;
     }
-    
+
     // Stop any pending processing
     if (processingTimeoutRef.current) {
       clearTimeout(processingTimeoutRef.current);
       processingTimeoutRef.current = null;
     }
-    
+
     // Reset all state
     setIsRecording(false);
     setTranscription('');
     setFieldProgress(new Map());
     setCountdown(null); // Clear countdown to ensure clean unmount
-    
+
     // Tell parent to go back to AI assist selection (this will unmount the component)
     if (onCancel) {
       onCancel();
@@ -400,21 +400,21 @@ export function VoiceCommentaryCapture({
             </div>
           </div>
 
-          {/* Bottom row: vertical progress bars side by side */}
-          <div className="flex items-end gap-1 h-12">
+          {/* Bottom row: horizontal progress bars stacked */}
+          <div className="space-y-1.5">
             {formSchema.fields.map((field, idx) => {
               const fieldKey = field.id || field.name;
               const progress = fieldProgress.get(fieldKey) || 0;
               const isAnswered = progress >= 100;
 
               return (
-                <div key={fieldKey} className="w-1">
-                  {/* Vertical progress bar - very thin */}
-                  <div className="w-1 h-12 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                <div key={fieldKey} className="w-full">
+                  {/* Horizontal progress bar - thin height, full width */}
+                  <div className="w-full h-1 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
                     <div
-                      className={`absolute bottom-0 w-full transition-all duration-300 ${isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
+                      className={`absolute left-0 h-full transition-all duration-300 ${isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
                         }`}
-                      style={{ height: `${progress}%` }}
+                      style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>

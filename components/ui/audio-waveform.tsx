@@ -24,13 +24,13 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
           const audioContext = new AudioContext();
           const analyser = audioContext.createAnalyser();
           const source = audioContext.createMediaStreamSource(stream);
-          
+
           analyser.fftSize = 64; // 32 frequency bins
           const bufferLength = analyser.frequencyBinCount;
           const dataArray: Uint8Array<ArrayBuffer> = new Uint8Array(bufferLength);
-          
+
           source.connect(analyser);
-          
+
           // Store references for cleanup
           streamRef.current = stream;
           audioContextRef.current = audioContext;
@@ -87,7 +87,7 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
     } else {
       // Reset to flat when not recording
       setBars(Array.from({ length: 30 }, () => 10));
-      
+
       // Also cleanup any active streams when switching to not recording
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());

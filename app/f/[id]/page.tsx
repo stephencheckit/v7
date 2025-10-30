@@ -611,18 +611,18 @@ export default function PublicFormPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => setAssistMode('vision')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-2 hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
                 >
                   <Camera className="h-6 w-6 text-[#c4dfc4]" />
-                  <span className="text-sm font-medium">AI Vision</span>
+                  <span className="text-sm font-medium text-white">AI Vision</span>
                   <span className="text-xs text-gray-400">Use camera</span>
                 </Button>
                 <Button
                   onClick={() => setAssistMode('voice')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-2 hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
                 >
                   <Mic className="h-6 w-6 text-[#c4dfc4]" />
-                  <span className="text-sm font-medium">Voice Recording</span>
+                  <span className="text-sm font-medium text-white">Voice Recording</span>
                   <span className="text-xs text-gray-400">Speak answers</span>
                 </Button>
               </div>
