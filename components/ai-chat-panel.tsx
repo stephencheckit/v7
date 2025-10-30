@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AudioWaveform } from "@/components/ui/audio-waveform";
 import { Sparkles, Send, PanelRightClose, PanelRightOpen, Loader2, Upload, FileSpreadsheet, X, ImagePlus, CheckCircle2, Plus, Mic, MicOff, RotateCcw } from "lucide-react";
 import type { FormField as FrontendFormField } from "@/app/forms/builder/page";
 import type { FormSchema } from "@/lib/types/form-schema";
@@ -2062,21 +2063,28 @@ Please extract and build the form now.`;
                 </DropdownMenu>
               )}
 
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={isRecording ? "Listening..." : "Share anything"}
-                disabled={isLoading || isParsingFile}
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
-                className="flex-1 min-h-[36px] max-h-[200px] resize-none overflow-y-auto bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500 py-2"
-              />
+              <div className="flex-1 relative">
+                {isRecording && (
+                  <div className="absolute inset-0 bg-white/90 rounded-md flex items-center justify-center px-4 pointer-events-none z-10">
+                    <AudioWaveform isRecording={isRecording} size="sm" />
+                  </div>
+                )}
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Share anything"
+                  disabled={isLoading || isParsingFile}
+                  rows={1}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
+                  className="flex-1 min-h-[36px] max-h-[200px] resize-none overflow-y-auto bg-white/80 border-white/30 text-sm text-gray-800 placeholder:text-gray-500 py-2"
+                />
+              </div>
               <Button
                 type="button"
                 size="icon"
