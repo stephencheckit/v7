@@ -31,7 +31,10 @@
             "command": "npm run dev",
             "problemMatcher": {
                 "owner": "typescript",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
                 "pattern": [
                     {
                         "regexp": "^(.+):(\\d+):(\\d+)$",
@@ -73,7 +76,10 @@
             "command": "npx vercel logs --follow --scope ${input:vercelTeam}",
             "problemMatcher": {
                 "owner": "vercel",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
                 "pattern": {
                     "regexp": "^(.+):(\\d+):(\\d+)\\s*Type error: (.+)$",
                     "file": 1,
@@ -93,7 +99,10 @@
             "command": "node scripts/check-vercel-deploy.js",
             "problemMatcher": {
                 "owner": "vercel-build",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
                 "pattern": {
                     "regexp": "^(.+):(\\d+):(\\d+):\\s*error:\\s*(.+)$",
                     "file": 1,
@@ -114,7 +123,10 @@
             "command": "sh scripts/deploy-and-check.sh",
             "problemMatcher": {
                 "owner": "vercel-deploy",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
                 "pattern": {
                     "regexp": "^(.+):(\\d+):(\\d+):\\s*error:\\s*(.+)$",
                     "file": 1,

@@ -7,8 +7,26 @@
 
 const https = require('https');
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+// Load VERCEL_TOKEN from .env.local if not in environment
+let VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+
+if (!VERCEL_TOKEN) {
+  try {
+    const envPath = path.join(__dirname, '..', '.env.local');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const tokenMatch = envContent.match(/VERCEL_TOKEN=(.+)/);
+      if (tokenMatch) {
+        VERCEL_TOKEN = tokenMatch[1].trim();
+      }
+    }
+  } catch (e) {
+    // Ignore - will fallback to CLI
+  }
+}
 const PROJECT_NAME = 'v7'; // Update this to match your Vercel project name
 
 function makeRequest(path) {
@@ -42,7 +60,7 @@ async function main() {
     console.log('To enable Vercel integration:');
     console.log('1. Get token from: https://vercel.com/account/tokens');
     console.log('2. Add to .env.local: VERCEL_TOKEN=your_token_here\n');
-    
+
     // Fallback to CLI if available
     try {
       console.log('Trying Vercel CLI instead...\n');
@@ -58,9 +76,19 @@ async function main() {
   try {
     console.log('🔍 Checking latest Vercel deployment...\n');
 
-    // Get latest deployments
-    const deploymentsData = await makeRequest(`/v6/deployments?projectId=${PROJECT_NAME}&limit=1`);
+    // Get project ID first (we need the actual ID, not the name)
+    const projectsData = await makeRequest('/v9/projects');
+    const project = projectsData.projects?.find(p => p.name === PROJECT_NAME);
     
+    if (!project) {
+      console.log(`❌ Project "${PROJECT_NAME}" not found`);
+      console.log('Available projects:', projectsData.projects?.map(p => p.name).join(', '));
+      return;
+    }
+
+    // Get latest deployments using project ID
+    const deploymentsData = await makeRequest(`/v6/deployments?projectId=${project.id}&limit=1`);
+
     if (!deploymentsData.deployments || deploymentsData.deployments.length === 0) {
       console.log('No deployments found');
       return;
@@ -80,21 +108,21 @@ async function main() {
     // If deployment failed, try to get build logs
     if (status === 'ERROR' || status === 'FAILED') {
       console.log('\n📋 Fetching build logs...\n');
-      
+
       try {
         // Get build logs - note: this endpoint might require different permissions
-        const logs = execSync(`npx vercel logs ${deployment.url} --output raw`, { 
+        const logs = execSync(`npx vercel logs ${deployment.url} --output raw`, {
           encoding: 'utf-8',
           stdio: 'pipe'
         });
-        
+
         // Parse logs for TypeScript errors and format for Cursor problem matcher
         const lines = logs.split('\n');
         let currentFile = '';
         let currentLine = '';
         let currentCol = '';
         let currentError = '';
-        
+
         for (const line of lines) {
           // Match TypeScript errors: ./app/api/workflows/[id]/route.ts:74:13
           const tsErrorMatch = line.match(/^\.?\/(.+\.tsx?):(\d+):(\d+)/);
@@ -104,7 +132,7 @@ async function main() {
             currentCol = tsErrorMatch[3];
             continue;
           }
-          
+
           // Match "Type error:" messages
           const typeErrorMatch = line.match(/Type error:\s*(.+)$/);
           if (typeErrorMatch && currentFile) {
@@ -114,13 +142,13 @@ async function main() {
             currentFile = '';
             continue;
           }
-          
+
           // Match other error patterns
           if (line.includes('Failed to compile') || line.includes('Build failed')) {
             console.log(`\n❌ ${line}\n`);
           }
         }
-        
+
         console.log('\n💡 Errors above should appear in Cursor Problems panel');
         console.log(`📊 View full logs: https://vercel.com/dashboard/deployments/${deployment.uid}`);
       } catch (logError) {
