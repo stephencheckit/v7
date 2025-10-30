@@ -652,6 +652,13 @@ export default function PublicFormPage() {
                 currentValues={formValues}
                 onFieldUpdate={handleVoiceFieldUpdate}
                 onCommentaryCapture={handleCommentaryCapture}
+                onAutoSubmit={() => {
+                  // Trigger form submission
+                  const formElement = document.querySelector('form');
+                  if (formElement) {
+                    formElement.requestSubmit();
+                  }
+                }}
               />
             </>
           )}

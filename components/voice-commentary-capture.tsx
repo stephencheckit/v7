@@ -2,33 +2,33 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, X, MicOff } from 'lucide-react';
+import { Mic, CheckCircle2, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface VoiceCommentaryCaptureProps {
   formSchema: { fields: any[] };
   currentValues: Record<string, any>;
   onFieldUpdate: (fieldId: string, value: any) => void;
   onCommentaryCapture?: (commentary: string) => void;
+  onAutoSubmit?: () => void;
 }
 
 export function VoiceCommentaryCapture({
   formSchema,
   currentValues,
   onFieldUpdate,
-  onCommentaryCapture
+  onCommentaryCapture,
+  onAutoSubmit
 }: VoiceCommentaryCaptureProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [transcription, setTranscription] = useState('');
-  const [formAnswers, setFormAnswers] = useState<string[]>([]);
-  const [additionalNotes, setAdditionalNotes] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Timer: counts up from 0
   useEffect(() => {
@@ -69,8 +69,6 @@ export function VoiceCommentaryCapture({
       console.log('🎤 Voice recording started');
       setIsRecording(true);
       setTranscription('');
-      setFormAnswers([]);
-      setAdditionalNotes([]);
     };
 
     recognition.onresult = (event: any) => {
@@ -80,13 +78,12 @@ export function VoiceCommentaryCapture({
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
           finalTranscript += transcript + ' ';
-          // Process this chunk
-          processTranscriptionChunk(transcript);
         } else {
           interimTranscript += transcript;
         }
       }
 
+      // Just update the display - NO incremental processing
       setTranscription(finalTranscript + interimTranscript);
     };
 
@@ -111,77 +108,86 @@ export function VoiceCommentaryCapture({
     recognition.start();
   };
 
-  const stopRecording = () => {
+  const stopRecordingAndSubmit = async () => {
     if (recognitionRef.current) {
       setIsRecording(false);
       recognitionRef.current.stop();
       recognitionRef.current = null;
       
-      // Send final commentary
-      if (onCommentaryCapture && transcription) {
-        onCommentaryCapture(transcription);
+      if (!transcription || transcription.trim().length === 0) {
+        toast.error('No voice input detected', {
+          description: 'Please try recording again'
+        });
+        return;
       }
-    }
-  };
 
-  const processTranscriptionChunk = async (chunk: string) => {
-    // Debounce processing - reduced for more real-time feedback
-    if (processingTimeoutRef.current) {
-      clearTimeout(processingTimeoutRef.current);
-    }
-
-    processingTimeoutRef.current = setTimeout(async () => {
+      // Process entire transcript holistically
       setIsProcessing(true);
+      toast.info('Processing your answers...', {
+        description: 'Analyzing entire transcript'
+      });
       
       try {
-        // Send to AI parser (now uses OpenAI for cleanup + aggressive matching)
+        console.log('[Voice] Processing full transcript:', transcription);
+        
+        // Send ENTIRE transcript to AI for holistic analysis
         const response = await fetch('/api/ai/voice-to-form', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            transcription: chunk,
+            transcription,
             formSchema,
             currentValues
           })
         });
 
-        if (response.ok) {
-          const { field_updates, unstructured_notes } = await response.json();
-          
-          console.log('[Voice] Field updates:', field_updates);
-          console.log('[Voice] Unstructured notes:', unstructured_notes);
-          
-          // Update form fields IMMEDIATELY
-          if (field_updates && Object.keys(field_updates).length > 0) {
-            Object.entries(field_updates).forEach(([fieldId, value]) => {
-              onFieldUpdate(fieldId, value);
-              
-              // Add to form answers display
-              const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
-              if (field) {
-                setFormAnswers(prev => {
-                  // Avoid duplicates
-                  const existing = prev.find(a => a.startsWith(`${field.label}:`));
-                  if (existing) {
-                    return prev.map(a => a === existing ? `${field.label}: ${value}` : a);
-                  }
-                  return [...prev, `${field.label}: ${value}`];
-                });
-              }
-            });
-          }
-          
-          // Add unstructured notes
-          if (unstructured_notes && unstructured_notes.length > 0) {
-            setAdditionalNotes(prev => [...prev, ...unstructured_notes]);
-          }
+        if (!response.ok) {
+          throw new Error('Failed to process transcript');
         }
+
+        const { field_updates, unstructured_notes } = await response.json();
+        
+        console.log('[Voice] ✅ AI Results:', { field_updates, unstructured_notes });
+        
+        // Fill ALL fields at once
+        if (field_updates && Object.keys(field_updates).length > 0) {
+          let filledCount = 0;
+          Object.entries(field_updates).forEach(([fieldId, value]) => {
+            onFieldUpdate(fieldId, value);
+            filledCount++;
+          });
+          
+          toast.success(`Filled ${filledCount} field${filledCount !== 1 ? 's' : ''}!`, {
+            description: 'Review answers below'
+          });
+        } else {
+          toast.warning('No answers detected', {
+            description: 'Try speaking more clearly about the form questions'
+          });
+        }
+        
+        // Save commentary
+        if (onCommentaryCapture) {
+          onCommentaryCapture(transcription);
+        }
+        
+        // Auto-submit after a brief delay to let user see filled fields
+        setTimeout(() => {
+          if (onAutoSubmit) {
+            toast.success('Auto-submitting form...');
+            onAutoSubmit();
+          }
+        }, 2000);
+        
       } catch (error) {
-        console.error('Error processing transcription:', error);
+        console.error('[Voice] Error processing transcript:', error);
+        toast.error('Failed to process voice input', {
+          description: 'Please try again or fill manually'
+        });
       } finally {
         setIsProcessing(false);
       }
-    }, 800); // Reduced from 1500ms to 800ms for faster real-time updates
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -207,95 +213,52 @@ export function VoiceCommentaryCapture({
   // Recording active view
   return (
     <div className="w-full mb-6">
-      <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-4">
+      <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-6">
         {/* Header with recording indicator */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-red-500/20 px-3 py-1.5 rounded-lg border border-red-500/30">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <div className="flex items-center gap-2 bg-red-500/20 px-4 py-2 rounded-lg border border-red-500/30">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
               <span className="text-sm text-red-600 dark:text-red-400 font-medium">Recording</span>
             </div>
-            <Badge variant="outline" className="text-sm font-mono">
+            <Badge variant="outline" className="text-base font-mono px-3 py-1">
               {formatTime(timeElapsed)}
             </Badge>
-            {isProcessing && (
-              <span className="text-xs text-[#c4dfc4] flex items-center gap-1">
-                <div className="w-1.5 h-1.5 bg-[#c4dfc4] rounded-full animate-pulse" />
-                Processing...
-              </span>
-            )}
           </div>
           <Button
-            onClick={stopRecording}
-            size="sm"
-            className="bg-red-500/80 hover:bg-red-500 border border-red-400/30"
+            onClick={stopRecordingAndSubmit}
+            size="lg"
+            disabled={isProcessing}
+            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] font-medium"
           >
-            <MicOff className="w-4 h-4 mr-2" />
-            Stop Recording
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+                Stop & Submit
+              </>
+            )}
           </Button>
         </div>
 
         {/* Live Transcription */}
-        <div className="mb-4 p-3 bg-white/50 dark:bg-black/20 rounded-lg border border-white/20">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
-            Live Transcription
+        <div className="p-4 bg-white/50 dark:bg-black/20 rounded-lg border border-white/20 min-h-[150px]">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            📝 Live Transcription
           </h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300 min-h-[40px]">
-            {transcription || 'Listening...'}
+          <p className="text-base text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+            {transcription || 'Listening... Start speaking your answers.'}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Form Answers */}
-          <div className="p-3 bg-green-50/50 dark:bg-green-900/10 rounded-lg border border-green-200/30">
-            <h3 className="text-xs font-medium text-green-700 dark:text-green-400 uppercase mb-2 flex items-center gap-2">
-              ✓ Form Answers
-              <Badge variant="outline" className="text-xs">
-                {formAnswers.length}
-              </Badge>
-            </h3>
-            <div className="space-y-1 max-h-[120px] overflow-y-auto">
-              {formAnswers.length > 0 ? (
-                formAnswers.map((answer, idx) => (
-                  <p key={idx} className="text-sm text-gray-700 dark:text-gray-300">
-                    • {answer}
-                  </p>
-                ))
-              ) : (
-                <p className="text-xs text-gray-500 italic">
-                  Waiting for answers...
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Additional Notes */}
-          <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-200/30">
-            <h3 className="text-xs font-medium text-blue-700 dark:text-blue-400 uppercase mb-2 flex items-center gap-2">
-              📝 Additional Notes
-              <Badge variant="outline" className="text-xs">
-                {additionalNotes.length}
-              </Badge>
-            </h3>
-            <div className="space-y-1 max-h-[120px] overflow-y-auto">
-              {additionalNotes.length > 0 ? (
-                additionalNotes.map((note, idx) => (
-                  <p key={idx} className="text-sm text-gray-700 dark:text-gray-300">
-                    • {note}
-                  </p>
-                ))
-              ) : (
-                <p className="text-xs text-gray-500 italic">
-                  Waiting for observations...
-                </p>
-              )}
-            </div>
-          </div>
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+          <Mic className="w-4 h-4" />
+          <span>Speak naturally - AI will match your answers to questions when you stop</span>
         </div>
-
-        <p className="text-xs text-gray-500 mt-4 text-center italic">
-          AI is listening and separating form answers from observations
-        </p>
       </Card>
     </div>
   );
