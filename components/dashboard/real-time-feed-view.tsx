@@ -258,18 +258,18 @@ export function RealTimeFeedView() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleFlagIssue(post)}
-                      className="flex-1"
+                      className="flex-1 hover:bg-[#c4dfc4] hover:text-[#0a0a0a] hover:border-[#c4dfc4] transition-colors"
                     >
-                      <Flag className="h-3 w-3 mr-1" />
+                      <Flag className="h-4 w-4 mr-1" />
                       Flag Issue
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleAddToForm(post)}
-                      className="flex-1"
+                      className="flex-1 hover:bg-[#c4dfc4] hover:text-[#0a0a0a] hover:border-[#c4dfc4] transition-colors"
                     >
-                      <Plus className="h-3 w-3 mr-1" />
+                      <Plus className="h-4 w-4 mr-1" />
                       Add to Form
                     </Button>
                   </>
@@ -279,9 +279,9 @@ export function RealTimeFeedView() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleRecognize(post)}
-                    className="flex-1"
+                    className="flex-1 hover:bg-[#c4dfc4] hover:text-[#0a0a0a] hover:border-[#c4dfc4] transition-colors"
                   >
-                    <Star className="h-3 w-3 mr-1" />
+                    <Star className="h-4 w-4 mr-1" />
                     Recognize
                   </Button>
                 )}
@@ -289,8 +289,9 @@ export function RealTimeFeedView() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleReply(post)}
+                  className="hover:bg-[#c4dfc4] hover:text-[#0a0a0a] transition-colors"
                 >
-                  <MessageSquare className="h-3 w-3 mr-1" />
+                  <MessageSquare className="h-4 w-4 mr-1" />
                   Reply
                 </Button>
               </div>
