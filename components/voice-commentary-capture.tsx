@@ -187,12 +187,21 @@ export function VoiceCommentaryCapture({
 
           // Update form fields AND track progress
           if (field_updates && Object.keys(field_updates).length > 0) {
+            console.log('[Voice] Received field updates:', field_updates);
             Object.entries(field_updates).forEach(([fieldId, value]) => {
-              onFieldUpdate(fieldId, value);
-              // Mark as 100% complete
-              setFieldProgress(prev => new Map(prev).set(fieldId, 100));
-              if (onProgressUpdate) {
-                onProgressUpdate(fieldId, 100);
+              // Try to match field by id or name
+              const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
+              if (field) {
+                const fieldKey = field.id || field.name;
+                console.log(`[Voice] Updating field: ${field.label} (${fieldKey}) = ${value}`);
+                onFieldUpdate(fieldKey, value);
+                // Mark as 100% complete
+                setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
+                if (onProgressUpdate) {
+                  onProgressUpdate(fieldKey, 100);
+                }
+              } else {
+                console.warn(`[Voice] Could not find field for ID: ${fieldId}`);
               }
             });
           }
@@ -241,11 +250,20 @@ export function VoiceCommentaryCapture({
 
         // Apply any additional updates from final pass
         if (field_updates && Object.keys(field_updates).length > 0) {
+          console.log('[Voice] Final pass - received field updates:', field_updates);
           Object.entries(field_updates).forEach(([fieldId, value]) => {
-            onFieldUpdate(fieldId, value);
-            setFieldProgress(prev => new Map(prev).set(fieldId, 100));
-            if (onProgressUpdate) {
-              onProgressUpdate(fieldId, 100);
+            // Try to match field by id or name
+            const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
+            if (field) {
+              const fieldKey = field.id || field.name;
+              console.log(`[Voice] Final pass - updating field: ${field.label} (${fieldKey}) = ${value}`);
+              onFieldUpdate(fieldKey, value);
+              setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
+              if (onProgressUpdate) {
+                onProgressUpdate(fieldKey, 100);
+              }
+            } else {
+              console.warn(`[Voice] Final pass - could not find field for ID: ${fieldId}`);
             }
           });
         }
@@ -349,13 +367,31 @@ export function VoiceCommentaryCapture({
     );
   }
 
-  // Compact recording bar with vertical progress bars
-  if (isRecording) {
+  // Compact recording bar with progress tracking
+  if (isRecording || isProcessing) {
     return (
-      <div className="w-full mb-4">
-        <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-3">
-          {/* Top row: audio controls */}
-          <div className="flex items-center gap-3 mb-3">
+      <>
+        {/* Loading Overlay */}
+        {isProcessing && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-8 flex flex-col items-center gap-4 shadow-2xl">
+              <Loader2 className="w-12 h-12 text-[#c4dfc4] animate-spin" />
+              <div className="text-center">
+                <p className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                  Processing your answers...
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  AI is analyzing your voice recording
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="w-full mb-4">
+          <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-3">
+            {/* Top row: audio controls */}
+            <div className="flex items-center gap-3 mb-3">
             {/* Recording indicator */}
             <div className="flex items-center gap-2 shrink-0">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -424,7 +460,8 @@ export function VoiceCommentaryCapture({
             );
           })()}
         </Card>
-      </div>
+        </div>
+      </>
     );
   }
 
