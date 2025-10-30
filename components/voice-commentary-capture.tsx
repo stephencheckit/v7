@@ -372,16 +372,16 @@ export function VoiceCommentaryCapture({
           </div>
 
           {/* Bottom row: vertical progress bars side by side */}
-          <div className="flex items-end gap-2 h-20">
+          <div className="flex items-end gap-1 h-12">
             {formSchema.fields.map((field, idx) => {
               const fieldKey = field.id || field.name;
               const progress = fieldProgress.get(fieldKey) || 0;
               const isAnswered = progress >= 100;
               
               return (
-                <div key={fieldKey} className="flex-1 flex flex-col items-center gap-1">
-                  {/* Vertical progress bar */}
-                  <div className="w-full h-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                <div key={fieldKey} className="w-1">
+                  {/* Vertical progress bar - very thin */}
+                  <div className="w-1 h-12 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
                     <div
                       className={`absolute bottom-0 w-full transition-all duration-300 ${
                         isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
@@ -389,10 +389,6 @@ export function VoiceCommentaryCapture({
                       style={{ height: `${progress}%` }}
                     />
                   </div>
-                  {/* Field label */}
-                  <span className="text-[10px] text-gray-600 dark:text-gray-400 text-center truncate w-full">
-                    {field.label}
-                  </span>
                 </div>
               );
             })}
