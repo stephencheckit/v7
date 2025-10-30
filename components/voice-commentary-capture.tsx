@@ -16,6 +16,8 @@ interface VoiceCommentaryCaptureProps {
   onCommentaryCapture?: (commentary: string) => void;
   onAutoSubmit?: () => void;
   onProgressUpdate?: (fieldId: string, progress: number) => void;
+  onValidationError?: (missingFieldIds: string[]) => void;
+  onCancel?: () => void;
 }
 
 interface FieldProgress {
@@ -31,7 +33,9 @@ export function VoiceCommentaryCapture({
   onFieldUpdate,
   onCommentaryCapture,
   onAutoSubmit,
-  onProgressUpdate
+  onProgressUpdate,
+  onValidationError,
+  onCancel
 }: VoiceCommentaryCaptureProps) {
   const [countdown, setCountdown] = useState<number | null>(3);
   const [isRecording, setIsRecording] = useState(false);
@@ -235,8 +239,14 @@ export function VoiceCommentaryCapture({
         });
         
         if (missingFields.length > 0) {
+          // Notify parent of missing fields for highlighting
+          const missingFieldIds = missingFields.map(f => f.id || f.name);
+          if (onValidationError) {
+            onValidationError(missingFieldIds);
+          }
+          
           // Show which questions need answers
-          toast.warning(`⚠️ ${missingFields.length} required question${missingFields.length !== 1 ? 's' : ''} unanswered`, {
+          toast.error(`⚠️ ${missingFields.length} required question${missingFields.length !== 1 ? 's' : ''} unanswered`, {
             description: missingFields.map(f => f.label).join(', '),
             duration: 5000
           });
@@ -285,6 +295,11 @@ export function VoiceCommentaryCapture({
     setIsRecording(false);
     setTranscription('');
     setFieldProgress(new Map());
+    
+    // Tell parent to go back to AI assist selection
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   // Countdown display
@@ -305,12 +320,13 @@ export function VoiceCommentaryCapture({
     );
   }
 
-  // Compact recording bar - similar to AI Vision
+  // Compact recording bar with vertical progress bars
   if (isRecording) {
     return (
       <div className="w-full mb-4">
         <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-3">
-          <div className="flex items-center gap-3">
+          {/* Top row: audio controls */}
+          <div className="flex items-center gap-3 mb-3">
             {/* Recording indicator */}
             <div className="flex items-center gap-2 shrink-0">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -353,6 +369,33 @@ export function VoiceCommentaryCapture({
                 )}
               </Button>
             </div>
+          </div>
+
+          {/* Bottom row: vertical progress bars side by side */}
+          <div className="flex items-end gap-2 h-20">
+            {formSchema.fields.map((field, idx) => {
+              const fieldKey = field.id || field.name;
+              const progress = fieldProgress.get(fieldKey) || 0;
+              const isAnswered = progress >= 100;
+              
+              return (
+                <div key={fieldKey} className="flex-1 flex flex-col items-center gap-1">
+                  {/* Vertical progress bar */}
+                  <div className="w-full h-16 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                    <div
+                      className={`absolute bottom-0 w-full transition-all duration-300 ${
+                        isAnswered ? 'bg-green-500' : 'bg-[#c4dfc4]'
+                      }`}
+                      style={{ height: `${progress}%` }}
+                    />
+                  </div>
+                  {/* Field label */}
+                  <span className="text-[10px] text-gray-600 dark:text-gray-400 text-center truncate w-full">
+                    {field.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </Card>
       </div>

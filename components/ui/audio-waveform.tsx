@@ -23,23 +23,23 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
           const audioContext = new AudioContext();
           const analyser = audioContext.createAnalyser();
           const source = audioContext.createMediaStreamSource(stream);
-          
+
           analyser.fftSize = 64; // 32 frequency bins
           const bufferLength = analyser.frequencyBinCount;
           const dataArray: Uint8Array<ArrayBuffer> = new Uint8Array(bufferLength);
-          
+
           source.connect(analyser);
-          
+
           audioContextRef.current = audioContext;
           analyserRef.current = analyser;
           dataArrayRef.current = dataArray;
-          
+
           // Animate bars based on real audio input
           const animate = () => {
             if (!analyserRef.current || !dataArrayRef.current) return;
-            
+
             analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-            
+
             // Map frequency data to 30 bars
             const newBars = Array.from({ length: 30 }, (_, i) => {
               const dataIndex = Math.floor((i / 30) * dataArrayRef.current!.length);
@@ -47,11 +47,11 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
               // Normalize to 0-100 with minimum height
               return Math.max(10, (value / 255) * 100);
             });
-            
+
             setBars(newBars);
             animationFrameRef.current = requestAnimationFrame(animate);
           };
-          
+
           animate();
         } catch (error) {
           console.error('Error accessing microphone:', error);
@@ -62,9 +62,9 @@ export function AudioWaveform({ isRecording, size = 'md' }: AudioWaveformProps) 
           return () => clearInterval(interval);
         }
       };
-      
+
       initAudio();
-      
+
       return () => {
         // Cleanup
         if (animationFrameRef.current) {

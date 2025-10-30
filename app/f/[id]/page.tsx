@@ -73,6 +73,7 @@ export default function PublicFormPage() {
   const [assistMode, setAssistMode] = useState<'vision' | 'voice' | null>(null); // Which AI assist is active
   const [voiceCommentary, setVoiceCommentary] = useState<string>(''); // Captured voice commentary
   const [voiceFieldProgress, setVoiceFieldProgress] = useState<Record<string, number>>({}); // Track progress per field (0-100)
+  const [missingFieldIds, setMissingFieldIds] = useState<string[]>([]); // Fields that failed validation
 
   // Reset state when timestamp changes (new preview load)
   useEffect(() => {
@@ -326,6 +327,9 @@ export default function PublicFormPage() {
       ...prev,
       [fieldName]: value,
     }));
+    
+    // Clear missing field highlight if user starts filling it
+    setMissingFieldIds(prev => prev.filter(id => id !== fieldName));
   };
 
   const handleAnalysisComplete = (snapshot: number, answers: any, confidence: any) => {
@@ -607,7 +611,7 @@ export default function PublicFormPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => setAssistMode('vision')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:ring-2 hover:ring-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
                 >
                   <Camera className="h-6 w-6 text-[#c4dfc4]" />
                   <span className="text-sm font-medium">AI Vision</span>
@@ -615,7 +619,7 @@ export default function PublicFormPage() {
                 </Button>
                 <Button
                   onClick={() => setAssistMode('voice')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:ring-2 hover:ring-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
+                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
                 >
                   <Mic className="h-6 w-6 text-[#c4dfc4]" />
                   <span className="text-sm font-medium">Voice Recording</span>
@@ -647,21 +651,14 @@ export default function PublicFormPage() {
 
           {/* Voice Commentary Capture */}
           {form && assistMode === 'voice' && (
-            <>
-              <Button
-                onClick={() => setAssistMode(null)}
-                variant="ghost"
-                size="sm"
-                className="mb-3 text-gray-400 hover:text-white"
-              >
-                ← Switch to AI Vision
-              </Button>
               <VoiceCommentaryCapture
                 formSchema={form.schema}
                 currentValues={formValues}
                 onFieldUpdate={handleVoiceFieldUpdate}
                 onCommentaryCapture={handleCommentaryCapture}
                 onProgressUpdate={handleVoiceProgressUpdate}
+                onValidationError={(fieldIds) => setMissingFieldIds(fieldIds)}
+                onCancel={() => setAssistMode(null)}
                 onAutoSubmit={() => {
                   // Trigger form submission
                   const formElement = document.querySelector('form');
@@ -670,7 +667,6 @@ export default function PublicFormPage() {
                   }
                 }}
               />
-            </>
           )}
 
           {/* Error Message */}
@@ -684,13 +680,15 @@ export default function PublicFormPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {form?.schema.fields.map((field) => {
               const fieldKey = field.id || field.name;
-              const fieldProgress = voiceFieldProgress[fieldKey] || 0;
-              const isFieldAnswered = fieldProgress >= 100;
+              const isMissing = missingFieldIds.includes(fieldKey);
 
               return (
-              <div key={field.id}>
+              <div 
+                key={field.id}
+                className={`${isMissing ? 'p-3 rounded-lg border-2 border-red-500 bg-red-500/5' : ''}`}
+              >
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
-                  <span>
+                  <span className={isMissing ? 'text-red-400' : ''}>
                     {field.label}
                     {field.required && <span className="text-red-400 ml-1">*</span>}
                   </span>
@@ -699,196 +697,186 @@ export default function PublicFormPage() {
                   )}
                 </label>
 
-                {/* Voice Recording Progress Bar */}
-                {assistMode === 'voice' && (
-                  <div className="mb-3">
-                    <Progress 
-                      value={fieldProgress} 
-                      className={`h-1.5 ${isFieldAnswered ? 'bg-green-500/20' : ''}`}
-                    />
-                  </div>
-                )}
-
                 {/* Text Input */}
-                {field.type === "text" && (
-                  <Input
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    className="bg-white/5 border-white/10 text-white"
-                  />
-                )}
+                  {field.type === "text" && (
+                    <Input
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  )}
 
-                {/* Text Area */}
-                {field.type === "textarea" && (
-                  <textarea
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    rows={4}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#c4dfc4]"
-                  />
-                )}
+                  {/* Text Area */}
+                  {field.type === "textarea" && (
+                    <textarea
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      rows={4}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#c4dfc4]"
+                    />
+                  )}
 
-                {/* Email */}
-                {field.type === "email" && (
-                  <Input
-                    type="email"
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    className="bg-white/5 border-white/10 text-white"
-                  />
-                )}
+                  {/* Email */}
+                  {field.type === "email" && (
+                    <Input
+                      type="email"
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  )}
 
-                {/* Number */}
-                {field.type === "number" && (
-                  <Input
-                    type="number"
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    className="bg-white/5 border-white/10 text-white"
-                  />
-                )}
+                  {/* Number */}
+                  {field.type === "number" && (
+                    <Input
+                      type="number"
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  )}
 
-                {/* Phone */}
-                {field.type === "phone" && (
-                  <Input
-                    type="tel"
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    className="bg-white/5 border-white/10 text-white"
-                  />
-                )}
+                  {/* Phone */}
+                  {field.type === "phone" && (
+                    <Input
+                      type="tel"
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  )}
 
-                {/* Date */}
-                {field.type === "date" && (
-                  <Input
-                    type="date"
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    required={field.required}
-                    className="bg-white/5 border-white/10 text-white"
-                  />
-                )}
+                  {/* Date */}
+                  {field.type === "date" && (
+                    <Input
+                      type="date"
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      required={field.required}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  )}
 
-                {/* Radio Buttons */}
-                {field.type === "radio" && field.options && (
-                  <div className="space-y-2">
-                    {field.options.map((option, index) => (
-                      <label key={index} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={field.name}
-                          value={option}
-                          checked={formValues[field.name] === option}
-                          onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                          required={field.required}
-                          className="text-[#c4dfc4] focus:ring-[#c4dfc4]"
-                        />
-                        <span className="text-gray-300">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+                  {/* Radio Buttons */}
+                  {field.type === "radio" && field.options && (
+                    <div className="space-y-2">
+                      {field.options.map((option, index) => (
+                        <label key={index} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={field.name}
+                            value={option}
+                            checked={formValues[field.name] === option}
+                            onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                            required={field.required}
+                            className="text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                          />
+                          <span className="text-gray-300">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
 
-                {/* Checkboxes */}
-                {field.type === "checkbox" && field.options && (
-                  <div className="space-y-2">
-                    {field.options.map((option, index) => (
-                      <label key={index} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={option}
-                          checked={(formValues[field.name] || []).includes(option)}
-                          onChange={(e) => {
-                            const currentValues = formValues[field.name] || [];
-                            const newValues = e.target.checked
-                              ? [...currentValues, option]
-                              : currentValues.filter((v: string) => v !== option);
-                            handleFieldChange(field.name, newValues);
-                          }}
-                          className="text-[#c4dfc4] focus:ring-[#c4dfc4] rounded"
-                        />
-                        <span className="text-gray-300">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+                  {/* Checkboxes */}
+                  {field.type === "checkbox" && field.options && (
+                    <div className="space-y-2">
+                      {field.options.map((option, index) => (
+                        <label key={index} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            value={option}
+                            checked={(formValues[field.name] || []).includes(option)}
+                            onChange={(e) => {
+                              const currentValues = formValues[field.name] || [];
+                              const newValues = e.target.checked
+                                ? [...currentValues, option]
+                                : currentValues.filter((v: string) => v !== option);
+                              handleFieldChange(field.name, newValues);
+                            }}
+                            className="text-[#c4dfc4] focus:ring-[#c4dfc4] rounded"
+                          />
+                          <span className="text-gray-300">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
 
-                {/* Dropdown */}
-                {field.type === "dropdown" && field.options && (
-                  <select
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    required={field.required}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#c4dfc4]"
-                  >
-                    <option value="">Select an option...</option>
-                    {field.options.map((option, index) => (
-                      <option key={index} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                )}
-
-                {/* Thumbs Up/Down */}
-                {field.type === "thumbs" && (
-                  <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange(field.name, "up")}
-                      className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "up"
-                        ? "bg-[#c4dfc4]/20 border-[#c4dfc4] text-[#c4dfc4]"
-                        : "bg-white/5 border-white/10 text-gray-400 hover:border-[#c4dfc4]/50"
-                        }`}
+                  {/* Dropdown */}
+                  {field.type === "dropdown" && field.options && (
+                    <select
+                      value={formValues[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      required={field.required}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#c4dfc4]"
                     >
-                      👍 Yes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange(field.name, "down")}
-                      className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "down"
-                        ? "bg-red-500/20 border-red-500 text-red-400"
-                        : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/50"
-                        }`}
-                    >
-                      👎 No
-                    </button>
-                  </div>
-                )}
+                      <option value="">Select an option...</option>
+                      {field.options.map((option, index) => (
+                        <option key={index} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  )}
 
-                {/* Signature */}
-                {field.type === "signature" && (
-                  <SignaturePadWidget
-                    field={{
-                      id: field.id,
-                      name: field.name,
-                      label: field.label,
-                      required: field.required,
-                      signatureMeaning: (field as any).signatureMeaning || 'Completed by',
-                      requireCertification: (field as any).requireCertification !== false,
-                      certificationText: (field as any).certificationText || 'I certify that my electronic signature is the legally binding equivalent of my handwritten signature.',
-                      signatureSettings: (field as any).signatureSettings || {
-                        penColor: '#000000',
-                        backgroundColor: '#ffffff',
-                        requirePassword: true
-                      }
-                    }}
-                    value={formValues[field.name]}
-                    onChange={(value) => handleFieldChange(field.name, value)}
-                    disabled={submitting || submitted}
-                  />
-                )}
-              </div>
+                  {/* Thumbs Up/Down */}
+                  {field.type === "thumbs" && (
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => handleFieldChange(field.name, "up")}
+                        className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "up"
+                          ? "bg-[#c4dfc4]/20 border-[#c4dfc4] text-[#c4dfc4]"
+                          : "bg-white/5 border-white/10 text-gray-400 hover:border-[#c4dfc4]/50"
+                          }`}
+                      >
+                        👍 Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFieldChange(field.name, "down")}
+                        className={`flex-1 py-3 rounded-lg border transition-colors ${formValues[field.name] === "down"
+                          ? "bg-red-500/20 border-red-500 text-red-400"
+                          : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/50"
+                          }`}
+                      >
+                        👎 No
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Signature */}
+                  {field.type === "signature" && (
+                    <SignaturePadWidget
+                      field={{
+                        id: field.id,
+                        name: field.name,
+                        label: field.label,
+                        required: field.required,
+                        signatureMeaning: (field as any).signatureMeaning || 'Completed by',
+                        requireCertification: (field as any).requireCertification !== false,
+                        certificationText: (field as any).certificationText || 'I certify that my electronic signature is the legally binding equivalent of my handwritten signature.',
+                        signatureSettings: (field as any).signatureSettings || {
+                          penColor: '#000000',
+                          backgroundColor: '#ffffff',
+                          requirePassword: true
+                        }
+                      }}
+                      value={formValues[field.name]}
+                      onChange={(value) => handleFieldChange(field.name, value)}
+                      disabled={submitting || submitted}
+                    />
+                  )}
+                </div>
               );
             })}
 
