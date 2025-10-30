@@ -1016,11 +1016,14 @@ Please extract and build the form now.`;
 
           // Clear all fields
           onFormUpdate?.([], { title: undefined, description: undefined });
+          
+          // Track result
+          finalFieldCount = 0;
+          operationResults.push('Cleared all form fields');
 
           console.log('✅ Cleared all form fields');
 
-          // Don't process other operations if we cleared
-          return;
+          // Continue processing (don't return) - there might be CREATE_FORM after this
         }
 
         // Check for CREATE_WORKFLOW
@@ -1422,9 +1425,9 @@ Please extract and build the form now.`;
       // Inject confirmation message if any operations succeeded
       if (operationResults.length > 0) {
         const confirmationMessage = `✅ **Operation Complete**\n\n${operationResults.map(r => `• ${r}`).join('\n')}\n\n📊 Form now has **${finalFieldCount} field(s)** total.`;
-        
+
         console.log('💬 Injecting confirmation message:', confirmationMessage);
-        
+
         setMessages(prev => [...prev, {
           role: 'assistant' as const,
           content: confirmationMessage
