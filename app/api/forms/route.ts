@@ -45,12 +45,44 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { title, description, schema, status, ai_vision_enabled, thank_you_settings } = body;
 
-    if (!title || !schema) {
+    // Detailed validation
+    if (!title || title.trim() === '') {
+      console.error('❌ Validation failed: Missing or empty title');
       return NextResponse.json(
-        { error: 'Title and schema are required' },
+        { error: 'Title is required and cannot be empty' },
         { status: 400 }
       );
     }
+
+    if (!schema) {
+      console.error('❌ Validation failed: Missing schema');
+      return NextResponse.json(
+        { error: 'Schema is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!schema.fields || !Array.isArray(schema.fields)) {
+      console.error('❌ Validation failed: schema.fields missing or not an array');
+      return NextResponse.json(
+        { error: 'Schema must contain a fields array' },
+        { status: 400 }
+      );
+    }
+
+    if (schema.fields.length === 0) {
+      console.error('❌ Validation failed: schema.fields is empty');
+      return NextResponse.json(
+        { error: 'Form must have at least one field' },
+        { status: 400 }
+      );
+    }
+
+    console.log('✅ Validation passed:', {
+      title,
+      fieldCount: schema.fields.length,
+      workspaceId,
+    });
 
     // Generate short ID
     const formId = nanoid(8);

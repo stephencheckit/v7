@@ -664,6 +664,27 @@ Please extract and build the form now.`;
             console.log('Backend form:', backendForm);
             const { fields, title, description } = convertBackendFormToFrontend(backendForm);
             console.log('Frontend fields:', fields);
+            
+            // Validate form before updating
+            if (!fields || fields.length === 0) {
+              console.error('❌ Form has no fields, cannot update');
+              setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: '❌ Sorry, I couldn\'t create the form properly. Please try again with a clearer description.'
+              }]);
+              return;
+            }
+            
+            if (!title || title.trim() === '') {
+              console.error('❌ Form has no title, cannot update');
+              setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: '❌ Sorry, I couldn\'t create a form title. Please specify what this form should be called.'
+              }]);
+              return;
+            }
+            
+            console.log('✅ Form validated, updating with', fields.length, 'fields');
             onFormUpdate?.(fields, { title, description });
           } catch (firstParseError) {
             // JSON parsing failed - try to log more details

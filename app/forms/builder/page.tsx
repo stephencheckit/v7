@@ -1338,7 +1338,19 @@ function FormsPageContent() {
 
   const handleAutoSave = async () => {
     // Silent auto-save - no alerts
-    if (formFields.length === 0) return;
+    if (formFields.length === 0) {
+      console.warn('⚠️ Cannot save form with no fields');
+      return;
+    }
+
+    // Validate required fields before saving
+    if (!formName || formName.trim() === '') {
+      console.error('❌ Cannot save form without a title');
+      toast.error('Form title is required', {
+        description: 'Please provide a title for your form before saving.',
+      });
+      return;
+    }
 
     setSaving(true);
     try {
@@ -1356,34 +1368,47 @@ function FormsPageContent() {
         })),
       };
 
+      // Log what we're about to save
+      console.log('💾 Saving form:', {
+        title: formName,
+        fieldCount: formFields.length,
+        status: formStatus,
+        isEditMode,
+      });
+
       // Determine endpoint and method based on edit mode
       const endpoint = isEditMode ? `/api/forms/${editingFormId}` : '/api/forms';
       const method = isEditMode ? 'PUT' : 'POST';
+
+      const payload = {
+        title: formName,
+        description: formDescription,
+        schema,
+        status: formStatus,
+        ai_vision_enabled: aiVisionEnabled,
+        thank_you_settings: {
+          message: thankYouMessage,
+          allowAnotherSubmission,
+          showResponseSummary,
+          showCloseButton,
+          allowSocialShare,
+          redirectUrl,
+          redirectDelay,
+        },
+      };
+
+      console.log('📤 Payload:', JSON.stringify(payload, null, 2));
 
       // Save form to database
       const response = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: formName,
-          description: formDescription,
-          schema,
-          status: formStatus,
-          ai_vision_enabled: aiVisionEnabled,
-          thank_you_settings: {
-            message: thankYouMessage,
-            allowAnotherSubmission,
-            showResponseSummary,
-            showCloseButton,
-            allowSocialShare,
-            redirectUrl,
-            redirectDelay,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ Save failed:', errorData);
         throw new Error(errorData.error || 'Failed to save form');
       }
 
