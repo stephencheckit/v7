@@ -211,7 +211,7 @@ export default function CadencesPage() {
               <FullCalendar
                 key={`${statusFilter}-${refreshKey}`}
                 plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                initialView="timeGridWeek"
                 headerToolbar={{
                   left: 'prev,next today',
                   center: 'title',

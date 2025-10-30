@@ -47,23 +47,30 @@ export function AppHeader() {
   const { user, signOut } = useAuth();
   
   const isFormBuilderPage = pathname?.includes('/forms/builder');
+  const isWorkflowsPage = pathname === '/workflows';
+  const isLearnPage = pathname === '/learn';
   
-  // Listen for AI chat state changes (from form builder)
+  // Listen for AI chat state changes (from form builder, workflows, and learn pages)
   useEffect(() => {
-    if (!isFormBuilderPage) return;
+    if (!isFormBuilderPage && !isWorkflowsPage && !isLearnPage) return;
+    
+    // Determine which localStorage key to use based on page
+    const storageKey = isFormBuilderPage ? 'ai-chat-open' : 
+                       isWorkflowsPage ? 'workflows-ai-chat-open' :
+                       'learn-ai-chat-open';
     
     const getInitialChatState = () => {
       if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('ai-chat-open');
-        return saved !== null ? saved === 'true' : true;
+        const saved = localStorage.getItem(storageKey);
+        return saved !== null ? saved === 'true' : (isFormBuilderPage ? true : false);
       }
-      return true;
+      return isFormBuilderPage ? true : false;
     };
     
     setIsChatOpen(getInitialChatState());
     
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'ai-chat-open') {
+      if (e.key === storageKey) {
         setIsChatOpen(e.newValue === 'true');
       }
     };
@@ -79,7 +86,7 @@ export function AppHeader() {
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [isFormBuilderPage]);
+  }, [isFormBuilderPage, isWorkflowsPage, isLearnPage]);
 
   const performSearch = async (query: string) => {
     if (query.trim().length === 0) {
@@ -206,7 +213,7 @@ export function AppHeader() {
     <>
       <header 
         className={`sticky top-0 z-40 flex h-16 items-center gap-2 md:gap-3 border-b border-white bg-gradient-to-r from-[#000000] via-[#0a0a0a] to-[#000000] shadow-sm pl-3 md:pl-6 pr-3 md:pr-0 transition-all duration-300 ${
-          isFormBuilderPage 
+          (isFormBuilderPage || isWorkflowsPage || isLearnPage)
             ? (isChatOpen ? 'mr-[400px]' : 'mr-16')
             : 'md:mr-6'
         }`}
