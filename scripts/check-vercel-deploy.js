@@ -76,18 +76,8 @@ async function main() {
   try {
     console.log('🔍 Checking latest Vercel deployment...\n');
 
-    // Get project ID first (we need the actual ID, not the name)
-    const projectsData = await makeRequest('/v9/projects');
-    const project = projectsData.projects?.find(p => p.name === PROJECT_NAME);
-    
-    if (!project) {
-      console.log(`❌ Project "${PROJECT_NAME}" not found`);
-      console.log('Available projects:', projectsData.projects?.map(p => p.name).join(', '));
-      return;
-    }
-
-    // Get latest deployments using project ID
-    const deploymentsData = await makeRequest(`/v6/deployments?projectId=${project.id}&limit=1`);
+    // Get latest deployments - use app name filter instead of project ID
+    const deploymentsData = await makeRequest(`/v6/deployments?app=${PROJECT_NAME}&limit=5`);
 
     if (!deploymentsData.deployments || deploymentsData.deployments.length === 0) {
       console.log('No deployments found');
