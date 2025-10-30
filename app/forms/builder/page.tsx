@@ -135,18 +135,18 @@ export interface FormField {
   };
 }
 
-function SortableOption({ 
-  option, 
-  index, 
-  onUpdate, 
+function SortableOption({
+  option,
+  index,
+  onUpdate,
   onRemove,
   onAddNew,
   fieldId,
   fieldType,
   multiSelect
-}: { 
-  option: string; 
-  index: number; 
+}: {
+  option: string;
+  index: number;
   onUpdate: (index: number, value: string) => void;
   onRemove: (index: number) => void;
   onAddNew: () => void;
@@ -207,9 +207,9 @@ function SortableOption({
   );
 }
 
-function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, questionCount, isDraggingNewWidget }: { 
-  field: FormField; 
-  onRemove: (id: string) => void; 
+function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, questionCount, isDraggingNewWidget }: {
+  field: FormField;
+  onRemove: (id: string) => void;
   onUpdate: (id: string, updates: Partial<FormField>) => void;
   onDuplicate: (id: string) => void;
   isOver?: boolean;
@@ -229,7 +229,7 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
     transform,
     transition,
     isDragging,
-  } = useSortable({ 
+  } = useSortable({
     id: field.id,
     transition: {
       duration: 200,
@@ -270,16 +270,15 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
           <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-3 h-3 bg-[#c4dfc4] rounded-full" />
         </div>
       )}
-      
+
       <div
         ref={setNodeRef}
         style={{
           ...style,
           backgroundColor: isOver ? undefined : `${field.color}25`, // 25 = ~15% opacity
         }}
-        className={`group relative p-4 rounded-lg border-2 transition-all duration-200 ${
-          isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98] bg-[#c4dfc4]/10' : 'border-transparent'
-        }`}
+        className={`group relative p-4 rounded-lg border-2 transition-all duration-200 ${isOver ? 'border-[#c4dfc4] mt-2 scale-[0.98] bg-[#c4dfc4]/10' : 'border-transparent'
+          }`}
         onMouseEnter={(e) => {
           if (!isOver && !isDraggingNewWidget) {
             e.currentTarget.style.borderColor = field.color;
@@ -293,122 +292,18 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
           }
         }}
       >
-      <div className="flex items-start gap-3">
-        <button
-          className="cursor-grab active:cursor-grabbing mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <div className="flex-1 space-y-3 min-w-0">
-          {field.type !== "group" && (
-            <div className="flex items-center gap-3">
-              <div className="flex-1 flex items-center gap-1">
-                {isEditingLabel ? (
-                  <Input
-                    ref={labelInputRef}
-                    value={field.label || ''}
-                    onChange={(e) => onUpdate(field.id, { label: e.target.value })}
-                    onBlur={() => setIsEditingLabel(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setIsEditingLabel(false);
-                      }
-                    }}
-                    className="flex-1 font-medium text-sm border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent"
-                    placeholder="Field label"
-                  />
-                ) : (
-                  <div
-                    onClick={() => setIsEditingLabel(true)}
-                    className="flex-1 font-medium text-sm cursor-text px-0 py-0 h-auto"
-                  >
-                    {field.label || "Field label"}
-                  </div>
-                )}
-                {field.required && <span className="text-red-500 font-medium">*</span>}
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                <input
-                  type="checkbox"
-                  checked={field.required}
-                  onChange={(e) => onUpdate(field.id, { required: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
-                />
-                <span className="text-xs text-muted-foreground">Required</span>
-              </label>
-            </div>
-          )}
-          
-          {/* Description - Only for non-group fields */}
-          {field.type !== "group" && (
-            <>
-              {showDescription || field.description ? (
-                <div className="flex items-center gap-2">
-                  {isEditingDescription ? (
-                    <Input
-                      ref={descriptionInputRef}
-                      value={field.description || ''}
-                      onChange={(e) => onUpdate(field.id, { description: e.target.value })}
-                      onBlur={() => {
-                        setIsEditingDescription(false);
-                        if (!field.description) {
-                          setShowDescription(false);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setIsEditingDescription(false);
-                        }
-                      }}
-                      className="flex-1 text-xs border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-muted-foreground italic"
-                      placeholder="Add description..."
-                    />
-                  ) : (
-                    <div
-                      onClick={() => setIsEditingDescription(true)}
-                      className="flex-1 text-xs cursor-text px-0 py-0 h-auto text-muted-foreground italic"
-                    >
-                      {field.description || "Add description..."}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => {
-                      onUpdate(field.id, { description: '' });
-                      setShowDescription(false);
-                      setIsEditingDescription(false);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-muted-foreground hover:text-destructive"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowDescription(true)}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100"
-                >
-                  <Plus className="h-3 w-3" />
-                  Add description
-                </button>
-              )}
-            </>
-          )}
-          
-          {/* Field Input */}
-          {field.type === "group" ? (
-            <div 
-              className="w-full px-4 py-3 rounded-lg border-l-4 font-semibold text-base"
-              style={{ 
-                backgroundColor: `${field.color}40`,
-                borderLeftColor: field.color,
-                color: '#0a0a0a'
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 flex-1">
-                  <Layers className="h-5 w-5" style={{ color: field.color }} />
+        <div className="flex items-start gap-3">
+          <button
+            className="cursor-grab active:cursor-grabbing mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <div className="flex-1 space-y-3 min-w-0">
+            {field.type !== "group" && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 flex items-center gap-1">
                   {isEditingLabel ? (
                     <Input
                       ref={labelInputRef}
@@ -420,441 +315,545 @@ function SortableFormField({ field, onRemove, onUpdate, onDuplicate, isOver, que
                           setIsEditingLabel(false);
                         }
                       }}
-                      className="font-semibold text-base border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-[#0a0a0a] uppercase"
-                      placeholder="Group name"
-                    />
-                  ) : (
-                    <span 
-                      onClick={() => setIsEditingLabel(true)}
-                      className="cursor-text"
-                    >
-                      {field.label.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                {questionCount !== undefined && (
-                  <Badge 
-                    variant="secondary" 
-                    className="font-normal text-xs"
-                    style={{ 
-                      backgroundColor: `${field.color}80`,
-                      color: '#0a0a0a',
-                      borderColor: field.color
-                    }}
-                  >
-                    {questionCount} {questionCount === 1 ? 'question' : 'questions'}
-                  </Badge>
-                )}
-              </div>
-              
-              {/* Group Description */}
-              {showDescription || field.description ? (
-                <div className="flex items-center gap-2 mt-2">
-                  {isEditingDescription ? (
-                    <Input
-                      ref={descriptionInputRef}
-                      value={field.description || ''}
-                      onChange={(e) => onUpdate(field.id, { description: e.target.value })}
-                      onBlur={() => {
-                        setIsEditingDescription(false);
-                        if (!field.description) {
-                          setShowDescription(false);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setIsEditingDescription(false);
-                        }
-                      }}
-                      className="flex-1 text-xs border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-white font-normal"
-                      placeholder="Add description..."
+                      className="flex-1 font-medium text-sm border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent"
+                      placeholder="Field label"
                     />
                   ) : (
                     <div
-                      onClick={() => setIsEditingDescription(true)}
-                      className="flex-1 text-xs cursor-text px-0 py-0 h-auto text-white font-normal"
+                      onClick={() => setIsEditingLabel(true)}
+                      className="flex-1 font-medium text-sm cursor-text px-0 py-0 h-auto"
                     >
-                      {field.description || "Add description..."}
+                      {field.label || "Field label"}
                     </div>
                   )}
-                  <button
-                    onClick={() => {
-                      onUpdate(field.id, { description: '' });
-                      setShowDescription(false);
-                      setIsEditingDescription(false);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-white/70 hover:text-destructive"
-                  >
-                    ×
-                  </button>
+                  {field.required && <span className="text-red-500 font-medium">*</span>}
                 </div>
-              ) : (
-                <button
-                  onClick={() => setShowDescription(true)}
-                  className="text-xs text-white/70 hover:text-white transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100 mt-2"
+                <label className="flex items-center gap-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                  <input
+                    type="checkbox"
+                    checked={field.required}
+                    onChange={(e) => onUpdate(field.id, { required: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300 text-[#c4dfc4] focus:ring-[#c4dfc4]"
+                  />
+                  <span className="text-xs text-muted-foreground">Required</span>
+                </label>
+              </div>
+            )}
+
+            {/* Description - Only for non-group fields */}
+            {field.type !== "group" && (
+              <>
+                {showDescription || field.description ? (
+                  <div className="flex items-center gap-2">
+                    {isEditingDescription ? (
+                      <Input
+                        ref={descriptionInputRef}
+                        value={field.description || ''}
+                        onChange={(e) => onUpdate(field.id, { description: e.target.value })}
+                        onBlur={() => {
+                          setIsEditingDescription(false);
+                          if (!field.description) {
+                            setShowDescription(false);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setIsEditingDescription(false);
+                          }
+                        }}
+                        className="flex-1 text-xs border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-muted-foreground italic"
+                        placeholder="Add description..."
+                      />
+                    ) : (
+                      <div
+                        onClick={() => setIsEditingDescription(true)}
+                        className="flex-1 text-xs cursor-text px-0 py-0 h-auto text-muted-foreground italic"
+                      >
+                        {field.description || "Add description..."}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        onUpdate(field.id, { description: '' });
+                        setShowDescription(false);
+                        setIsEditingDescription(false);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowDescription(true)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add description
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* Field Input */}
+            {field.type === "group" ? (
+              <div
+                className="w-full px-4 py-3 rounded-lg border-l-4 font-semibold text-base"
+                style={{
+                  backgroundColor: `${field.color}40`,
+                  borderLeftColor: field.color,
+                  color: '#0a0a0a'
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Layers className="h-5 w-5" style={{ color: field.color }} />
+                    {isEditingLabel ? (
+                      <Input
+                        ref={labelInputRef}
+                        value={field.label || ''}
+                        onChange={(e) => onUpdate(field.id, { label: e.target.value })}
+                        onBlur={() => setIsEditingLabel(false)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setIsEditingLabel(false);
+                          }
+                        }}
+                        className="font-semibold text-base border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-[#0a0a0a] uppercase"
+                        placeholder="Group name"
+                      />
+                    ) : (
+                      <span
+                        onClick={() => setIsEditingLabel(true)}
+                        className="cursor-text"
+                      >
+                        {field.label.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  {questionCount !== undefined && (
+                    <Badge
+                      variant="secondary"
+                      className="font-normal text-xs"
+                      style={{
+                        backgroundColor: `${field.color}80`,
+                        color: '#0a0a0a',
+                        borderColor: field.color
+                      }}
+                    >
+                      {questionCount} {questionCount === 1 ? 'question' : 'questions'}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Group Description */}
+                {showDescription || field.description ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    {isEditingDescription ? (
+                      <Input
+                        ref={descriptionInputRef}
+                        value={field.description || ''}
+                        onChange={(e) => onUpdate(field.id, { description: e.target.value })}
+                        onBlur={() => {
+                          setIsEditingDescription(false);
+                          if (!field.description) {
+                            setShowDescription(false);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setIsEditingDescription(false);
+                          }
+                        }}
+                        className="flex-1 text-xs border-none px-0 py-0 h-auto focus-visible:ring-0 bg-transparent text-white font-normal"
+                        placeholder="Add description..."
+                      />
+                    ) : (
+                      <div
+                        onClick={() => setIsEditingDescription(true)}
+                        className="flex-1 text-xs cursor-text px-0 py-0 h-auto text-white font-normal"
+                      >
+                        {field.description || "Add description..."}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        onUpdate(field.id, { description: '' });
+                        setShowDescription(false);
+                        setIsEditingDescription(false);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-white/70 hover:text-destructive"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowDescription(true)}
+                    className="text-xs text-white/70 hover:text-white transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100 mt-2"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add description
+                  </button>
+                )}
+              </div>
+            ) : field.type === "textarea" ? (
+              <textarea
+                className="w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                placeholder={field.placeholder}
+              />
+            ) : field.type === "dropdown" || field.type === "checkbox" || field.type === "radio" ? (
+              <div className="space-y-2">
+                {(field.type === "checkbox" || field.type === "dropdown") && (
+                  <div className="flex items-center gap-4 pb-2 border-b border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={!field.multiSelect}
+                        onChange={() => onUpdate(field.id, { multiSelect: false })}
+                        className="h-3.5 w-3.5"
+                      />
+                      <span className="text-xs text-muted-foreground">Single select</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={field.multiSelect}
+                        onChange={() => onUpdate(field.id, { multiSelect: true })}
+                        className="h-3.5 w-3.5"
+                      />
+                      <span className="text-xs text-muted-foreground">Multi-select</span>
+                    </label>
+                  </div>
+                )}
+                <DndContext
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => {
+                    const { active, over } = event;
+                    if (over && active.id !== over.id) {
+                      const oldIndex = field.options?.findIndex((_, i) => `${field.id}-option-${i}` === active.id) ?? -1;
+                      const newIndex = field.options?.findIndex((_, i) => `${field.id}-option-${i}` === over.id) ?? -1;
+                      if (oldIndex !== -1 && newIndex !== -1) {
+                        const newOptions = arrayMove(field.options || [], oldIndex, newIndex);
+                        onUpdate(field.id, { options: newOptions });
+                      }
+                    }
+                  }}
                 >
-                  <Plus className="h-3 w-3" />
-                  Add description
-                </button>
-              )}
-            </div>
-          ) : field.type === "textarea" ? (
-            <textarea
-              className="w-full min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm"
-              placeholder={field.placeholder}
-            />
-          ) : field.type === "dropdown" || field.type === "checkbox" || field.type === "radio" ? (
-            <div className="space-y-2">
-              {(field.type === "checkbox" || field.type === "dropdown") && (
+                  <SortableContext
+                    items={field.options?.map((_, i) => `${field.id}-option-${i}`) || []}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-1.5">
+                      {field.options?.map((option, index) => (
+                        <SortableOption
+                          key={`${field.id}-option-${index}`}
+                          option={option}
+                          index={index}
+                          fieldId={field.id}
+                          fieldType={field.type}
+                          multiSelect={field.multiSelect}
+                          onUpdate={(idx, value) => {
+                            const newOptions = [...(field.options || [])];
+                            newOptions[idx] = value;
+                            onUpdate(field.id, { options: newOptions });
+                          }}
+                          onRemove={(idx) => {
+                            const newOptions = field.options?.filter((_, i) => i !== idx);
+                            onUpdate(field.id, { options: newOptions });
+                          }}
+                          onAddNew={() => {
+                            const newOptions = [...(field.options || []), `Option ${(field.options?.length || 0) + 1}`];
+                            onUpdate(field.id, { options: newOptions });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newOptions = [...(field.options || []), `Option ${(field.options?.length || 0) + 1}`];
+                    onUpdate(field.id, { options: newOptions });
+                  }}
+                  className="w-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add Option
+                </Button>
+              </div>
+            ) : field.type === "thumbs" ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`thumbs-${field.id}`}
+                    className="h-4 w-4"
+                    disabled
+                  />
+                  <span className="text-sm">👍 Thumbs Up</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`thumbs-${field.id}`}
+                    className="h-4 w-4"
+                    disabled
+                  />
+                  <span className="text-sm">👎 Thumbs Down</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`thumbs-${field.id}`}
+                    className="h-4 w-4"
+                    disabled
+                  />
+                  <span className="text-sm text-muted-foreground">N/A</span>
+                </div>
+              </div>
+            ) : field.type === "date" ? (
+              <div className="space-y-2">
                 <div className="flex items-center gap-4 pb-2 border-b border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
-                      checked={!field.multiSelect}
-                      onChange={() => onUpdate(field.id, { multiSelect: false })}
+                      checked={!field.dateRange}
+                      onChange={() => onUpdate(field.id, { dateRange: false })}
                       className="h-3.5 w-3.5"
                     />
-                    <span className="text-xs text-muted-foreground">Single select</span>
+                    <span className="text-xs text-muted-foreground">Single date</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
-                      checked={field.multiSelect}
-                      onChange={() => onUpdate(field.id, { multiSelect: true })}
+                      checked={field.dateRange}
+                      onChange={() => onUpdate(field.id, { dateRange: true })}
                       className="h-3.5 w-3.5"
                     />
-                    <span className="text-xs text-muted-foreground">Multi-select</span>
+                    <span className="text-xs text-muted-foreground">Date range</span>
                   </label>
                 </div>
-              )}
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={(event) => {
-                  const { active, over } = event;
-                  if (over && active.id !== over.id) {
-                    const oldIndex = field.options?.findIndex((_, i) => `${field.id}-option-${i}` === active.id) ?? -1;
-                    const newIndex = field.options?.findIndex((_, i) => `${field.id}-option-${i}` === over.id) ?? -1;
-                    if (oldIndex !== -1 && newIndex !== -1) {
-                      const newOptions = arrayMove(field.options || [], oldIndex, newIndex);
-                      onUpdate(field.id, { options: newOptions });
-                    }
-                  }
-                }}
-              >
-                <SortableContext
-                  items={field.options?.map((_, i) => `${field.id}-option-${i}`) || []}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-1.5">
-                    {field.options?.map((option, index) => (
-                      <SortableOption
-                        key={`${field.id}-option-${index}`}
-                        option={option}
-                        index={index}
-                        fieldId={field.id}
-                        fieldType={field.type}
-                        multiSelect={field.multiSelect}
-                        onUpdate={(idx, value) => {
-                          const newOptions = [...(field.options || [])];
-                          newOptions[idx] = value;
-                          onUpdate(field.id, { options: newOptions });
-                        }}
-                        onRemove={(idx) => {
-                          const newOptions = field.options?.filter((_, i) => i !== idx);
-                          onUpdate(field.id, { options: newOptions });
-                        }}
-                        onAddNew={() => {
-                          const newOptions = [...(field.options || []), `Option ${(field.options?.length || 0) + 1}`];
-                          onUpdate(field.id, { options: newOptions });
-                        }}
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    className="flex-1"
+                    placeholder={field.dateRange ? "Start date" : "Select date"}
+                  />
+                  {field.dateRange && (
+                    <>
+                      <span className="self-center text-muted-foreground">to</span>
+                      <Input
+                        type="date"
+                        className="flex-1"
+                        placeholder="End date"
                       />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const newOptions = [...(field.options || []), `Option ${(field.options?.length || 0) + 1}`];
-                  onUpdate(field.id, { options: newOptions });
-                }}
-                className="w-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Add Option
-              </Button>
-            </div>
-          ) : field.type === "thumbs" ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`thumbs-${field.id}`}
-                  className="h-4 w-4"
-                  disabled
-                />
-                <span className="text-sm">👍 Thumbs Up</span>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`thumbs-${field.id}`}
-                  className="h-4 w-4"
-                  disabled
-                />
-                <span className="text-sm">👎 Thumbs Down</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={`thumbs-${field.id}`}
-                  className="h-4 w-4"
-                  disabled
-                />
-                <span className="text-sm text-muted-foreground">N/A</span>
-              </div>
-            </div>
-          ) : field.type === "date" ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-4 pb-2 border-b border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={!field.dateRange}
-                    onChange={() => onUpdate(field.id, { dateRange: false })}
-                    className="h-3.5 w-3.5"
+            ) : field.type === "file" || field.type === "image" ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    className="flex-1"
+                    accept={field.type === "image" ? "image/*" : undefined}
                   />
-                  <span className="text-xs text-muted-foreground">Single date</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={field.dateRange}
-                    onChange={() => onUpdate(field.id, { dateRange: true })}
-                    className="h-3.5 w-3.5"
-                  />
-                  <span className="text-xs text-muted-foreground">Date range</span>
-                </label>
+                </div>
+                <p className="text-xs text-muted-foreground italic">
+                  {field.type === "image" ? "Accepted formats: JPG, PNG, GIF, WebP" : "Maximum file size: 10MB"}
+                </p>
               </div>
-              <div className="flex gap-2">
-                <Input 
-                  type="date" 
-                  className="flex-1"
-                  placeholder={field.dateRange ? "Start date" : "Select date"}
-                />
-                {field.dateRange && (
-                  <>
-                    <span className="self-center text-muted-foreground">to</span>
-                    <Input 
-                      type="date" 
-                      className="flex-1"
-                      placeholder="End date"
-                    />
-                  </>
-                )}
-              </div>
-            </div>
-          ) : field.type === "file" || field.type === "image" ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Input 
-                  type="file"
-                  className="flex-1"
-                  accept={field.type === "image" ? "image/*" : undefined}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground italic">
-                {field.type === "image" ? "Accepted formats: JPG, PNG, GIF, WebP" : "Maximum file size: 10MB"}
-              </p>
-            </div>
-          ) : field.type === "matrix" ? (
-            <div className="space-y-3 w-full">
-              {/* Editable Matrix Table */}
-              <div className="overflow-x-auto">
-                <table className="border-collapse text-sm w-max min-w-full">
-                  <thead>
-                    <tr>
-                      <th className="sticky left-0 z-10 border border-border/50 bg-muted/30 p-1 text-left font-medium text-xs w-48">
-                        <Input
-                          value={(field.label || "Question").split('\n')[0]}
-                          onChange={(e) => {
-                            onUpdate(field.id, { label: e.target.value });
-                          }}
-                          className="text-xs font-medium bg-transparent border-0 shadow-none p-1 h-auto hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
-                          placeholder="Type a question"
-                        />
-                      </th>
-                      {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((col, idx) => (
-                        <th key={`col-${idx}`} className="border border-border/50 bg-muted/30 p-1 text-center font-medium text-xs min-w-[120px] group relative">
+            ) : field.type === "matrix" ? (
+              <div className="space-y-3 w-full">
+                {/* Editable Matrix Table */}
+                <div className="overflow-x-auto">
+                  <table className="border-collapse text-sm w-max min-w-full">
+                    <thead>
+                      <tr>
+                        <th className="sticky left-0 z-10 border border-border/50 bg-muted/30 p-1 text-left font-medium text-xs w-48">
                           <Input
-                            value={col || ''}
+                            value={(field.label || "Question").split('\n')[0]}
                             onChange={(e) => {
-                              const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"])];
-                              newColumns[idx] = e.target.value;
-                              onUpdate(field.id, { columns: newColumns });
+                              onUpdate(field.id, { label: e.target.value });
                             }}
-                            className="text-xs font-medium text-center bg-transparent border-0 shadow-none p-1 h-auto hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
-                            placeholder={`Column ${idx + 1}`}
+                            className="text-xs font-medium bg-transparent border-0 shadow-none p-1 h-auto hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
+                            placeholder="Type a question"
                           />
-                          <button
-                            onClick={() => {
-                              const newColumns = (field.columns || ["Option 1", "Option 2", "Option 3"]).filter((_, i) => i !== idx);
-                              onUpdate(field.id, { columns: newColumns.length > 0 ? newColumns : ["Option 1"] });
-                            }}
-                            className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-0.5"
-                            title="Delete column"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
                         </th>
-                      ))}
-                      <th className="border border-border/50 bg-muted/30 p-1 text-center w-10">
-                        <button
-                          onClick={() => {
-                            const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"]), `Option ${((field.columns?.length || 3) + 1)}`];
-                            onUpdate(field.id, { columns: newColumns });
-                          }}
-                          className="hover:bg-accent rounded p-1"
-                          title="Add column"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </button>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(field.rows || ["Row 1", "Row 2", "Row 3"]).map((row, rowIdx) => (
-                      <tr key={`row-${rowIdx}`} className="group">
-                        <td className="sticky left-0 z-10 border border-border/50 bg-background p-1 font-medium text-xs">
-                          <div className="relative">
+                        {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((col, idx) => (
+                          <th key={`col-${idx}`} className="border border-border/50 bg-muted/30 p-1 text-center font-medium text-xs min-w-[120px] group relative">
                             <Input
-                              value={row || ''}
+                              value={col || ''}
                               onChange={(e) => {
-                                const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"])];
-                                newRows[rowIdx] = e.target.value;
-                                onUpdate(field.id, { rows: newRows });
+                                const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"])];
+                                newColumns[idx] = e.target.value;
+                                onUpdate(field.id, { columns: newColumns });
                               }}
-                              className="text-xs bg-transparent border-0 shadow-none p-1 h-auto pr-6 hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
-                              placeholder={`Row ${rowIdx + 1}`}
+                              className="text-xs font-medium text-center bg-transparent border-0 shadow-none p-1 h-auto hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
+                              placeholder={`Column ${idx + 1}`}
                             />
                             <button
                               onClick={() => {
-                                const newRows = (field.rows || ["Row 1", "Row 2", "Row 3"]).filter((_, i) => i !== rowIdx);
-                                onUpdate(field.id, { rows: newRows.length > 0 ? newRows : ["Row 1"] });
+                                const newColumns = (field.columns || ["Option 1", "Option 2", "Option 3"]).filter((_, i) => i !== idx);
+                                onUpdate(field.id, { columns: newColumns.length > 0 ? newColumns : ["Option 1"] });
                               }}
-                              className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Delete row"
+                              className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-0.5"
+                              title="Delete column"
                             >
-                              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                              <X className="h-3 w-3" />
                             </button>
-                          </div>
-                        </td>
-                        {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((_, colIdx) => (
-                          <td key={`cell-${rowIdx}-${colIdx}`} className="border border-border/50 p-2 text-center">
-                            <input
-                              type="radio"
-                              name={`matrix-preview-${field.id}-${rowIdx}`}
-                              className="h-4 w-4"
-                              disabled
-                            />
-                          </td>
+                          </th>
                         ))}
-                        <td className="border border-border/50 p-1 text-center"></td>
+                        <th className="border border-border/50 bg-muted/30 p-1 text-center w-10">
+                          <button
+                            onClick={() => {
+                              const newColumns = [...(field.columns || ["Option 1", "Option 2", "Option 3"]), `Option ${((field.columns?.length || 3) + 1)}`];
+                              onUpdate(field.id, { columns: newColumns });
+                            }}
+                            className="hover:bg-accent rounded p-1"
+                            title="Add column"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </th>
                       </tr>
-                    ))}
-                    <tr>
-                      <td colSpan={((field.columns?.length || 3) + 2)} className="border border-border/50 p-1 text-center bg-muted/20">
-                        <button
-                          onClick={() => {
-                            const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"]), `Row ${((field.rows?.length || 3) + 1)}`];
-                            onUpdate(field.id, { rows: newRows });
-                          }}
-                          className="hover:bg-accent rounded p-1 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto"
-                          title="Add row"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          Add row
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {(field.rows || ["Row 1", "Row 2", "Row 3"]).map((row, rowIdx) => (
+                        <tr key={`row-${rowIdx}`} className="group">
+                          <td className="sticky left-0 z-10 border border-border/50 bg-background p-1 font-medium text-xs">
+                            <div className="relative">
+                              <Input
+                                value={row || ''}
+                                onChange={(e) => {
+                                  const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"])];
+                                  newRows[rowIdx] = e.target.value;
+                                  onUpdate(field.id, { rows: newRows });
+                                }}
+                                className="text-xs bg-transparent border-0 shadow-none p-1 h-auto pr-6 hover:bg-accent/30 focus:bg-accent/50 focus:ring-1 focus:ring-accent rounded cursor-text"
+                                placeholder={`Row ${rowIdx + 1}`}
+                              />
+                              <button
+                                onClick={() => {
+                                  const newRows = (field.rows || ["Row 1", "Row 2", "Row 3"]).filter((_, i) => i !== rowIdx);
+                                  onUpdate(field.id, { rows: newRows.length > 0 ? newRows : ["Row 1"] });
+                                }}
+                                className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Delete row"
+                              >
+                                <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                              </button>
+                            </div>
+                          </td>
+                          {(field.columns || ["Option 1", "Option 2", "Option 3"]).map((_, colIdx) => (
+                            <td key={`cell-${rowIdx}-${colIdx}`} className="border border-border/50 p-2 text-center">
+                              <input
+                                type="radio"
+                                name={`matrix-preview-${field.id}-${rowIdx}`}
+                                className="h-4 w-4"
+                                disabled
+                              />
+                            </td>
+                          ))}
+                          <td className="border border-border/50 p-1 text-center"></td>
+                        </tr>
+                      ))}
+                      <tr>
+                        <td colSpan={((field.columns?.length || 3) + 2)} className="border border-border/50 p-1 text-center bg-muted/20">
+                          <button
+                            onClick={() => {
+                              const newRows = [...(field.rows || ["Row 1", "Row 2", "Row 3"]), `Row ${((field.rows?.length || 3) + 1)}`];
+                              onUpdate(field.id, { rows: newRows });
+                            }}
+                            className="hover:bg-accent rounded p-1 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto"
+                            title="Add row"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Add row
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          ) : field.type === "signature" ? (
-            <div className="space-y-3">
-              {/* Signature Preview */}
-              <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50 text-center">
-                <PenTool className="h-8 w-8 mx-auto mb-2 text-purple-400" />
-                <p className="text-sm text-muted-foreground">Signature capture area</p>
-                <p className="text-xs text-muted-foreground mt-1">Users will sign here</p>
-              </div>
+            ) : field.type === "signature" ? (
+              <div className="space-y-3">
+                {/* Signature Preview */}
+                <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50 text-center">
+                  <PenTool className="h-8 w-8 mx-auto mb-2 text-purple-400" />
+                  <p className="text-sm text-muted-foreground">Signature capture area</p>
+                  <p className="text-xs text-muted-foreground mt-1">Users will sign here</p>
+                </div>
 
-              {/* Signature Settings */}
-              <div className="space-y-2 pt-2 border-t border-border/50">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground">
-                    Password Verification
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={field.signatureSettings?.requirePassword ?? true}
-                      onChange={(e) => {
-                        const currentSettings = field.signatureSettings || {};
-                        onUpdate(field.id, { 
-                          signatureSettings: {
-                            ...currentSettings,
-                            requirePassword: e.target.checked
-                          }
-                        });
-                      }}
-                      className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                {/* Signature Settings */}
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Password Verification
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={field.signatureSettings?.requirePassword ?? true}
+                        onChange={(e) => {
+                          const currentSettings = field.signatureSettings || {};
+                          onUpdate(field.id, {
+                            signatureSettings: {
+                              ...currentSettings,
+                              requirePassword: e.target.checked
+                            }
+                          });
+                        }}
+                        className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {field.signatureSettings?.requirePassword ?? true ? 'Required' : 'Optional'}
+                      </span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic pl-1">
+                    {field.signatureSettings?.requirePassword ?? true
+                      ? '🔒 Authenticated users must re-enter password to sign'
+                      : '✓ Authenticated users can sign without re-entering password'}
+                  </p>
+
+                  <div className="pt-2">
+                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                      Signature Meaning
+                    </label>
+                    <Input
+                      value={field.signatureMeaning || 'Completed by'}
+                      onChange={(e) => onUpdate(field.id, { signatureMeaning: e.target.value })}
+                      placeholder="e.g., Approved by, Completed by"
+                      className="text-xs"
                     />
-                    <span className="text-xs text-muted-foreground">
-                      {field.signatureSettings?.requirePassword ?? true ? 'Required' : 'Optional'}
-                    </span>
-                  </label>
-                </div>
-                <p className="text-xs text-muted-foreground italic pl-1">
-                  {field.signatureSettings?.requirePassword ?? true 
-                    ? '🔒 Authenticated users must re-enter password to sign'
-                    : '✓ Authenticated users can sign without re-entering password'}
-                </p>
-
-                <div className="pt-2">
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">
-                    Signature Meaning
-                  </label>
-                  <Input
-                    value={field.signatureMeaning || 'Completed by'}
-                    onChange={(e) => onUpdate(field.id, { signatureMeaning: e.target.value })}
-                    placeholder="e.g., Approved by, Completed by"
-                    className="text-xs"
-                  />
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <Input placeholder={field.placeholder} type={field.type === "email" ? "email" : field.type === "number" ? "number" : "text"} />
-          )}
+            ) : (
+              <Input placeholder={field.placeholder} type={field.type === "email" ? "email" : field.type === "number" ? "number" : "text"} />
+            )}
+          </div>
+          <button
+            onClick={() => onRemove(field.id)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+            title="Delete field"
+          >
+            <Trash2 className="h-4 w-4 text-muted-foreground" />
+          </button>
         </div>
         <button
-          onClick={() => onRemove(field.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
-          title="Delete field"
+          onClick={() => onDuplicate(field.id)}
+          className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#c4dfc4]"
+          title="Duplicate field"
         >
-          <Trash2 className="h-4 w-4 text-muted-foreground" />
+          <Copy className="h-4 w-4 text-muted-foreground" />
         </button>
-      </div>
-      <button
-        onClick={() => onDuplicate(field.id)}
-        className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#c4dfc4]"
-        title="Duplicate field"
-      >
-        <Copy className="h-4 w-4 text-muted-foreground" />
-      </button>
       </div>
     </div>
   );
@@ -879,11 +878,11 @@ function FormsPageContent() {
   const isEditMode = !!editingFormId;
   const chatModeParam = searchParams.get('chatMode'); // 'collapsed' or 'expanded'
   const aiPromptParam = searchParams.get('aiPrompt'); // Auto-submit prompt if provided
-  
+
   const [isMounted, setIsMounted] = useState(false);
   const [showChatPointer, setShowChatPointer] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
-  
+
   // Initialize AI chat state - respect chatMode param or use localStorage
   const getInitialChatState = () => {
     // If chatMode param is provided (from form creation flow), use it
@@ -898,9 +897,9 @@ function FormsPageContent() {
     }
     return true;
   };
-  
+
   const [isChatOpen, setIsChatOpen] = useState(getInitialChatState);
-  
+
   // Function to toggle chat and save to localStorage
   const toggleChat = () => {
     const newState = !isChatOpen;
@@ -909,7 +908,7 @@ function FormsPageContent() {
       localStorage.setItem('ai-chat-open', String(newState));
     }
   };
-  
+
   const [activeTab, setActiveTab] = useState<"builder" | "settings" | "report">("builder");
   const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
   const [activeSettingsSection, setActiveSettingsSection] = useState<"general" | "thankyou" | "cadence" | "publish">("general");
@@ -918,15 +917,15 @@ function FormsPageContent() {
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [formStatus, setFormStatus] = useState<"published" | "draft">("draft");
   const [submitButtonText, setSubmitButtonText] = useState("Submit");
-  
+
   // AI Vision Settings
   const [aiVisionEnabled, setAiVisionEnabled] = useState(false);
-  
+
   // Handle URL parameters for direct navigation
   React_useEffect(() => {
     const tabParam = searchParams.get('tab');
     const sectionParam = searchParams.get('section');
-    
+
     if (tabParam === 'settings') {
       setActiveTab('settings');
       if (sectionParam === 'cadence' || sectionParam === 'schedule') {
@@ -934,7 +933,7 @@ function FormsPageContent() {
       }
     }
   }, [searchParams]);
-  
+
   // Thank You Page Settings
   const [thankYouMessage, setThankYouMessage] = useState("Thank you for your submission!");
   const [allowAnotherSubmission, setAllowAnotherSubmission] = useState(true);
@@ -947,38 +946,38 @@ function FormsPageContent() {
   const submitButtonInputRef = React.useRef<HTMLInputElement>(null);
   const [isEditingFormName, setIsEditingFormName] = useState(false);
   const formNameInputRef = React.useRef<HTMLInputElement>(null);
-  
+
   // Fix hydration issues with DnD library
   React_useEffect(() => {
     setIsMounted(true);
-    
+
     // Show chat pointer if user selected "Build with AI Chat" option
     if (chatModeParam === 'expanded' && !aiPromptParam) {
       // Show pointer after a brief delay for smooth UX
       setTimeout(() => setShowChatPointer(true), 800);
-      
+
       // Auto-hide after 8 seconds
       setTimeout(() => setShowChatPointer(false), 8800);
     }
-    
+
     // If AI prompt is provided, show generating state
     if (aiPromptParam) {
       setIsAiGenerating(true);
     }
   }, []);
-  
+
   const [formName, setFormName] = useState("Untitled Form");
   const [formDescription, setFormDescription] = useState("Add a description for your form");
   const [isEditingFormDescription, setIsEditingFormDescription] = useState(false);
   const [showFormDescription, setShowFormDescription] = useState(true);
   const formDescriptionInputRef = React.useRef<HTMLInputElement>(null);
-  
+
   const [formFields, setFormFields] = useState<FormField[]>([]);
 
   const [activeWidget, setActiveWidget] = useState<any>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [isDraggingNewWidget, setIsDraggingNewWidget] = useState(false);
-  
+
   // Save & Share state
   const [saving, setSaving] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -989,7 +988,7 @@ function FormsPageContent() {
   const shouldAutoSave = React.useRef(false);
   const autoSaveTimeout = React.useRef<NodeJS.Timeout | null>(null);
   const hasAutoSubmittedPrompt = React.useRef(false);
-  
+
   // Load form data when in edit mode
   React_useEffect(() => {
     if (isEditMode && editingFormId) {
@@ -1008,16 +1007,16 @@ function FormsPageContent() {
         return;
       }
       const { form } = await response.json();
-      
+
       // Populate state with existing form data
       setFormName(form.title);
       setFormDescription(form.description || 'Add a description for your form');
       setFormFields(form.schema.fields || []);
       setFormStatus(form.status || 'draft');
-      
+
       // Load AI Vision setting
       setAiVisionEnabled(form.ai_vision_enabled ?? false);
-      
+
       // Load thank you settings
       if (form.thank_you_settings) {
         setThankYouMessage(form.thank_you_settings.message || "Thank you for your submission!");
@@ -1028,7 +1027,7 @@ function FormsPageContent() {
         setRedirectUrl(form.thank_you_settings.redirectUrl || "");
         setRedirectDelay(form.thank_you_settings.redirectDelay || 0);
       }
-      
+
       setShareUrl(`${window.location.origin}/f/${form.id}`);
       setLastSavedFormId(form.id);
       setLastSaveTime(new Date()); // Set initial save time
@@ -1046,15 +1045,15 @@ function FormsPageContent() {
   React.useEffect(() => {
     // Don't auto-save while loading
     if (loadingForm) return;
-    
+
     // Don't auto-save if form is empty
     if (formFields.length === 0 && formName === 'Untitled Form') return;
-    
+
     // Clear existing timeout
     if (autoSaveTimeout.current) {
       clearTimeout(autoSaveTimeout.current);
     }
-    
+
     // Set new timeout to save after 2 seconds of inactivity
     autoSaveTimeout.current = setTimeout(() => {
       if (!saving) {
@@ -1062,7 +1061,7 @@ function FormsPageContent() {
         handleAutoSave();
       }
     }, 2000);
-    
+
     // Cleanup
     return () => {
       if (autoSaveTimeout.current) {
@@ -1134,10 +1133,10 @@ function FormsPageContent() {
   // Save form name
   const handleSaveFormName = async () => {
     setIsEditingFormName(false);
-    
+
     // Only save if there's an actual form ID
     if (!editingFormId && !lastSavedFormId) return;
-    
+
     const formId = editingFormId || lastSavedFormId;
     if (!formId) return;
 
@@ -1192,7 +1191,7 @@ function FormsPageContent() {
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    
+
     // Check if it's a widget from the sidebar
     if (active.id.toString().startsWith("widget-")) {
       const widgetId = active.id.toString().replace("widget-", "");
@@ -1330,7 +1329,7 @@ function FormsPageContent() {
   };
 
   const handleUpdateField = (id: string, updates: Partial<FormField>) => {
-    setFormFields(formFields.map((f) => 
+    setFormFields(formFields.map((f) =>
       f.id === id ? { ...f, ...updates } : f
     ));
   };
@@ -1338,18 +1337,12 @@ function FormsPageContent() {
 
   const handleAutoSave = async () => {
     // Silent auto-save - no alerts
-    if (formFields.length === 0) {
-      console.warn('⚠️ Cannot save form with no fields');
-      return;
-    }
-
+    // Allow saving blank forms (user can add fields later)
+    
     // Validate required fields before saving
-    if (!formName || formName.trim() === '') {
-      console.error('❌ Cannot save form without a title');
-      toast.error('Form title is required', {
-        description: 'Please provide a title for your form before saving.',
-      });
-      return;
+    if (!formName || formName.trim() === '' || formName === 'Untitled Form') {
+      console.warn('⚠️ Skipping auto-save for untitled blank form');
+      return; // Don't save completely blank forms
     }
 
     setSaving(true);
@@ -1413,21 +1406,21 @@ function FormsPageContent() {
       }
 
       const data = await response.json();
-      
+
       // Save form ID and timestamp
       setLastSavedFormId(data.id || editingFormId);
       setLastSaveTime(new Date());
-      
+
       // Set share URL
       if (data.shareUrl) {
         setShareUrl(data.shareUrl);
       }
-      
+
       // If this was a new form, redirect to edit mode so the URL includes the form ID
       if (!isEditMode && data.id) {
         router.push(`/forms/builder?id=${data.id}`);
       }
-      
+
       console.log('✅ Form auto-saved');
     } catch (error: any) {
       console.error('Auto-save error:', error);
@@ -1444,16 +1437,16 @@ function FormsPageContent() {
       });
       return;
     }
-    
+
     const formId = lastSavedFormId || editingFormId;
     // Add timestamp to prevent browser caching and ensure fresh state on each preview
     const timestamp = Date.now();
     const previewUrl = `${window.location.origin}/f/${formId}?preview=true&t=${timestamp}`;
-    
+
     // Open in a named window - this will reuse the preview tab if it's still open
     // The timestamp in URL ensures fresh state even when reusing the tab
     const previewWindow = window.open(previewUrl, 'formPreview');
-    
+
     // Force reload if window already exists
     if (previewWindow) {
       previewWindow.location.href = previewUrl;
@@ -1505,7 +1498,7 @@ function FormsPageContent() {
               <div className="max-w-3xl mx-auto space-y-6">
                 {/* Form Title Skeleton */}
                 <div className="h-12 w-full bg-white/5 rounded-lg animate-pulse" />
-                
+
                 {/* Form Fields Skeleton */}
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="p-6 bg-white/5 rounded-lg border border-border/50 animate-pulse space-y-3">
@@ -1539,469 +1532,457 @@ function FormsPageContent() {
 
   return (
     <div className="flex h-screen">
-      
-        <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="flex flex-col h-[calc(100vh-4rem)] relative w-full">
-              {activeTab === "builder" ? (
-                <>
-                  {/* Form Sub-Header - Extends full width from left edge */}
-                  <div 
-                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
-                      isChatOpen ? 'mr-[400px]' : 'mr-16'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4 px-6 py-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Link 
-                          href="/forms"
-                          className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
-                        >
-                          All Forms
-                        </Link>
-                        <span className="text-gray-600">/</span>
-                        {isEditingFormName ? (
-                          <Input
-                            ref={formNameInputRef}
-                            value={formName}
-                            onChange={(e) => setFormName(e.target.value)}
-                            onBlur={handleSaveFormName}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleSaveFormName();
-                              }
-                            }}
-                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
-                          />
-                        ) : (
-                          <div 
-                            onClick={() => setIsEditingFormName(true)}
-                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
-                          >
-                            {formName || "Untitled Form"}
-                          </div>
-                        )}
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex flex-col h-[calc(100vh-4rem)] relative w-full">
+          {activeTab === "builder" ? (
+            <>
+              {/* Form Sub-Header - Extends full width from left edge */}
+              <div
+                className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${isChatOpen ? 'mr-[400px]' : 'mr-16'
+                  }`}
+              >
+                <div className="flex items-center justify-between gap-4 px-6 py-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Link
+                      href="/forms"
+                      className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
+                    >
+                      All Forms
+                    </Link>
+                    <span className="text-gray-600">/</span>
+                    {isEditingFormName ? (
+                      <Input
+                        ref={formNameInputRef}
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        onBlur={handleSaveFormName}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveFormName();
+                          }
+                        }}
+                        className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                      />
+                    ) : (
+                      <div
+                        onClick={() => setIsEditingFormName(true)}
+                        className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                      >
+                        {formName || "Untitled Form"}
                       </div>
-                      <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
-                          <TabsList className="bg-[#1a1a1a]">
-                            <TabsTrigger value="builder">Builder</TabsTrigger>
-                            <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="report">Report</TabsTrigger>
-                          </TabsList>
-                        </Tabs>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
+                      <TabsList className="bg-[#1a1a1a]">
+                        <TabsTrigger value="builder">Builder</TabsTrigger>
+                        <TabsTrigger value="settings">Settings</TabsTrigger>
+                        <TabsTrigger value="report">Report</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  <div className="flex items-center gap-3 justify-end flex-1">
+                    {/* Auto-save indicator */}
+                    {saving && (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Saving...</span>
                       </div>
-                      <div className="flex items-center gap-3 justify-end flex-1">
-                        {/* Auto-save indicator */}
-                        {saving && (
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>Saving...</span>
+                    )}
+                    {!saving && lastSaveTime && (
+                      <div className="text-xs text-gray-500">
+                        Saved {formatTimeSince(lastSaveTime)}
+                      </div>
+                    )}
+
+                    {/* Preview button */}
+                    <Button
+                      size="sm"
+                      className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                      onClick={handlePreview}
+                      disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Area - Below Sub-Header */}
+              <div className="flex flex-1 overflow-hidden">
+                {/* Left Panel - Widget Navigation - GRADIENT BLACK */}
+                <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+                  }`}>
+                  <div className={`p-3 space-y-3 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
+                    <div className="border-b border-white/10 pb-2">
+                      <div className="flex items-center justify-between">
+                        {!isLeftSidebarCollapsed && (
+                          <div>
+                            <h2 className="text-sm font-semibold text-gray-100">Form Widgets</h2>
+                            <p className="text-xs text-gray-400">Drag to add</p>
                           </div>
                         )}
-                        {!saving && lastSaveTime && (
-                          <div className="text-xs text-gray-500">
-                            Saved {formatTimeSince(lastSaveTime)}
-                          </div>
-                        )}
-                        
-                        {/* Preview button */}
-                        <Button 
-                          size="sm" 
-                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                          onClick={handlePreview}
-                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                          className={`hover:bg-white/10 ${isLeftSidebarCollapsed ? 'w-full' : ''}`}
+                          title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview
+                          {isLeftSidebarCollapsed ? (
+                            <PanelRightOpen className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <PanelRightClose className="h-4 w-4 text-gray-400" />
+                          )}
                         </Button>
                       </div>
                     </div>
+
+                    {!isLeftSidebarCollapsed && widgetTypes.map((group, idx) => (
+                      <div key={idx} className="space-y-1.5">
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">
+                          {group.category}
+                        </h3>
+                        <div className="space-y-1.5">
+                          {group.items.map((widget) => (
+                            <DraggableWidget key={widget.id} widget={widget} onAddToTop={handleAddWidgetToTop} />
+                          ))}
+                        </div>
+                        {idx < widgetTypes.length - 1 && <Separator className="my-3 bg-white/10" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Middle Panel - Form Editor - GRADIENT BLACK */}
+                <div
+                  className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                >
+
+                  {/* Editor Content */}
+                  <div className="flex-1 overflow-y-auto">
+                    {loadingForm ? (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#c4dfc4]" />
+                          <p className="text-gray-400">Loading form...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <ScrollArea className="h-full p-8">
+                        <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#0f0f0f] border-border/50">
+                          <SortableContext
+                            items={formFields.map((f) => f.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="space-y-4">
+                              {formFields.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
+                                  {isAiGenerating ? (
+                                    <>
+                                      <div className="relative">
+                                        <Loader2 className="h-16 w-16 text-[#c4dfc4] animate-spin" />
+                                        <Sparkles className="h-6 w-6 text-[#c4dfc4] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                                      </div>
+                                      <div>
+                                        <p className="text-[#c4dfc4] text-xl font-semibold mb-2">
+                                          AI is building your form...
+                                        </p>
+                                        <p className="text-gray-500 text-sm">
+                                          This will just take a moment
+                                        </p>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <p className="text-gray-500 text-lg">
+                                      Drag widgets onto the builder to start, or chat with AI to generate your form
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                formFields.map((field, index) => {
+                                  // Calculate question count for group fields
+                                  let questionCount: number | undefined = undefined;
+                                  if (field.type === 'group') {
+                                    questionCount = 0;
+                                    for (let i = index + 1; i < formFields.length; i++) {
+                                      if (formFields[i].type === 'group') break;
+                                      questionCount++;
+                                    }
+                                  }
+
+                                  return (
+                                    <SortableFormField
+                                      key={field.id}
+                                      field={field}
+                                      onRemove={handleRemoveField}
+                                      onUpdate={handleUpdateField}
+                                      onDuplicate={handleDuplicateField}
+                                      isOver={overId === field.id && activeWidget !== null}
+                                      questionCount={questionCount}
+                                      isDraggingNewWidget={isDraggingNewWidget}
+                                    />
+                                  );
+                                })
+                              )}
+                            </div>
+                          </SortableContext>
+
+                          {formFields.length > 0 && (
+                            <div className="w-full mt-6 group/submit">
+                              {isEditingSubmitButton ? (
+                                <Input
+                                  ref={submitButtonInputRef}
+                                  value={submitButtonText}
+                                  onChange={(e) => setSubmitButtonText(e.target.value)}
+                                  onBlur={() => setIsEditingSubmitButton(false)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      setIsEditingSubmitButton(false);
+                                    }
+                                  }}
+                                  className="w-full text-center font-medium bg-[#c4dfc4] text-[#0a0a0a] border-[#c4dfc4]"
+                                />
+                              ) : (
+                                <Button
+                                  onClick={() => setIsEditingSubmitButton(true)}
+                                  className="w-full bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] relative group-hover/submit:ring-2 ring-[#c4dfc4]/50"
+                                >
+                                  {submitButtonText}
+                                  <span className="absolute right-2 text-xs opacity-0 group-hover/submit:opacity-50 transition-opacity">
+                                    Click to edit
+                                  </span>
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </Card>
+                      </ScrollArea>
+                    )}
                   </div>
 
-                  {/* Main Content Area - Below Sub-Header */}
-                  <div className="flex flex-1 overflow-hidden">
-                    {/* Left Panel - Widget Navigation - GRADIENT BLACK */}
-                    <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${
-                      isLeftSidebarCollapsed ? 'w-12' : 'w-80'
-                    }`}>
-                      <div className={`p-3 space-y-3 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
-                        <div className="border-b border-white/10 pb-2">
-                          <div className="flex items-center justify-between">
-                            {!isLeftSidebarCollapsed && (
-                              <div>
-                                <h2 className="text-sm font-semibold text-gray-100">Form Widgets</h2>
-                                <p className="text-xs text-gray-400">Drag to add</p>
-                              </div>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
-                              className={`hover:bg-white/10 ${isLeftSidebarCollapsed ? 'w-full' : ''}`}
-                              title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                            >
-                              {isLeftSidebarCollapsed ? (
-                                <PanelRightOpen className="h-4 w-4 text-gray-400" />
-                              ) : (
-                                <PanelRightClose className="h-4 w-4 text-gray-400" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {!isLeftSidebarCollapsed && widgetTypes.map((group, idx) => (
-                          <div key={idx} className="space-y-1.5">
-                            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1">
-                              {group.category}
-                            </h3>
-                            <div className="space-y-1.5">
-                              {group.items.map((widget) => (
-                                <DraggableWidget key={widget.id} widget={widget} onAddToTop={handleAddWidgetToTop} />
-                              ))}
-                            </div>
-                            {idx < widgetTypes.length - 1 && <Separator className="my-3 bg-white/10" />}
-                          </div>
-                        ))}
+                  {/* Bottom Navigation Bar - Builder Tab */}
+                  <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
+                    <div className="flex items-center justify-between px-6 py-3">
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <ListChecks className="w-4 h-4" />
+                        <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
                       </div>
-                    </div>
-
-                    {/* Middle Panel - Form Editor - GRADIENT BLACK */}
-                    <div 
-                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
-                        isChatOpen ? 'mr-[400px]' : 'mr-16'
-                      }`}
-                    >
-                
-                {/* Editor Content */}
-                <div className="flex-1 overflow-y-auto">
-                  {loadingForm ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#c4dfc4]" />
-                        <p className="text-gray-400">Loading form...</p>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setFormStatus("draft")}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "draft"
+                              ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
+                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                        >
+                          <FileText className="w-4 h-4" />
+                          Draft
+                        </button>
+                        <button
+                          onClick={() => setFormStatus("published")}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "published"
+                              ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Published
+                        </button>
                       </div>
-                    </div>
-                  ) : (
-                  <ScrollArea className="h-full p-8">
-              <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#0f0f0f] border-border/50">
-                <SortableContext
-                  items={formFields.map((f) => f.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-4">
-                    {formFields.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
-                        {isAiGenerating ? (
+                      <div className="flex items-center gap-4">
+                        {formStatus === "draft" && (
+                          <span className="text-xs text-gray-500">Preview mode only</span>
+                        )}
+                        {formStatus === "published" && shareUrl && (
                           <>
-                            <div className="relative">
-                              <Loader2 className="h-16 w-16 text-[#c4dfc4] animate-spin" />
-                              <Sparkles className="h-6 w-6 text-[#c4dfc4] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                            </div>
-                            <div>
-                              <p className="text-[#c4dfc4] text-xl font-semibold mb-2">
-                                AI is building your form...
-                              </p>
-                              <p className="text-gray-500 text-sm">
-                                This will just take a moment
-                              </p>
-                            </div>
+                            <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                            <Button
+                              size="sm"
+                              onClick={() => window.open(shareUrl, '_blank')}
+                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                            >
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              View Form
+                            </Button>
                           </>
-                        ) : (
-                          <p className="text-gray-500 text-lg">
-                            Drag widgets onto the builder to start, or chat with AI to generate your form
-                          </p>
                         )}
                       </div>
-                    ) : (
-                      formFields.map((field, index) => {
-                        // Calculate question count for group fields
-                        let questionCount: number | undefined = undefined;
-                        if (field.type === 'group') {
-                          questionCount = 0;
-                          for (let i = index + 1; i < formFields.length; i++) {
-                            if (formFields[i].type === 'group') break;
-                            questionCount++;
-                          }
-                        }
-                        
-                        return (
-                          <SortableFormField
-                            key={field.id}
-                            field={field}
-                            onRemove={handleRemoveField}
-                            onUpdate={handleUpdateField}
-                            onDuplicate={handleDuplicateField}
-                            isOver={overId === field.id && activeWidget !== null}
-                            questionCount={questionCount}
-                            isDraggingNewWidget={isDraggingNewWidget}
-                          />
-                        );
-                      })
-                    )}
-                  </div>
-                </SortableContext>
-
-                {formFields.length > 0 && (
-                  <div className="w-full mt-6 group/submit">
-                    {isEditingSubmitButton ? (
-                      <Input
-                        ref={submitButtonInputRef}
-                        value={submitButtonText}
-                        onChange={(e) => setSubmitButtonText(e.target.value)}
-                        onBlur={() => setIsEditingSubmitButton(false)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            setIsEditingSubmitButton(false);
-                          }
-                        }}
-                        className="w-full text-center font-medium bg-[#c4dfc4] text-[#0a0a0a] border-[#c4dfc4]"
-                      />
-                    ) : (
-                      <Button 
-                        onClick={() => setIsEditingSubmitButton(true)}
-                        className="w-full bg-[#c4dfc4] text-[#0a0a0a] hover:bg-[#b5d0b5] relative group-hover/submit:ring-2 ring-[#c4dfc4]/50"
-                      >
-                        {submitButtonText}
-                        <span className="absolute right-2 text-xs opacity-0 group-hover/submit:opacity-50 transition-opacity">
-                          Click to edit
-                        </span>
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </Card>
-                  </ScrollArea>
-                  )}
-                </div>
-                
-                {/* Bottom Navigation Bar - Builder Tab */}
-                <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
-                  <div className="flex items-center justify-between px-6 py-3">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <ListChecks className="w-4 h-4" />
-                      <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setFormStatus("draft")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                          formStatus === "draft"
-                            ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
-                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
-                        }`}
-                      >
-                        <FileText className="w-4 h-4" />
-                        Draft
-                      </button>
-                      <button
-                        onClick={() => setFormStatus("published")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                          formStatus === "published"
-                            ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
-                        }`}
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        Published
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {formStatus === "draft" && (
-                        <span className="text-xs text-gray-500">Preview mode only</span>
-                      )}
-                      {formStatus === "published" && shareUrl && (
-                        <>
-                          <span className="text-xs text-[#c4dfc4]">✓ Live</span>
-                          <Button
-                            size="sm"
-                            onClick={() => window.open(shareUrl, '_blank')}
-                            className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
-                          >
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            View Form
-                          </Button>
-                        </>
-                      )}
                     </div>
                   </div>
                 </div>
               </div>
-                  </div>
-                </>
-              ) : activeTab === "settings" ? (
-                <>
-                  {/* Settings Sub-Header - Extends full width from left edge */}
-                  <div 
-                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
-                      isChatOpen ? 'mr-[400px]' : 'mr-16'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4 px-6 py-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Link 
-                          href="/forms"
-                          className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
-                        >
-                          All Forms
-                        </Link>
-                        <span className="text-gray-600">/</span>
-                        {isEditingFormName ? (
-                          <Input
-                            ref={formNameInputRef}
-                            value={formName}
-                            onChange={(e) => setFormName(e.target.value)}
-                            onBlur={handleSaveFormName}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleSaveFormName();
-                              }
-                            }}
-                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
-                          />
-                        ) : (
-                          <div 
-                            onClick={() => setIsEditingFormName(true)}
-                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
-                          >
-                            {formName || "Untitled Form"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
-                          <TabsList className="bg-[#1a1a1a]">
-                            <TabsTrigger value="builder">Builder</TabsTrigger>
-                            <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="report">Report</TabsTrigger>
-                          </TabsList>
-                        </Tabs>
-                      </div>
-                      <div className="flex items-center gap-3 justify-end flex-1">
-                        {/* Auto-save indicator */}
-                        {saving && (
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>Saving...</span>
-                          </div>
-                        )}
-                        {!saving && lastSaveTime && (
-                          <div className="text-xs text-gray-500">
-                            Saved {formatTimeSince(lastSaveTime)}
-                          </div>
-                        )}
-                        
-                        {/* Preview button */}
-                        <Button 
-                          size="sm" 
-                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                          onClick={handlePreview}
-                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Main Content Area - Below Sub-Header */}
-                  <div className="flex flex-1 overflow-hidden">
-                    {/* Left Panel - Settings Navigation */}
-                    <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${
-                      isLeftSidebarCollapsed ? 'w-12' : 'w-80'
-                    }`}>
-                      <div className={`p-3 space-y-1 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
-                        <div className="border-b border-white/10 pb-2 mb-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
-                            className="w-full hover:bg-white/10"
-                            title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                          >
-                            {isLeftSidebarCollapsed ? (
-                              <PanelRightOpen className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <PanelRightClose className="h-4 w-4 text-gray-400" />
-                            )}
-                          </Button>
-                        </div>
-                        {!isLeftSidebarCollapsed && (
-                        <button
-                          onClick={() => setActiveSettingsSection("general")}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeSettingsSection === "general"
-                              ? "bg-[#c4dfc4]/20 text-white font-medium"
-                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                          }`}
-                        >
-                          <div className="text-sm">General</div>
-                          <div className="text-xs text-gray-500">Name, status, description</div>
-                        </button>
-                        )}
-                        
-                        {!isLeftSidebarCollapsed && (
-                        <button
-                          onClick={() => setActiveSettingsSection("thankyou")}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeSettingsSection === "thankyou"
-                              ? "bg-[#c4dfc4]/20 text-white font-medium"
-                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                          }`}
-                        >
-                          <div className="text-sm">Thank You Page</div>
-                          <div className="text-xs text-gray-500">Post-submission experience</div>
-                        </button>
-                        )}
-                        
-                        {!isLeftSidebarCollapsed && (
-                        <button
-                          onClick={() => setActiveSettingsSection("publish")}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeSettingsSection === "publish"
-                              ? "bg-[#c4dfc4]/20 text-white font-medium"
-                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                          }`}
-                        >
-                          <div className="text-sm">Publish & Share</div>
-                          <div className="text-xs text-gray-500">Form status and URL</div>
-                        </button>
-                        )}
-
-                        {!isLeftSidebarCollapsed && (
-                        <button
-                          onClick={() => setActiveSettingsSection("cadence")}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeSettingsSection === "cadence"
-                              ? "bg-[#c4dfc4]/20 text-white font-medium"
-                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                          }`}
-                        >
-                          <div className="text-sm">Cadence</div>
-                          <div className="text-xs text-gray-500">Recurring form instances</div>
-                        </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Middle Panel - Settings Content */}
-                    <div 
-                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
-                        isChatOpen ? 'mr-[400px]' : 'mr-16'
-                      }`}
+            </>
+          ) : activeTab === "settings" ? (
+            <>
+              {/* Settings Sub-Header - Extends full width from left edge */}
+              <div
+                className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${isChatOpen ? 'mr-[400px]' : 'mr-16'
+                  }`}
+              >
+                <div className="flex items-center justify-between gap-4 px-6 py-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Link
+                      href="/forms"
+                      className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
                     >
+                      All Forms
+                    </Link>
+                    <span className="text-gray-600">/</span>
+                    {isEditingFormName ? (
+                      <Input
+                        ref={formNameInputRef}
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        onBlur={handleSaveFormName}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveFormName();
+                          }
+                        }}
+                        className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                      />
+                    ) : (
+                      <div
+                        onClick={() => setIsEditingFormName(true)}
+                        className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                      >
+                        {formName || "Untitled Form"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
+                      <TabsList className="bg-[#1a1a1a]">
+                        <TabsTrigger value="builder">Builder</TabsTrigger>
+                        <TabsTrigger value="settings">Settings</TabsTrigger>
+                        <TabsTrigger value="report">Report</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  <div className="flex items-center gap-3 justify-end flex-1">
+                    {/* Auto-save indicator */}
+                    {saving && (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Saving...</span>
+                      </div>
+                    )}
+                    {!saving && lastSaveTime && (
+                      <div className="text-xs text-gray-500">
+                        Saved {formatTimeSince(lastSaveTime)}
+                      </div>
+                    )}
 
-                    {/* Settings Content */}
-                    <div className="flex-1 overflow-y-auto">
-                      <ScrollArea className="h-full p-8">
-                        <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#1a1a1a] border-border/50">
-                          {activeSettingsSection === "general" && (
+                    {/* Preview button */}
+                    <Button
+                      size="sm"
+                      className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                      onClick={handlePreview}
+                      disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Area - Below Sub-Header */}
+              <div className="flex flex-1 overflow-hidden">
+                {/* Left Panel - Settings Navigation */}
+                <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+                  }`}>
+                  <div className={`p-3 space-y-1 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
+                    <div className="border-b border-white/10 pb-2 mb-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                        className="w-full hover:bg-white/10"
+                        title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                      >
+                        {isLeftSidebarCollapsed ? (
+                          <PanelRightOpen className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <PanelRightClose className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
+                    {!isLeftSidebarCollapsed && (
+                      <button
+                        onClick={() => setActiveSettingsSection("general")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "general"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                      >
+                        <div className="text-sm">General</div>
+                        <div className="text-xs text-gray-500">Name, status, description</div>
+                      </button>
+                    )}
+
+                    {!isLeftSidebarCollapsed && (
+                      <button
+                        onClick={() => setActiveSettingsSection("thankyou")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "thankyou"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                      >
+                        <div className="text-sm">Thank You Page</div>
+                        <div className="text-xs text-gray-500">Post-submission experience</div>
+                      </button>
+                    )}
+
+                    {!isLeftSidebarCollapsed && (
+                      <button
+                        onClick={() => setActiveSettingsSection("publish")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "publish"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                      >
+                        <div className="text-sm">Publish & Share</div>
+                        <div className="text-xs text-gray-500">Form status and URL</div>
+                      </button>
+                    )}
+
+                    {!isLeftSidebarCollapsed && (
+                      <button
+                        onClick={() => setActiveSettingsSection("cadence")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "cadence"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                      >
+                        <div className="text-sm">Cadence</div>
+                        <div className="text-xs text-gray-500">Recurring form instances</div>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Middle Panel - Settings Content */}
+                <div
+                  className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                >
+
+                  {/* Settings Content */}
+                  <div className="flex-1 overflow-y-auto">
+                    <ScrollArea className="h-full p-8">
+                      <Card className="max-w-2xl mx-auto p-8 mb-32 bg-[#1a1a1a] border-border/50">
+                        {activeSettingsSection === "general" && (
                           <div className="space-y-8">
                             {/* Form Name */}
                             <div className="space-y-3">
@@ -2064,9 +2045,9 @@ function FormsPageContent() {
                               </div>
                             </div>
                           </div>
-                          )}
+                        )}
 
-                          {activeSettingsSection === "thankyou" && (
+                        {activeSettingsSection === "thankyou" && (
                           <div className="space-y-8">
                             {/* Section Header */}
                             <div>
@@ -2090,7 +2071,7 @@ function FormsPageContent() {
                             {/* Post-Submission Options */}
                             <div className="space-y-4">
                               <h4 className="text-base font-medium text-white">Post-Submission Options</h4>
-                              
+
                               {/* Allow Another Submission */}
                               <div className="flex items-start gap-3 p-4 rounded-lg bg-[#0a0a0a] border border-border/30">
                                 <input
@@ -2163,7 +2144,7 @@ function FormsPageContent() {
                             {/* Auto-Redirect */}
                             <div className="space-y-4">
                               <h4 className="text-base font-medium text-white">Auto-Redirect (Optional)</h4>
-                              
+
                               <div className="space-y-3">
                                 <label className="text-sm font-medium text-gray-300">Redirect URL</label>
                                 <Input
@@ -2187,8 +2168,8 @@ function FormsPageContent() {
                                     className="bg-[#0a0a0a] border-border/50 text-gray-100"
                                   />
                                   <p className="text-xs text-gray-400 italic">
-                                    {redirectDelay === 0 
-                                      ? "Redirect immediately after submission" 
+                                    {redirectDelay === 0
+                                      ? "Redirect immediately after submission"
                                       : `Wait ${redirectDelay} second${redirectDelay === 1 ? '' : 's'} before redirecting`}
                                   </p>
                                 </div>
@@ -2202,13 +2183,13 @@ function FormsPageContent() {
                                 <div className="text-center space-y-4">
                                   <div className="text-4xl">✓</div>
                                   <p className="text-lg font-medium text-white whitespace-pre-wrap">{thankYouMessage}</p>
-                                  
+
                                   {showResponseSummary && (
                                     <div className="text-sm text-gray-400 italic">
                                       [Response summary would appear here]
                                     </div>
                                   )}
-                                  
+
                                   <div className="flex flex-wrap gap-2 justify-center pt-4">
                                     {allowAnotherSubmission && (
                                       <div className="px-4 py-2 rounded-lg bg-[#c4dfc4] text-[#0a0a0a] text-sm font-medium">
@@ -2229,8 +2210,8 @@ function FormsPageContent() {
 
                                   {redirectUrl && (
                                     <p className="text-xs text-gray-500 italic pt-2">
-                                      {redirectDelay === 0 
-                                        ? "Redirecting now..." 
+                                      {redirectDelay === 0
+                                        ? "Redirecting now..."
                                         : `Redirecting in ${redirectDelay} second${redirectDelay === 1 ? '' : 's'}...`}
                                     </p>
                                   )}
@@ -2238,9 +2219,9 @@ function FormsPageContent() {
                               </div>
                             </div>
                           </div>
-                          )}
+                        )}
 
-                          {activeSettingsSection === "publish" && (
+                        {activeSettingsSection === "publish" && (
                           <div className="space-y-8">
                             {/* Form Status - Synced with bottom nav */}
                             <div className="space-y-3">
@@ -2258,7 +2239,7 @@ function FormsPageContent() {
                                     </span>
                                   </div>
                                   <p className="text-xs text-gray-400 italic">
-                                    {formStatus === "published" 
+                                    {formStatus === "published"
                                       ? "✓ This form is live and can collect responses from users."
                                       : "⚠ This form is a draft and will only work in preview mode."}
                                   </p>
@@ -2266,8 +2247,8 @@ function FormsPageContent() {
                                 <Button
                                   size="sm"
                                   onClick={() => setFormStatus(formStatus === "draft" ? "published" : "draft")}
-                                  className={formStatus === "published" 
-                                    ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40" 
+                                  className={formStatus === "published"
+                                    ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40"
                                     : "bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                                   }
                                 >
@@ -2278,7 +2259,7 @@ function FormsPageContent() {
                                 Toggle also available in the bottom navigation bar
                               </p>
                             </div>
-                            
+
                             {shareUrl && (
                               <div>
                                 <label className="text-sm font-medium text-gray-300 block mb-2">Form URL</label>
@@ -2286,11 +2267,10 @@ function FormsPageContent() {
                                   <Input
                                     value={shareUrl || ''}
                                     readOnly
-                                    className={`border-border/50 font-mono text-sm ${
-                                      formStatus === "draft" 
-                                        ? "bg-[#0a0a0a]/50 text-gray-500 opacity-50" 
+                                    className={`border-border/50 font-mono text-sm ${formStatus === "draft"
+                                        ? "bg-[#0a0a0a]/50 text-gray-500 opacity-50"
                                         : "bg-[#0a0a0a] text-gray-100"
-                                    }`}
+                                      }`}
                                   />
                                   <Button
                                     onClick={() => {
@@ -2324,467 +2304,316 @@ function FormsPageContent() {
                               </div>
                             )}
                           </div>
-                          )}
+                        )}
 
-                          {activeSettingsSection === "cadence" && (
+                        {activeSettingsSection === "cadence" && (
                           <div className="space-y-8">
-                            <ScheduleSettings 
+                            <ScheduleSettings
                               formId={editingFormId || lastSavedFormId || ""}
                               formTitle={formName}
                             />
                           </div>
-                          )}
-                        </Card>
-                      </ScrollArea>
-                    </div>
-
-                    {/* Bottom Navigation Bar - Settings Tab */}
-                    <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
-                      <div className="flex items-center justify-between px-6 py-3">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <ListChecks className="w-4 h-4" />
-                          <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setFormStatus("draft")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                              formStatus === "draft"
-                                ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
-                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
-                            }`}
-                          >
-                            <FileText className="w-4 h-4" />
-                            Draft
-                          </button>
-                          <button
-                            onClick={() => setFormStatus("published")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                              formStatus === "published"
-                                ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
-                            }`}
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                            Published
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          {formStatus === "draft" && (
-                            <span className="text-xs text-amber-400">⚠ Preview mode only</span>
-                          )}
-                          {formStatus === "published" && shareUrl && (
-                            <>
-                              <span className="text-xs text-[#c4dfc4]">✓ Live</span>
-                              <Button
-                                size="sm"
-                                onClick={() => window.open(shareUrl, '_blank')}
-                                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
-                              >
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                View Form
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Report Sub-Header - Extends full width from left edge */}
-                  <div 
-                    className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${
-                      isChatOpen ? 'mr-[400px]' : 'mr-16'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4 px-6 py-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Link 
-                          href="/forms"
-                          className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
-                        >
-                          All Forms
-                        </Link>
-                        <span className="text-gray-600">/</span>
-                        {isEditingFormName ? (
-                          <Input
-                            ref={formNameInputRef}
-                            value={formName}
-                            onChange={(e) => setFormName(e.target.value)}
-                            onBlur={handleSaveFormName}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleSaveFormName();
-                              }
-                            }}
-                            className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
-                          />
-                        ) : (
-                          <div 
-                            onClick={() => setIsEditingFormName(true)}
-                            className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
-                          >
-                            {formName || "Untitled Form"}
-                          </div>
                         )}
-                      </div>
-                      <div className="flex items-center justify-center">
-                        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
-                          <TabsList className="bg-[#1a1a1a]">
-                            <TabsTrigger value="builder">Builder</TabsTrigger>
-                            <TabsTrigger value="settings">Settings</TabsTrigger>
-                            <TabsTrigger value="report">Report</TabsTrigger>
-                          </TabsList>
-                        </Tabs>
-                      </div>
-                      <div className="flex items-center gap-3 justify-end flex-1">
-                        {/* Auto-save indicator */}
-                        {saving && (
-                          <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>Saving...</span>
-                          </div>
-                        )}
-                        {!saving && lastSaveTime && (
-                          <div className="text-xs text-gray-500">
-                            Saved {formatTimeSince(lastSaveTime)}
-                          </div>
-                        )}
-                        
-                        {/* Preview button */}
-                        <Button 
-                          size="sm" 
-                          className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                          onClick={handlePreview}
-                          disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview
-                        </Button>
-                        
-                      </div>
-                    </div>
+                      </Card>
+                    </ScrollArea>
                   </div>
 
-                  {/* Main Content Area - Below Sub-Header */}
-                  <div className="flex flex-1 overflow-hidden">
-                    {/* Left Panel - Responses List */}
-                    <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${
-                      isLeftSidebarCollapsed ? 'w-12' : 'w-80'
-                    }`}>
-                      <div className={`p-3 space-y-1 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
-                        <div className="border-b border-white/10 pb-2 mb-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
-                            className="w-full hover:bg-white/10"
-                            title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                          >
-                            {isLeftSidebarCollapsed ? (
-                              <PanelRightOpen className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <PanelRightClose className="h-4 w-4 text-gray-400" />
-                            )}
-                          </Button>
-                        </div>
-                        {/* All Responses (Summary View) */}
-                        {!isLeftSidebarCollapsed && (
+                  {/* Bottom Navigation Bar - Settings Tab */}
+                  <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
+                    <div className="flex items-center justify-between px-6 py-3">
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <ListChecks className="w-4 h-4" />
+                        <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
                         <button
-                          onClick={() => setSelectedResponseId("all")}
-                          className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            selectedResponseId === "all"
-                              ? "bg-[#c4dfc4]/20 text-white font-medium"
-                              : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                          }`}
+                          onClick={() => setFormStatus("draft")}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "draft"
+                              ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
+                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
                         >
-                          <div className="text-sm">All Responses</div>
-                          <div className="text-xs text-gray-500">{submissions.length} total submissions</div>
+                          <FileText className="w-4 h-4" />
+                          Draft
                         </button>
+                        <button
+                          onClick={() => setFormStatus("published")}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "published"
+                              ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            }`}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Published
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {formStatus === "draft" && (
+                          <span className="text-xs text-amber-400">⚠ Preview mode only</span>
                         )}
-
-                        {/* Individual Responses */}
-                        {!isLeftSidebarCollapsed && (
-                        loadingSubmissions ? (
-                          <div className="flex items-center justify-center py-8">
-                            <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
-                          </div>
-                        ) : submissions.length > 0 ? (
+                        {formStatus === "published" && shareUrl && (
                           <>
-                            <Separator className="my-3 bg-white/10" />
-                            <div className="space-y-1">
-                              {submissions.map((submission: any) => {
-                                const submittedDate = new Date(submission.submitted_at).toLocaleString();
-                                const identifier = submission.data?.email || 
-                                                  submission.data?.name || 
-                                                  `Response ${submission.id.toString().slice(0, 8)}`;
-                                
-                                return (
-                                  <button
-                                    key={submission.id}
-                                    onClick={() => setSelectedResponseId(submission.id)}
-                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                                      selectedResponseId === submission.id
-                                        ? "bg-[#c4dfc4]/20 text-white font-medium"
-                                        : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                                    }`}
-                                  >
-                                    <div className="text-sm truncate">{identifier}</div>
-                                    <div className="text-xs text-gray-500">{submittedDate}</div>
-                                  </button>
-                                );
-                              })}
-                            </div>
+                            <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                            <Button
+                              size="sm"
+                              onClick={() => window.open(shareUrl, '_blank')}
+                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                            >
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              View Form
+                            </Button>
                           </>
-                        ) : (
-                          <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                            No responses yet
-                          </div>
-                        ))}
+                        )}
                       </div>
                     </div>
-
-                    {/* Middle Panel - Report Content */}
-                    <div 
-                      className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${
-                        isChatOpen ? 'mr-[400px]' : 'mr-16'
-                      }`}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Report Sub-Header - Extends full width from left edge */}
+              <div
+                className={`sticky top-0 z-30 border-b border-white bg-gradient-to-r from-[#000000] to-[#0a0a0a] transition-all duration-300 ${isChatOpen ? 'mr-[400px]' : 'mr-16'
+                  }`}
+              >
+                <div className="flex items-center justify-between gap-4 px-6 py-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Link
+                      href="/forms"
+                      className="text-sm text-gray-400 hover:text-[#c4dfc4] transition-colors shrink-0"
                     >
+                      All Forms
+                    </Link>
+                    <span className="text-gray-600">/</span>
+                    {isEditingFormName ? (
+                      <Input
+                        ref={formNameInputRef}
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        onBlur={handleSaveFormName}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveFormName();
+                          }
+                        }}
+                        className="text-white font-medium bg-[#1a1a1a] border-[#c4dfc4] max-w-xs h-8"
+                      />
+                    ) : (
+                      <div
+                        onClick={() => setIsEditingFormName(true)}
+                        className="text-white font-medium truncate max-w-xs cursor-pointer hover:text-[#c4dfc4] transition-colors px-2 py-1 rounded hover:bg-white/5"
+                      >
+                        {formName || "Untitled Form"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "builder" | "settings" | "report")} className="w-auto">
+                      <TabsList className="bg-[#1a1a1a]">
+                        <TabsTrigger value="builder">Builder</TabsTrigger>
+                        <TabsTrigger value="settings">Settings</TabsTrigger>
+                        <TabsTrigger value="report">Report</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  <div className="flex items-center gap-3 justify-end flex-1">
+                    {/* Auto-save indicator */}
+                    {saving && (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Saving...</span>
+                      </div>
+                    )}
+                    {!saving && lastSaveTime && (
+                      <div className="text-xs text-gray-500">
+                        Saved {formatTimeSince(lastSaveTime)}
+                      </div>
+                    )}
 
-                    {/* Report Content */}
-                    <div className="flex-1 overflow-y-auto">
-                      <ScrollArea className="h-full p-8">
-                        {submissions.length === 0 ? (
-                          <Card className="max-w-2xl mx-auto p-12 mb-32 bg-[#1a1a1a] border-border/50 text-center">
-                            <h3 className="text-xl font-semibold text-white mb-2">No Responses Yet</h3>
-                            <p className="text-gray-400">
-                              Responses will appear here once people start submitting your form.
-                            </p>
-                          </Card>
-                        ) : selectedResponseId === "all" ? (
-                          <Card className="max-w-4xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
-                            <div className="space-y-8">
-                              {/* Summary Stats */}
-                              <div className="mb-32">
-                                <h2 className="text-2xl font-bold text-white mb-4">Response Summary</h2>
-                                <div className="grid grid-cols-3 gap-4">
-                                  <Card className="p-4 bg-[#0a0a0a] border-border/50">
-                                    <div className="text-sm text-gray-400">Total Submissions</div>
-                                    <div className="text-3xl font-bold text-white mt-1">{submissions.length}</div>
-                                  </Card>
-                                  <Card className="p-4 bg-[#0a0a0a] border-border/50">
-                                    <div className="text-sm text-gray-400">Last Submission</div>
-                                    <div className="text-lg font-medium text-white mt-1">
-                                      {submissions.length > 0 
-                                        ? new Date(submissions[0].submitted_at).toLocaleDateString()
-                                        : 'N/A'
-                                      }
-                                    </div>
-                                  </Card>
-                                  <Card className="p-4 bg-[#0a0a0a] border-border/50">
-                                    <Button
-                                      className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-                                      onClick={() => {
-                                        // TODO: Implement CSV export
-                                        toast.info('Coming soon!', {
-                                          description: 'CSV export feature is under development.',
-                                        });
-                                      }}
-                                    >
-                                      Export CSV
-                                    </Button>
-                                  </Card>
-                                </div>
+                    {/* Preview button */}
+                    <Button
+                      size="sm"
+                      className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                      onClick={handlePreview}
+                      disabled={saving || loadingForm || (!lastSavedFormId && !editingFormId)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview
+                    </Button>
+
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content Area - Below Sub-Header */}
+              <div className="flex flex-1 overflow-hidden">
+                {/* Left Panel - Responses List */}
+                <div className={`border-r border-white bg-gradient-to-b from-[#0a0a0a] via-[#0f0f0f] to-[#000000] overflow-y-auto shadow-sm transition-all duration-300 ${isLeftSidebarCollapsed ? 'w-12' : 'w-80'
+                  }`}>
+                  <div className={`p-3 space-y-1 ${isLeftSidebarCollapsed ? 'px-2' : ''}`}>
+                    <div className="border-b border-white/10 pb-2 mb-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+                        className="w-full hover:bg-white/10"
+                        title={isLeftSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                      >
+                        {isLeftSidebarCollapsed ? (
+                          <PanelRightOpen className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <PanelRightClose className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
+                    {/* All Responses (Summary View) */}
+                    {!isLeftSidebarCollapsed && (
+                      <button
+                        onClick={() => setSelectedResponseId("all")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${selectedResponseId === "all"
+                            ? "bg-[#c4dfc4]/20 text-white font-medium"
+                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          }`}
+                      >
+                        <div className="text-sm">All Responses</div>
+                        <div className="text-xs text-gray-500">{submissions.length} total submissions</div>
+                      </button>
+                    )}
+
+                    {/* Individual Responses */}
+                    {!isLeftSidebarCollapsed && (
+                      loadingSubmissions ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin text-[#c4dfc4]" />
+                        </div>
+                      ) : submissions.length > 0 ? (
+                        <>
+                          <Separator className="my-3 bg-white/10" />
+                          <div className="space-y-1">
+                            {submissions.map((submission: any) => {
+                              const submittedDate = new Date(submission.submitted_at).toLocaleString();
+                              const identifier = submission.data?.email ||
+                                submission.data?.name ||
+                                `Response ${submission.id.toString().slice(0, 8)}`;
+
+                              return (
+                                <button
+                                  key={submission.id}
+                                  onClick={() => setSelectedResponseId(submission.id)}
+                                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${selectedResponseId === submission.id
+                                      ? "bg-[#c4dfc4]/20 text-white font-medium"
+                                      : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                                    }`}
+                                >
+                                  <div className="text-sm truncate">{identifier}</div>
+                                  <div className="text-xs text-gray-500">{submittedDate}</div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                          No responses yet
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Middle Panel - Report Content */}
+                <div
+                  className={`flex-1 bg-gradient-to-b from-[#000000] to-[#0a0a0a] flex flex-col transition-all duration-300 ${isChatOpen ? 'mr-[400px]' : 'mr-16'
+                    }`}
+                >
+
+                  {/* Report Content */}
+                  <div className="flex-1 overflow-y-auto">
+                    <ScrollArea className="h-full p-8">
+                      {submissions.length === 0 ? (
+                        <Card className="max-w-2xl mx-auto p-12 mb-32 bg-[#1a1a1a] border-border/50 text-center">
+                          <h3 className="text-xl font-semibold text-white mb-2">No Responses Yet</h3>
+                          <p className="text-gray-400">
+                            Responses will appear here once people start submitting your form.
+                          </p>
+                        </Card>
+                      ) : selectedResponseId === "all" ? (
+                        <Card className="max-w-4xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                          <div className="space-y-8">
+                            {/* Summary Stats */}
+                            <div className="mb-32">
+                              <h2 className="text-2xl font-bold text-white mb-4">Response Summary</h2>
+                              <div className="grid grid-cols-3 gap-4">
+                                <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                  <div className="text-sm text-gray-400">Total Submissions</div>
+                                  <div className="text-3xl font-bold text-white mt-1">{submissions.length}</div>
+                                </Card>
+                                <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                  <div className="text-sm text-gray-400">Last Submission</div>
+                                  <div className="text-lg font-medium text-white mt-1">
+                                    {submissions.length > 0
+                                      ? new Date(submissions[0].submitted_at).toLocaleDateString()
+                                      : 'N/A'
+                                    }
+                                  </div>
+                                </Card>
+                                <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                  <Button
+                                    className="w-full bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                                    onClick={() => {
+                                      // TODO: Implement CSV export
+                                      toast.info('Coming soon!', {
+                                        description: 'CSV export feature is under development.',
+                                      });
+                                    }}
+                                  >
+                                    Export CSV
+                                  </Button>
+                                </Card>
                               </div>
+                            </div>
 
-                              {/* Question Breakdown */}
-                              <div className="space-y-6">
-                                <h3 className="text-xl font-semibold text-white">Question Breakdown</h3>
-                                
-                                {formFields.map((field: any) => {
-                                  // Collect all responses for this field
-                                  const fieldResponses = submissions
-                                    .map((s: any) => s.data?.[field.id])
-                                    .filter((val: any) => val !== undefined && val !== null && val !== '');
+                            {/* Question Breakdown */}
+                            <div className="space-y-6">
+                              <h3 className="text-xl font-semibold text-white">Question Breakdown</h3>
 
-                                  if (fieldResponses.length === 0) return null;
+                              {formFields.map((field: any) => {
+                                // Collect all responses for this field
+                                const fieldResponses = submissions
+                                  .map((s: any) => s.data?.[field.id])
+                                  .filter((val: any) => val !== undefined && val !== null && val !== '');
 
-                                  // For choice-based fields, count occurrences
-                                  if (field.type === 'multiple-choice' || field.type === 'radio' || field.type === 'dropdown') {
-                                    const counts: Record<string, number> = {};
-                                    fieldResponses.forEach((response: any) => {
-                                      const value = String(response);
-                                      counts[value] = (counts[value] || 0) + 1;
-                                    });
+                                if (fieldResponses.length === 0) return null;
 
-                                    const total = fieldResponses.length;
-                                    const sortedOptions = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                                // For choice-based fields, count occurrences
+                                if (field.type === 'multiple-choice' || field.type === 'radio' || field.type === 'dropdown') {
+                                  const counts: Record<string, number> = {};
+                                  fieldResponses.forEach((response: any) => {
+                                    const value = String(response);
+                                    counts[value] = (counts[value] || 0) + 1;
+                                  });
 
-                                    return (
-                                      <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
-                                        <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
-                                        <div className="space-y-3">
-                                          {sortedOptions.map(([option, count]) => {
-                                            const percentage = ((count / total) * 100).toFixed(1);
-                                            return (
-                                              <div key={option} className="space-y-1">
-                                                <div className="flex justify-between text-sm">
-                                                  <span className="text-gray-300">{option}</span>
-                                                  <span className="text-gray-400">{count} ({percentage}%)</span>
-                                                </div>
-                                                <div className="w-full bg-gray-800 rounded-full h-2">
-                                                  <div 
-                                                    className="bg-[#c4dfc4] h-2 rounded-full transition-all"
-                                                    style={{ width: `${percentage}%` }}
-                                                  />
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                        <div className="mt-3 text-xs text-gray-500">
-                                          {fieldResponses.length} responses
-                                        </div>
-                                      </Card>
-                                    );
-                                  }
+                                  const total = fieldResponses.length;
+                                  const sortedOptions = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
-                                  // For checkboxes, show selected options
-                                  if (field.type === 'checkboxes') {
-                                    const allSelections: Record<string, number> = {};
-                                    fieldResponses.forEach((response: any) => {
-                                      if (Array.isArray(response)) {
-                                        response.forEach(item => {
-                                          const value = String(item);
-                                          allSelections[value] = (allSelections[value] || 0) + 1;
-                                        });
-                                      }
-                                    });
-
-                                    const sortedSelections = Object.entries(allSelections).sort((a, b) => b[1] - a[1]);
-
-                                    return (
-                                      <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
-                                        <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
-                                        <div className="space-y-3">
-                                          {sortedSelections.map(([option, count]) => {
-                                            const percentage = ((count / fieldResponses.length) * 100).toFixed(1);
-                                            return (
-                                              <div key={option} className="space-y-1">
-                                                <div className="flex justify-between text-sm">
-                                                  <span className="text-gray-300">{option}</span>
-                                                  <span className="text-gray-400">{count} ({percentage}%)</span>
-                                                </div>
-                                                <div className="w-full bg-gray-800 rounded-full h-2">
-                                                  <div 
-                                                    className="bg-[#c4dfc4] h-2 rounded-full transition-all"
-                                                    style={{ width: `${percentage}%` }}
-                                                  />
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                        <div className="mt-3 text-xs text-gray-500">
-                                          {fieldResponses.length} responses
-                                        </div>
-                                      </Card>
-                                    );
-                                  }
-
-                                  // For number fields, show statistics
-                                  if (field.type === 'number') {
-                                    const numbers = fieldResponses.map(Number).filter(n => !isNaN(n));
-                                    if (numbers.length === 0) return null;
-
-                                    const avg = (numbers.reduce((a, b) => a + b, 0) / numbers.length).toFixed(2);
-                                    const min = Math.min(...numbers);
-                                    const max = Math.max(...numbers);
-
-                                    return (
-                                      <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
-                                        <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
-                                        <div className="grid grid-cols-3 gap-4">
-                                          <div>
-                                            <div className="text-sm text-gray-400">Average</div>
-                                            <div className="text-2xl font-bold text-white mt-1">{avg}</div>
-                                          </div>
-                                          <div>
-                                            <div className="text-sm text-gray-400">Min</div>
-                                            <div className="text-2xl font-bold text-white mt-1">{min}</div>
-                                          </div>
-                                          <div>
-                                            <div className="text-sm text-gray-400">Max</div>
-                                            <div className="text-2xl font-bold text-white mt-1">{max}</div>
-                                          </div>
-                                        </div>
-                                        <div className="mt-3 text-xs text-gray-500">
-                                          {numbers.length} responses
-                                        </div>
-                                      </Card>
-                                    );
-                                  }
-
-                                  // For text fields and signatures, show all responses
                                   return (
                                     <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
                                       <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
-                                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                                        {fieldResponses.map((response: any, idx: number) => {
-                                          // Check if this is a signature object
-                                          if (typeof response === 'object' && response !== null && response.signatureData) {
-                                            return (
-                                              <div key={idx} className="p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
-                                                <div className="flex items-start gap-3">
-                                                  <img 
-                                                    src={response.signatureData} 
-                                                    alt="Signature" 
-                                                    className="h-16 border border-border/50 bg-white rounded"
-                                                    style={{ minWidth: '120px' }}
-                                                  />
-                                                  <div className="flex-1 space-y-1 text-xs">
-                                                    <div className="flex items-center gap-2">
-                                                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                                        ✓ Verified Signature
-                                                      </Badge>
-                                                    </div>
-                                                    <p className="text-white font-medium">
-                                                      Signed by: {response.signedBy}
-                                                    </p>
-                                                    <p className="text-gray-400">
-                                                      {new Date(response.signedAt).toLocaleString('en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                        hour: 'numeric',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                      })}
-                                                    </p>
-                                                    {response.signedById && (
-                                                      <p className="text-green-400 text-xs flex items-center gap-1">
-                                                        <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                                        Password Verified
-                                                      </p>
-                                                    )}
-                                                    {response.ipAddress && response.ipAddress !== 'unknown' && (
-                                                      <p className="text-gray-500">
-                                                        {response.deviceType} • {response.ipAddress}
-                                                      </p>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            );
-                                          }
-                                          
-                                          // Regular text response
+                                      <div className="space-y-3">
+                                        {sortedOptions.map(([option, count]) => {
+                                          const percentage = ((count / total) * 100).toFixed(1);
                                           return (
-                                            <div key={idx} className="p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
-                                              <p className="text-sm text-gray-300">{String(response)}</p>
+                                            <div key={option} className="space-y-1">
+                                              <div className="flex justify-between text-sm">
+                                                <span className="text-gray-300">{option}</span>
+                                                <span className="text-gray-400">{count} ({percentage}%)</span>
+                                              </div>
+                                              <div className="w-full bg-gray-800 rounded-full h-2">
+                                                <div
+                                                  className="bg-[#c4dfc4] h-2 rounded-full transition-all"
+                                                  style={{ width: `${percentage}%` }}
+                                                />
+                                              </div>
                                             </div>
                                           );
                                         })}
@@ -2794,206 +2623,348 @@ function FormsPageContent() {
                                       </div>
                                     </Card>
                                   );
-                                })}
-                              </div>
+                                }
 
-                              {/* Recent Submissions List */}
-                              <div>
-                                <h3 className="text-lg font-semibold text-white mb-3">Individual Responses</h3>
-                                <div className="space-y-2">
-                                    {submissions.slice(0, 10).map((submission: any) => (
-                                    <Card 
-                                      key={submission.id}
-                                      className="p-4 bg-[#0a0a0a] border-border/50 cursor-pointer hover:bg-[#0a0a0a]/80 transition-colors"
-                                      onClick={() => setSelectedResponseId(submission.id)}
-                                    >
-                                      <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                          <div className="text-sm font-medium text-white">
-                                            {submission.data?.email || 
-                                             submission.data?.name || 
-                                             `Response ${submission.id.toString().slice(0, 8)}`}
-                                          </div>
-                                          <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                                            <span>{new Date(submission.submitted_at).toLocaleString()}</span>
-                                            {submission.signatures && submission.signatures.length > 0 && (
-                                              <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-400">
-                                                ✓ {submission.signatures.length} Signature{submission.signatures.length > 1 ? 's' : ''}
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <Badge variant="outline" className="text-xs">
-                                          View Details
-                                        </Badge>
+                                // For checkboxes, show selected options
+                                if (field.type === 'checkboxes') {
+                                  const allSelections: Record<string, number> = {};
+                                  fieldResponses.forEach((response: any) => {
+                                    if (Array.isArray(response)) {
+                                      response.forEach(item => {
+                                        const value = String(item);
+                                        allSelections[value] = (allSelections[value] || 0) + 1;
+                                      });
+                                    }
+                                  });
+
+                                  const sortedSelections = Object.entries(allSelections).sort((a, b) => b[1] - a[1]);
+
+                                  return (
+                                    <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                      <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                      <div className="space-y-3">
+                                        {sortedSelections.map(([option, count]) => {
+                                          const percentage = ((count / fieldResponses.length) * 100).toFixed(1);
+                                          return (
+                                            <div key={option} className="space-y-1">
+                                              <div className="flex justify-between text-sm">
+                                                <span className="text-gray-300">{option}</span>
+                                                <span className="text-gray-400">{count} ({percentage}%)</span>
+                                              </div>
+                                              <div className="w-full bg-gray-800 rounded-full h-2">
+                                                <div
+                                                  className="bg-[#c4dfc4] h-2 rounded-full transition-all"
+                                                  style={{ width: `${percentage}%` }}
+                                                />
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                      <div className="mt-3 text-xs text-gray-500">
+                                        {fieldResponses.length} responses
                                       </div>
                                     </Card>
-                                  ))}
-                                  {submissions.length > 10 && (
-                                    <p className="text-center text-sm text-gray-500 pt-2">
-                                      Showing 10 of {submissions.length} responses
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        ) : (
-                          (() => {
-                            const submission = submissions.find((s: any) => s.id === selectedResponseId);
-                            if (!submission) return null;
-                            
-                            return (
-                              <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
-                                <div className="space-y-6">
-                                  <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2">Response Details</h2>
-                                    <p className="text-sm text-gray-400">
-                                      Submitted: {new Date(submission.submitted_at).toLocaleString()}
-                                    </p>
-                                  </div>
+                                  );
+                                }
 
-                                  <Separator className="bg-white/10" />
+                                // For number fields, show statistics
+                                if (field.type === 'number') {
+                                  const numbers = fieldResponses.map(Number).filter(n => !isNaN(n));
+                                  if (numbers.length === 0) return null;
 
-                                  {/* Signatures Section */}
-                                  {submission.signatures && submission.signatures.length > 0 && (
-                                    <div className="space-y-4">
-                                      <h3 className="text-lg font-semibold text-white">Electronic Signatures</h3>
-                                      {submission.signatures.map((signature: any, idx: number) => (
-                                        <SignatureDisplay 
-                                          key={signature.id || idx}
-                                          signature={signature}
-                                          showDetails={true}
-                                        />
-                                      ))}
-                                      <Separator className="bg-white/10 mt-6" />
-                                    </div>
-                                  )}
+                                  const avg = (numbers.reduce((a, b) => a + b, 0) / numbers.length).toFixed(2);
+                                  const min = Math.min(...numbers);
+                                  const max = Math.max(...numbers);
 
-                                  {/* Audit Trail Section */}
-                                  {submission.signature_audit && submission.signature_audit.length > 0 && (
-                                    <div className="space-y-4">
-                                      <h3 className="text-lg font-semibold text-white">Signature Audit Trail</h3>
-                                      <Card className="p-4 bg-[#0a0a0a] border-border/50">
-                                        <div className="space-y-3">
-                                          {submission.signature_audit.map((audit: any, idx: number) => (
-                                            <div key={idx} className="flex items-start gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
-                                              <div className="flex-1 space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-sm font-medium text-white capitalize">
-                                                    {audit.action.replace(/_/g, ' ')}
-                                                  </span>
-                                                  <Badge variant="outline" className="text-xs">
-                                                    {new Date(audit.timestamp).toLocaleString()}
-                                                  </Badge>
-                                                </div>
-                                                <div className="text-xs text-gray-400 space-y-0.5">
-                                                  {audit.signatureId && (
-                                                    <div>Signature ID: {audit.signatureId}</div>
+                                  return (
+                                    <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                      <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                      <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                          <div className="text-sm text-gray-400">Average</div>
+                                          <div className="text-2xl font-bold text-white mt-1">{avg}</div>
+                                        </div>
+                                        <div>
+                                          <div className="text-sm text-gray-400">Min</div>
+                                          <div className="text-2xl font-bold text-white mt-1">{min}</div>
+                                        </div>
+                                        <div>
+                                          <div className="text-sm text-gray-400">Max</div>
+                                          <div className="text-2xl font-bold text-white mt-1">{max}</div>
+                                        </div>
+                                      </div>
+                                      <div className="mt-3 text-xs text-gray-500">
+                                        {numbers.length} responses
+                                      </div>
+                                    </Card>
+                                  );
+                                }
+
+                                // For text fields and signatures, show all responses
+                                return (
+                                  <Card key={field.id} className="p-6 bg-[#0a0a0a] border-border/50">
+                                    <h4 className="text-lg font-medium text-white mb-4">{field.label}</h4>
+                                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                                      {fieldResponses.map((response: any, idx: number) => {
+                                        // Check if this is a signature object
+                                        if (typeof response === 'object' && response !== null && response.signatureData) {
+                                          return (
+                                            <div key={idx} className="p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
+                                              <div className="flex items-start gap-3">
+                                                <img
+                                                  src={response.signatureData}
+                                                  alt="Signature"
+                                                  className="h-16 border border-border/50 bg-white rounded"
+                                                  style={{ minWidth: '120px' }}
+                                                />
+                                                <div className="flex-1 space-y-1 text-xs">
+                                                  <div className="flex items-center gap-2">
+                                                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                                      ✓ Verified Signature
+                                                    </Badge>
+                                                  </div>
+                                                  <p className="text-white font-medium">
+                                                    Signed by: {response.signedBy}
+                                                  </p>
+                                                  <p className="text-gray-400">
+                                                    {new Date(response.signedAt).toLocaleString('en-US', {
+                                                      month: 'short',
+                                                      day: 'numeric',
+                                                      year: 'numeric',
+                                                      hour: 'numeric',
+                                                      minute: '2-digit',
+                                                      hour12: true
+                                                    })}
+                                                  </p>
+                                                  {response.signedById && (
+                                                    <p className="text-green-400 text-xs flex items-center gap-1">
+                                                      <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                                      Password Verified
+                                                    </p>
                                                   )}
-                                                  {audit.userId && (
-                                                    <div>User ID: {audit.userId}</div>
-                                                  )}
-                                                  {audit.ipAddress && (
-                                                    <div>IP: {audit.ipAddress}</div>
+                                                  {response.ipAddress && response.ipAddress !== 'unknown' && (
+                                                    <p className="text-gray-500">
+                                                      {response.deviceType} • {response.ipAddress}
+                                                    </p>
                                                   )}
                                                 </div>
                                               </div>
                                             </div>
-                                          ))}
-                                        </div>
-                                      </Card>
-                                      <Separator className="bg-white/10 mt-6" />
-                                    </div>
-                                  )}
+                                          );
+                                        }
 
-                                  {/* Response Data */}
-                                  <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-white">Form Responses</h3>
-                                    {Object.entries(submission.data || {}).map(([key, value]: [string, any]) => {
-                                      // Skip signature data objects (they're shown above)
-                                      if (typeof value === 'object' && value !== null && 'signatureData' in value) {
-                                        return null;
-                                      }
-                                      
-                                      return (
-                                        <div key={key} className="space-y-2">
-                                          <label className="text-sm font-medium text-gray-300 capitalize">
-                                            {key.replace(/_/g, ' ')}
-                                          </label>
-                                          <div className="p-3 rounded-lg bg-[#0a0a0a] border border-border/50 text-white">
-                                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                        // Regular text response
+                                        return (
+                                          <div key={idx} className="p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
+                                            <p className="text-sm text-gray-300">{String(response)}</p>
                                           </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              </Card>
-                            );
-                          })()
-                        )}
-                      </ScrollArea>
-                    </div>
+                                        );
+                                      })}
+                                    </div>
+                                    <div className="mt-3 text-xs text-gray-500">
+                                      {fieldResponses.length} responses
+                                    </div>
+                                  </Card>
+                                );
+                              })}
+                            </div>
 
-                    {/* Bottom Navigation Bar - Report Tab */}
-                    <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
-                      <div className="flex items-center justify-between px-6 py-3">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <ListChecks className="w-4 h-4" />
-                          <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setFormStatus("draft")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                              formStatus === "draft"
-                                ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
-                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            {/* Recent Submissions List */}
+                            <div>
+                              <h3 className="text-lg font-semibold text-white mb-3">Individual Responses</h3>
+                              <div className="space-y-2">
+                                {submissions.slice(0, 10).map((submission: any) => (
+                                  <Card
+                                    key={submission.id}
+                                    className="p-4 bg-[#0a0a0a] border-border/50 cursor-pointer hover:bg-[#0a0a0a]/80 transition-colors"
+                                    onClick={() => setSelectedResponseId(submission.id)}
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <div className="text-sm font-medium text-white">
+                                          {submission.data?.email ||
+                                            submission.data?.name ||
+                                            `Response ${submission.id.toString().slice(0, 8)}`}
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                                          <span>{new Date(submission.submitted_at).toLocaleString()}</span>
+                                          {submission.signatures && submission.signatures.length > 0 && (
+                                            <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-400">
+                                              ✓ {submission.signatures.length} Signature{submission.signatures.length > 1 ? 's' : ''}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <Badge variant="outline" className="text-xs">
+                                        View Details
+                                      </Badge>
+                                    </div>
+                                  </Card>
+                                ))}
+                                {submissions.length > 10 && (
+                                  <p className="text-center text-sm text-gray-500 pt-2">
+                                    Showing 10 of {submissions.length} responses
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ) : (
+                        (() => {
+                          const submission = submissions.find((s: any) => s.id === selectedResponseId);
+                          if (!submission) return null;
+
+                          return (
+                            <Card className="max-w-2xl mx-auto p-8 bg-[#1a1a1a] border-border/50">
+                              <div className="space-y-6">
+                                <div>
+                                  <h2 className="text-2xl font-bold text-white mb-2">Response Details</h2>
+                                  <p className="text-sm text-gray-400">
+                                    Submitted: {new Date(submission.submitted_at).toLocaleString()}
+                                  </p>
+                                </div>
+
+                                <Separator className="bg-white/10" />
+
+                                {/* Signatures Section */}
+                                {submission.signatures && submission.signatures.length > 0 && (
+                                  <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-white">Electronic Signatures</h3>
+                                    {submission.signatures.map((signature: any, idx: number) => (
+                                      <SignatureDisplay
+                                        key={signature.id || idx}
+                                        signature={signature}
+                                        showDetails={true}
+                                      />
+                                    ))}
+                                    <Separator className="bg-white/10 mt-6" />
+                                  </div>
+                                )}
+
+                                {/* Audit Trail Section */}
+                                {submission.signature_audit && submission.signature_audit.length > 0 && (
+                                  <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-white">Signature Audit Trail</h3>
+                                    <Card className="p-4 bg-[#0a0a0a] border-border/50">
+                                      <div className="space-y-3">
+                                        {submission.signature_audit.map((audit: any, idx: number) => (
+                                          <div key={idx} className="flex items-start gap-3 p-3 bg-[#1a1a1a] rounded-lg border border-border/30">
+                                            <div className="flex-1 space-y-1">
+                                              <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium text-white capitalize">
+                                                  {audit.action.replace(/_/g, ' ')}
+                                                </span>
+                                                <Badge variant="outline" className="text-xs">
+                                                  {new Date(audit.timestamp).toLocaleString()}
+                                                </Badge>
+                                              </div>
+                                              <div className="text-xs text-gray-400 space-y-0.5">
+                                                {audit.signatureId && (
+                                                  <div>Signature ID: {audit.signatureId}</div>
+                                                )}
+                                                {audit.userId && (
+                                                  <div>User ID: {audit.userId}</div>
+                                                )}
+                                                {audit.ipAddress && (
+                                                  <div>IP: {audit.ipAddress}</div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </Card>
+                                    <Separator className="bg-white/10 mt-6" />
+                                  </div>
+                                )}
+
+                                {/* Response Data */}
+                                <div className="space-y-4">
+                                  <h3 className="text-lg font-semibold text-white">Form Responses</h3>
+                                  {Object.entries(submission.data || {}).map(([key, value]: [string, any]) => {
+                                    // Skip signature data objects (they're shown above)
+                                    if (typeof value === 'object' && value !== null && 'signatureData' in value) {
+                                      return null;
+                                    }
+
+                                    return (
+                                      <div key={key} className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300 capitalize">
+                                          {key.replace(/_/g, ' ')}
+                                        </label>
+                                        <div className="p-3 rounded-lg bg-[#0a0a0a] border border-border/50 text-white">
+                                          {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </Card>
+                          );
+                        })()
+                      )}
+                    </ScrollArea>
+                  </div>
+
+                  {/* Bottom Navigation Bar - Report Tab */}
+                  <div className="border-t border-white/10 bg-gradient-to-r from-[#0a0a0a] to-[#000000] shadow-lg">
+                    <div className="flex items-center justify-between px-6 py-3">
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <ListChecks className="w-4 h-4" />
+                        <span className="text-sm font-medium">{formFields.length} Question{formFields.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setFormStatus("draft")}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "draft"
+                              ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
+                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
-                          >
-                            <FileText className="w-4 h-4" />
-                            Draft
-                          </button>
-                          <button
-                            onClick={() => setFormStatus("published")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                              formStatus === "published"
-                                ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                                : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Draft
+                        </button>
+                        <button
+                          onClick={() => setFormStatus("published")}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "published"
+                              ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                            Published
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          {formStatus === "draft" && (
-                            <span className="text-xs text-amber-400">⚠ Preview mode only</span>
-                          )}
-                          {formStatus === "published" && shareUrl && (
-                            <>
-                              <span className="text-xs text-[#c4dfc4]">✓ Live</span>
-                              <Button
-                                size="sm"
-                                onClick={() => window.open(shareUrl, '_blank')}
-                                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
-                              >
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                View Form
-                              </Button>
-                            </>
-                          )}
-                        </div>
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Published
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {formStatus === "draft" && (
+                          <span className="text-xs text-amber-400">⚠ Preview mode only</span>
+                        )}
+                        {formStatus === "published" && shareUrl && (
+                          <>
+                            <span className="text-xs text-[#c4dfc4]">✓ Live</span>
+                            <Button
+                              size="sm"
+                              onClick={() => window.open(shareUrl, '_blank')}
+                              className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a] shadow-md"
+                            >
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              View Form
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </DndContext>
-      
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </DndContext>
+
 
       {/* Right Panel - AI Chat - Dynamic with Real API - Always visible but disabled on Settings/Publish */}
       <AIChatPanel
@@ -3009,12 +2980,12 @@ function FormsPageContent() {
           setFormFields(fields);
           if (formMeta?.title) setFormName(formMeta.title || "Untitled Form");
           if (formMeta?.description) setFormDescription(formMeta.description || "Add a description for your form");
-          
+
           // Hide AI generating spinner once fields appear
           if (fields.length > 0 && isAiGenerating) {
             setIsAiGenerating(false);
           }
-          
+
           // Mark for auto-save when AI creates a complete form
           if (fields.length > 0 && formMeta?.title && !isEditMode) {
             shouldAutoSave.current = true;
@@ -3024,7 +2995,7 @@ function FormsPageContent() {
 
       {/* AI Chat Pointer - Shows when user selects "Build with AI Chat" */}
       {isMounted && showChatPointer && isChatOpen && (
-        <div 
+        <div
           className="fixed right-[400px] top-[50%] -translate-y-1/2 z-[60] pointer-events-none animate-pulse"
           onClick={() => setShowChatPointer(false)}
         >
@@ -3032,17 +3003,17 @@ function FormsPageContent() {
             {/* Arrow pointing right */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2">
               <svg width="60" height="60" viewBox="0 0 60 60" className="text-[#c4dfc4] drop-shadow-lg">
-                <path 
-                  d="M10 30 L40 30 M40 30 L30 20 M40 30 L30 40" 
-                  stroke="currentColor" 
-                  strokeWidth="4" 
-                  strokeLinecap="round" 
+                <path
+                  d="M10 30 L40 30 M40 30 L30 20 M40 30 L30 40"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  strokeLinecap="round"
                   fill="none"
                   className="animate-bounce-x"
                 />
               </svg>
             </div>
-            
+
             {/* Tooltip */}
             <Card className="absolute right-[70px] top-1/2 -translate-y-1/2 p-4 bg-gradient-to-r from-[#c4dfc4] to-[#b5d0b5] border-[#c4dfc4] shadow-xl max-w-[280px] pointer-events-auto cursor-pointer">
               <div className="flex items-start gap-3">
@@ -3055,7 +3026,7 @@ function FormsPageContent() {
                     Describe what fields you need and I'll add them for you.
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowChatPointer(false)}
                   className="text-gray-600 hover:text-gray-900 transition-colors"
                 >
@@ -3068,29 +3039,29 @@ function FormsPageContent() {
       )}
 
       <DragOverlay dropAnimation={null} modifiers={modifiers}>
-          {activeWidget ? (
-            <Card
-              className="p-3 shadow-2xl border-2 rotate-3 opacity-90 cursor-grabbing"
-              style={{
-                backgroundImage: `linear-gradient(to right, ${activeWidget.color}, ${activeWidget.color}dd)`,
-                width: '280px',
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-black/10 p-2">
-                  <activeWidget.icon className="h-4 w-4 text-[#0a0a0a]" />
+        {activeWidget ? (
+          <Card
+            className="p-3 shadow-2xl border-2 rotate-3 opacity-90 cursor-grabbing"
+            style={{
+              backgroundImage: `linear-gradient(to right, ${activeWidget.color}, ${activeWidget.color}dd)`,
+              width: '280px',
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-black/10 p-2">
+                <activeWidget.icon className="h-4 w-4 text-[#0a0a0a]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-[#0a0a0a]">
+                  {activeWidget.name}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-[#0a0a0a]">
-                    {activeWidget.name}
-                  </div>
-                  <div className="text-xs text-[#0a0a0a]/70">
-                    {activeWidget.description}
-                  </div>
+                <div className="text-xs text-[#0a0a0a]/70">
+                  {activeWidget.description}
                 </div>
               </div>
-            </Card>
-          ) : null}
+            </div>
+          </Card>
+        ) : null}
       </DragOverlay>
 
       {/* Share Modal */}
@@ -3101,14 +3072,14 @@ function FormsPageContent() {
               <CheckCircle2 className="w-16 h-16 text-[#c4dfc4] mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Form Saved!</h2>
               <p className="text-gray-400 mb-6">Share this link with anyone to collect responses:</p>
-              
+
               <div className="flex gap-2 mb-6">
                 <Input
                   value={shareUrl}
                   readOnly
                   className="bg-white/5 border-white/10 text-white font-mono text-sm"
                 />
-                <Button 
+                <Button
                   onClick={copyShareUrl}
                   className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
                 >
@@ -3147,11 +3118,10 @@ function EmptyDropZone({ isOver }: { isOver: boolean }) {
   return (
     <div
       ref={setNodeRef}
-      className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
-        isOver
+      className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${isOver
           ? "border-[#c4dfc4] bg-[#c4dfc4]/10 scale-105"
           : "border-border/50"
-      }`}
+        }`}
     >
       <p className="text-muted-foreground text-sm">
         {isOver

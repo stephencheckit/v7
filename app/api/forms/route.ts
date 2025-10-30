@@ -13,10 +13,10 @@ import { apiRateLimit, getClientIdentifier, checkRateLimit, getRateLimitHeaders 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Get user's workspace
     const workspaceId = await getUserWorkspaceId();
-    
+
     if (!workspaceId) {
       return NextResponse.json(
         { error: 'Unauthorized - no workspace found' },
@@ -28,14 +28,14 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     const identifier = getClientIdentifier(req, user?.id);
     const rateLimitResult = await checkRateLimit(apiRateLimit, identifier);
-    
+
     if (!rateLimitResult.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Rate limit exceeded. Please slow down.',
           reset: rateLimitResult.reset
         },
-        { 
+        {
           status: 429,
           headers: getRateLimitHeaders(rateLimitResult)
         }
@@ -70,26 +70,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (schema.fields.length === 0) {
-      console.error('❌ Validation failed: schema.fields is empty');
-      return NextResponse.json(
-        { error: 'Form must have at least one field' },
-        { status: 400 }
-      );
-    }
-
+    // Allow blank forms (0 fields) - user will add fields in the builder
     console.log('✅ Validation passed:', {
       title,
       fieldCount: schema.fields.length,
       workspaceId,
+      isBlankForm: schema.fields.length === 0,
     });
 
     // Generate short ID
     const formId = nanoid(8);
-    
+
     // Get app URL from environment or construct from request
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ||
+      `${req.nextUrl.protocol}//${req.nextUrl.host}`;
     const shareUrl = `${appUrl}/f/${formId}`;
 
     // Build insert data with workspace_id
@@ -123,7 +117,7 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error('Supabase error:', error);
       return NextResponse.json(
-        { 
+        {
           error: 'Failed to create form',
           details: error.message,
           code: error.code,
@@ -158,10 +152,10 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Get user's workspace
     const workspaceId = await getUserWorkspaceId();
-    
+
     if (!workspaceId) {
       return NextResponse.json(
         { error: 'Unauthorized - no workspace found' },

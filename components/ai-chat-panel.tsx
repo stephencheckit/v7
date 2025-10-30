@@ -556,6 +556,10 @@ Please extract and build the form now.`;
       console.log('📝 Parsing complete message (length:', content.length, ')');
       console.log('🎯 Current Page:', currentPage);
 
+      // Track operation results for confirmation message
+      const operationResults: string[] = [];
+      let finalFieldCount = currentFields.length;
+
       // FORM MODE: Parse form operations
       // Extract create_form calls from multiple formats:
       // Format 1: CREATE_FORM:\n{...} (capture until we find a closing brace at the start of a line or followed by narrative text)
@@ -664,17 +668,17 @@ Please extract and build the form now.`;
             console.log('Backend form:', backendForm);
             const { fields, title, description } = convertBackendFormToFrontend(backendForm);
             console.log('Frontend fields:', fields);
-            
-            // Validate form before updating
-            if (!fields || fields.length === 0) {
-              console.error('❌ Form has no fields, cannot update');
+
+            // Validate form before updating (allow blank forms with 0 fields)
+            if (!fields) {
+              console.error('❌ Form has no fields array, cannot update');
               setMessages(prev => [...prev, {
                 role: 'assistant',
                 content: '❌ Sorry, I couldn\'t create the form properly. Please try again with a clearer description.'
               }]);
               return;
             }
-            
+
             if (!title || title.trim() === '') {
               console.error('❌ Form has no title, cannot update');
               setMessages(prev => [...prev, {
@@ -683,9 +687,13 @@ Please extract and build the form now.`;
               }]);
               return;
             }
-            
+
             console.log('✅ Form validated, updating with', fields.length, 'fields');
             onFormUpdate?.(fields, { title, description });
+            
+            // Track result
+            finalFieldCount = fields.length;
+            operationResults.push(`Created form "${title}" with ${fields.length} field(s)`);
           } catch (firstParseError) {
             // JSON parsing failed - try to log more details
             console.error('Failed to parse form JSON on first attempt:', firstParseError);
@@ -724,6 +732,10 @@ Please extract and build the form now.`;
 
               console.log('✅ Updating form metadata:', formMeta);
               onFormUpdate?.(currentFields, formMeta);
+              
+              // Track result
+              if (metaData.title) operationResults.push(`Updated form title to "${metaData.title}"`);
+              if (metaData.description) operationResults.push(`Updated form description`);
 
               // Continue processing other operations (don't return)
             } catch (e) {
@@ -822,6 +834,10 @@ Please extract and build the form now.`;
 
               const { fields, title, description } = convertBackendFormToFrontend(backendForm);
               onFormUpdate?.(fields, { title, description });
+              
+              // Track result
+              const updatedFieldLabel = existingField.label || fieldId;
+              operationResults.push(`Updated field "${updatedFieldLabel}"`);
 
               // Don't process add_field if we updated
               return;
@@ -909,6 +925,10 @@ Please extract and build the form now.`;
 
               const { fields, title, description } = convertBackendFormToFrontend(backendForm);
               onFormUpdate?.(fields, { title, description });
+              
+              // Track result
+              const movedFieldLabel = field.label || fieldId;
+              operationResults.push(`Moved field "${movedFieldLabel}" to ${position}`);
 
               // Don't process other operations if we moved
               return;
@@ -973,6 +993,11 @@ Please extract and build the form now.`;
 
               const { fields, title, description } = convertBackendFormToFrontend(backendForm);
               onFormUpdate?.(fields, { title, description });
+
+              // Track result
+              const removedFieldLabel = currentFields.find(f => f.id === fieldId)?.label || fieldId;
+              finalFieldCount--;
+              operationResults.push(`Removed field "${removedFieldLabel}"`);
 
               // Don't process add_field if we removed
               return;
@@ -1383,9 +1408,27 @@ Please extract and build the form now.`;
 
           const { fields, title, description } = convertBackendFormToFrontend(backendForm as any);
           onFormUpdate?.(fields, { title, description });
+          
+          // Track result
+          finalFieldCount += addedFields.length;
+          addedFields.forEach(f => {
+            operationResults.push(`Added field "${f.label}"`);
+          });
         } else {
           console.log('⚠️ No fields were added (parsing may have failed)');
         }
+      }
+
+      // Inject confirmation message if any operations succeeded
+      if (operationResults.length > 0) {
+        const confirmationMessage = `✅ **Operation Complete**\n\n${operationResults.map(r => `• ${r}`).join('\n')}\n\n📊 Form now has **${finalFieldCount} field(s)** total.`;
+        
+        console.log('💬 Injecting confirmation message:', confirmationMessage);
+        
+        setMessages(prev => [...prev, {
+          role: 'system',
+          content: confirmationMessage
+        }]);
       }
 
       // Note: We don't clean the message here to avoid infinite loops
