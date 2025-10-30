@@ -73,7 +73,7 @@ ${Object.entries(currentValues).length > 0 ? Object.entries(currentValues).map((
 3. For yes/no: recognize "yes", "yeah", "yep", "correct", "good", "no", "nope", "negative", "not good"
 4. For numbers: extract ANY numeric value mentioned
 5. For text: extract relevant phrases
-6. For multiple-choice: match to the closest option
+6. For multiple-choice/radio: **Match the EXACT option text** (including emojis like 👍 Yes or 👎 No)
 7. For CHECKBOX fields: Return an ARRAY of ALL mentioned options (e.g., ["Shoes", "Book", "Cup"])
 8. Be creative with matching - if they say "saw shoes and a book", that matches multiple items
 9. Only put things in unstructured_notes if they REALLY don't match any question
@@ -81,16 +81,20 @@ ${Object.entries(currentValues).length > 0 ? Object.entries(currentValues).map((
 ## Output Format (JSON only):
 {
   "field_updates": {
-    "field_id": "value_or_array_for_checkboxes"
+    "field_id": "exact_option_value_or_array"
   },
   "unstructured_notes": ["things that don't match any question"]
 }
 
 ## CRITICAL RULES:
-- For CHECKBOX fields: ALWAYS return an array: ["option1", "option2"]
-- For radio/select: Return a single string: "option1"
-- For text: Return a string: "The scene looks great"
-- BE AGGRESSIVE. If someone says "temperature is 38" and there's a temperature field, fill it. 
+- For radio/select: Return the EXACT option text from the list (e.g., "👍 Yes" not just "Yes")
+- For CHECKBOX fields: ALWAYS return an array of EXACT option texts: ["👍 Yes", "Shoes", "Book"]
+- For text fields: Return a string: "The scene looks great"
+- BE AGGRESSIVE at matching meaning to options:
+  • If they say "yes" and options are ["👍 Yes", "👎 No"] → return "👍 Yes"
+  • If they say "no" and options are ["👍 Yes", "👎 No"] → return "👎 No"
+  • If they say "shoes" and options are ["Shoes", "Child", "Cup"] → return "Shoes"
+- If someone says "temperature is 38" and there's a temperature field, fill it
 - If they say "I see shoes, a child, a cup, and a book" → extract ALL items for checkbox field
 
 Return ONLY valid JSON, no other text.`;
@@ -126,16 +130,74 @@ Return ONLY valid JSON, no other text.`;
       };
     }
 
-    console.log('[Voice-to-Form] ✅ Parsed result:', JSON.stringify(result, null, 2));
-    console.log('[Voice-to-Form] Field updates:');
+    // Step 3: Normalize field values (fuzzy match for radio/select options with emojis)
+    const normalizedUpdates: Record<string, any> = {};
+    
     Object.entries(result.field_updates || {}).forEach(([fieldId, value]) => {
+      const field = formSchema.fields.find((f: any) => f.id === fieldId || f.name === fieldId);
+      
+      if (!field) {
+        normalizedUpdates[fieldId] = value;
+        return;
+      }
+
+      // For radio/select fields with options, do fuzzy matching
+      if ((field.type === 'radio' || field.type === 'select') && field.options && Array.isArray(field.options)) {
+        // Check if value exactly matches an option
+        if (field.options.includes(value)) {
+          normalizedUpdates[fieldId] = value;
+        } else {
+          // Fuzzy match: find option that contains the value (case-insensitive)
+          const cleanValue = String(value).toLowerCase().trim();
+          const match = field.options.find((opt: string) => 
+            opt.toLowerCase().includes(cleanValue) || cleanValue.includes(opt.toLowerCase())
+          );
+          normalizedUpdates[fieldId] = match || value; // Use match if found, otherwise original
+          
+          if (match && match !== value) {
+            console.log(`[Voice-to-Form] 🔧 Fuzzy matched "${value}" → "${match}" for field: ${field.label}`);
+          }
+        }
+      } 
+      // For checkbox fields, fuzzy match each item in the array
+      else if (field.type === 'checkbox' && field.options && Array.isArray(field.options) && Array.isArray(value)) {
+        const matchedItems = value.map((item: string) => {
+          if (field.options.includes(item)) {
+            return item;
+          } else {
+            const cleanItem = String(item).toLowerCase().trim();
+            const match = field.options.find((opt: string) => 
+              opt.toLowerCase().includes(cleanItem) || cleanItem.includes(opt.toLowerCase())
+            );
+            if (match && match !== item) {
+              console.log(`[Voice-to-Form] 🔧 Fuzzy matched "${item}" → "${match}" for field: ${field.label}`);
+            }
+            return match || item;
+          }
+        });
+        normalizedUpdates[fieldId] = matchedItems;
+      }
+      // For other fields, use value as-is
+      else {
+        normalizedUpdates[fieldId] = value;
+      }
+    });
+
+    const finalResult = {
+      field_updates: normalizedUpdates,
+      unstructured_notes: result.unstructured_notes || []
+    };
+
+    console.log('[Voice-to-Form] ✅ Final result (after normalization):', JSON.stringify(finalResult, null, 2));
+    console.log('[Voice-to-Form] Field updates:');
+    Object.entries(finalResult.field_updates || {}).forEach(([fieldId, value]) => {
       const field = formSchema.fields.find((f: any) => f.id === fieldId || f.name === fieldId);
       if (field) {
         console.log(`  - ${field.label} (${field.type}): ${Array.isArray(value) ? `[${value.join(', ')}]` : value}`);
       }
     });
 
-    return Response.json(result);
+    return Response.json(finalResult);
   } catch (error) {
     console.error('[Voice-to-Form] Error:', error);
     return Response.json(
