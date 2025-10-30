@@ -690,7 +690,7 @@ Please extract and build the form now.`;
 
             console.log('✅ Form validated, updating with', fields.length, 'fields');
             onFormUpdate?.(fields, { title, description });
-            
+
             // Track result
             finalFieldCount = fields.length;
             operationResults.push(`Created form "${title}" with ${fields.length} field(s)`);
@@ -732,7 +732,7 @@ Please extract and build the form now.`;
 
               console.log('✅ Updating form metadata:', formMeta);
               onFormUpdate?.(currentFields, formMeta);
-              
+
               // Track result
               if (metaData.title) operationResults.push(`Updated form title to "${metaData.title}"`);
               if (metaData.description) operationResults.push(`Updated form description`);
@@ -834,7 +834,7 @@ Please extract and build the form now.`;
 
               const { fields, title, description } = convertBackendFormToFrontend(backendForm);
               onFormUpdate?.(fields, { title, description });
-              
+
               // Track result
               const updatedFieldLabel = existingField.label || fieldId;
               operationResults.push(`Updated field "${updatedFieldLabel}"`);
@@ -925,7 +925,7 @@ Please extract and build the form now.`;
 
               const { fields, title, description } = convertBackendFormToFrontend(backendForm);
               onFormUpdate?.(fields, { title, description });
-              
+
               // Track result
               const movedFieldLabel = field.label || fieldId;
               operationResults.push(`Moved field "${movedFieldLabel}" to ${position}`);
@@ -1408,7 +1408,7 @@ Please extract and build the form now.`;
 
           const { fields, title, description } = convertBackendFormToFrontend(backendForm as any);
           onFormUpdate?.(fields, { title, description });
-          
+
           // Track result
           finalFieldCount += addedFields.length;
           addedFields.forEach(f => {
@@ -1426,7 +1426,7 @@ Please extract and build the form now.`;
         console.log('💬 Injecting confirmation message:', confirmationMessage);
         
         setMessages(prev => [...prev, {
-          role: 'system',
+          role: 'assistant' as const,
           content: confirmationMessage
         }]);
       }
