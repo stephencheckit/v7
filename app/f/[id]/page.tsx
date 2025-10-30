@@ -608,23 +608,31 @@ export default function PublicFormPage() {
           {form && form.ai_vision_enabled && !assistMode && (
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-400 mb-3">AI Assist Options</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
+              <div className="grid grid-cols-2 gap-4">
+                <button
                   onClick={() => setAssistMode('vision')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-2 hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
+                  className="group relative h-auto py-6 px-4 flex flex-col items-center gap-3 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700 rounded-xl transition-all duration-200 hover:border-[#c4dfc4] hover:shadow-[0_0_20px_rgba(196,223,196,0.4)] hover:bg-gray-800/70 cursor-pointer"
                 >
-                  <Camera className="h-6 w-6 text-[#c4dfc4]" />
-                  <span className="text-sm font-medium text-white">AI Vision</span>
-                  <span className="text-xs text-gray-400">Use camera</span>
-                </Button>
-                <Button
+                  <div className="w-14 h-14 rounded-full bg-[#c4dfc4]/10 flex items-center justify-center group-hover:bg-[#c4dfc4]/20 transition-colors">
+                    <Camera className="h-7 w-7 text-[#c4dfc4]" />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold text-white mb-1">AI Vision</div>
+                    <div className="text-xs text-gray-400">Use camera</div>
+                  </div>
+                </button>
+                <button
                   onClick={() => setAssistMode('voice')}
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gradient-to-br from-[#c4dfc4]/20 to-[#c8e0f5]/20 border border-[#c4dfc4]/30 transition-all hover:border-2 hover:border-[#c4dfc4] hover:shadow-[0_0_15px_rgba(196,223,196,0.6)]"
+                  className="group relative h-auto py-6 px-4 flex flex-col items-center gap-3 bg-gray-800/50 backdrop-blur-sm border-2 border-gray-700 rounded-xl transition-all duration-200 hover:border-[#c4dfc4] hover:shadow-[0_0_20px_rgba(196,223,196,0.4)] hover:bg-gray-800/70 cursor-pointer"
                 >
-                  <Mic className="h-6 w-6 text-[#c4dfc4]" />
-                  <span className="text-sm font-medium text-white">Voice Recording</span>
-                  <span className="text-xs text-gray-400">Speak answers</span>
-                </Button>
+                  <div className="w-14 h-14 rounded-full bg-[#c4dfc4]/10 flex items-center justify-center group-hover:bg-[#c4dfc4]/20 transition-colors">
+                    <Mic className="h-7 w-7 text-[#c4dfc4]" />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold text-white mb-1">Voice Recording</div>
+                    <div className="text-xs text-gray-400">Speak answers</div>
+                  </div>
+                </button>
               </div>
             </div>
           )}
