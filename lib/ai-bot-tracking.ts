@@ -43,7 +43,7 @@ export async function logBotAccess(data: BotAccessLog): Promise<void> {
   });
 
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     console.error('❌ Supabase client not available');
     return;
@@ -88,8 +88,12 @@ export const AI_BOT_PATTERNS = {
   'ChatGPT-User': 'OpenAI',
   'Claude-Web': 'Anthropic',
   'Claude-Bot': 'Anthropic',
+  'Claude-User': 'Anthropic',
   'PerplexityBot': 'Perplexity',
+  'Perplexity-User': 'Perplexity',
   'Google-Extended': 'Google',
+  'Gemini-Bot': 'Google',
+  'GoogleOther': 'Google',
   'anthropic-ai': 'Anthropic',
   'Bytespider': 'ByteDance',
   'Applebot-Extended': 'Apple',
@@ -135,7 +139,7 @@ export function isAIBot(userAgent: string): boolean {
  */
 export async function getBotAnalytics(startDate?: Date, endDate?: Date) {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     console.warn('Supabase client not initialized');
     return null;
@@ -174,7 +178,7 @@ export async function getBotAnalytics(startDate?: Date, endDate?: Date) {
  */
 export async function getBotStatistics() {
   const supabase = getSupabaseClient();
-  
+
   if (!supabase) {
     console.warn('Supabase client not initialized');
     return null;
