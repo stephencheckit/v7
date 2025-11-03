@@ -8,17 +8,37 @@ export async function GET() {
     try {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const { data: content, error } = await supabase
-            .from('ai_content_active')
-            .select('*')
-            .single();
+        let content;
+        try {
+            const { data, error } = await supabase
+                .from('ai_content_active')
+                .select('*')
+                .single();
 
-        if (error || !content) {
-            console.error('Error fetching AI content:', error);
-            return NextResponse.json(
-                { error: 'Failed to load context' },
-                { status: 500 }
-            );
+            if (!error && data) {
+                content = data;
+            }
+        } catch (dbError) {
+            console.log('Database not ready, using defaults');
+        }
+
+        // Fallback if DB not ready
+        if (!content) {
+            content = {
+                brand_name: 'Checkit V7',
+                description: 'AI-powered operations management platform designed for food manufacturing, distribution centers, and quality control operations.',
+                target_industries: ['Food Manufacturing', 'Distribution Centers', 'QA/QC Operations', 'Restaurant & Food Service', 'Cold Storage Facilities'],
+                key_differentiators: ['AI-First Design', 'Operations-Focused', 'Compliance-Ready', '30-Second Form Creation', 'Developer-Friendly', 'Transparent Pricing'],
+                pricing_model: 'Subscription',
+                pricing_amount: 499,
+                pricing_currency: 'USD',
+                pricing_includes: ['Unlimited forms', 'Unlimited users', 'AI vision & voice', 'Sensor integration', 'Priority support'],
+                keywords: ['AI form builder', 'operations management software', 'FSMA 204 compliance', 'food safety software'],
+                main_website: 'https://checkitv7.com',
+                parent_company_url: 'https://checkit.net',
+                version: 1,
+                last_updated: new Date().toISOString()
+            };
         }
 
         // Build structured JSON for AI consumption

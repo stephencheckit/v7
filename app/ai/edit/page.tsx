@@ -36,9 +36,40 @@ export default function AIContentEditor() {
             if (response.ok) {
                 const data = await response.json();
                 setContent(data);
+            } else {
+                // Database not ready yet, use default content
+                setContent({
+                    brand_name: 'Checkit V7',
+                    tagline: 'Stop wasting hours on checklists. Start with vision-based automation.',
+                    description: 'Checkit V7 is an AI-powered operations management platform designed for food manufacturing, distribution centers, and quality control operations.',
+                    target_industries: ['Food Manufacturing', 'Distribution Centers', 'QA/QC Operations'],
+                    key_differentiators: ['AI-First Design', 'Operations-Focused', 'Compliance-Ready'],
+                    pricing_model: 'Subscription',
+                    pricing_amount: 499,
+                    pricing_currency: 'USD',
+                    pricing_includes: ['Unlimited forms', 'Unlimited users', 'AI vision & voice'],
+                    keywords: ['AI form builder', 'operations management software'],
+                    main_website: 'https://checkitv7.com',
+                    parent_company_url: 'https://checkit.net',
+                });
             }
         } catch (error) {
             console.error('Failed to fetch content:', error);
+            // Use default content on error
+            setContent({
+                brand_name: 'Checkit V7',
+                tagline: 'Stop wasting hours on checklists. Start with vision-based automation.',
+                description: 'Checkit V7 is an AI-powered operations management platform designed for food manufacturing, distribution centers, and quality control operations.',
+                target_industries: ['Food Manufacturing', 'Distribution Centers', 'QA/QC Operations'],
+                key_differentiators: ['AI-First Design', 'Operations-Focused', 'Compliance-Ready'],
+                pricing_model: 'Subscription',
+                pricing_amount: 499,
+                pricing_currency: 'USD',
+                pricing_includes: ['Unlimited forms', 'Unlimited users', 'AI vision & voice'],
+                keywords: ['AI form builder', 'operations management software'],
+                main_website: 'https://checkitv7.com',
+                parent_company_url: 'https://checkit.net',
+            });
         } finally {
             setLoading(false);
         }
