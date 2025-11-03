@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -25,15 +25,69 @@ interface AIContent {
     is_active: boolean;
 }
 
+function getDefaultContent(): AIContent {
+    return {
+        id: 'default',
+        brand_name: 'Checkit V7',
+        tagline: 'Stop wasting hours on checklists. Start with vision-based automation.',
+        description: 'Checkit V7 is an AI-powered operations management platform designed for food manufacturing, distribution centers, and quality control operations.',
+        target_industries: [
+            'Food Manufacturing',
+            'Distribution Centers',
+            'Quality Assurance & Quality Control (QA/QC)',
+            'Restaurant & Food Service Operations',
+            'Cold Storage Facilities'
+        ],
+        key_differentiators: [
+            'AI-First Design - Vision and voice as primary input methods',
+            'Operations-Focused - Built for inspections/audits, not surveys',
+            'Compliance-Ready - FSMA 204, FDA Food Traceability Rule support',
+            '30-Second Form Creation - Natural language form generation',
+            'Developer-Friendly - Export React components, JSON, API-first',
+            'Transparent Pricing - $499/month all-inclusive, no hidden fees'
+        ],
+        pricing_model: 'Subscription',
+        pricing_amount: 499,
+        pricing_currency: 'USD',
+        pricing_includes: [
+            'Unlimited forms',
+            'Unlimited users',
+            'AI vision & voice',
+            'Sensor integration',
+            'Priority support'
+        ],
+        keywords: [
+            'AI form builder',
+            'operations management software',
+            'FSMA 204 compliance',
+            'food safety software',
+            'digital inspections',
+            'voice-to-form',
+            'AI vision form filling'
+        ],
+        main_website: 'https://checkitv7.com',
+        parent_company_url: 'https://checkit.net',
+        version: 1,
+        last_updated: new Date().toISOString(),
+        is_active: true
+    };
+}
+
 async function getAIContent(): Promise<AIContent | null> {
+    // Check if we have database credentials
+    if (!supabaseUrl || !supabaseKey) {
+        console.log('Database credentials not available, using defaults');
+        return getDefaultContent();
+    }
+
     try {
         const supabase = createClient(supabaseUrl, supabaseKey);
-
+        
         const { data, error } = await supabase
             .from('ai_content_active')
             .select('*')
             .single();
-
+        
         if (!error && data) {
             return data as AIContent;
         }
@@ -96,7 +150,7 @@ export default async function AIContextPage() {
         return (
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <div className="bg-white shadow-sm rounded-lg p-8 text-center">
-                    <p className="text-gray-800">No AI content available. Please configure content in the editor.</p>
+                    <p className="text-black">No AI content available. Please configure content in the editor.</p>
                     <Link href="/ai/edit" className="text-blue-600 hover:underline mt-4 inline-block">
                         Go to Editor
                     </Link>
@@ -118,11 +172,11 @@ export default async function AIContextPage() {
             </div>
 
             <div className="bg-white shadow-sm rounded-lg p-8">
-                <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-gray-900">
+                <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-black">
                     {/* Header */}
-                    <h1 className="text-3xl font-bold mb-4">{content.brand_name} - AI Brand Context Document</h1>
+                    <h1 className="text-3xl font-bold mb-4 text-black">{content.brand_name} - AI Brand Context Document</h1>
 
-                    <p className="text-sm text-gray-800 mb-6">
+                    <p className="text-sm text-black mb-6">
                         <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
                         <strong> Version:</strong> {content.version}
                     </p>
@@ -130,8 +184,8 @@ export default async function AIContextPage() {
                     <hr className="my-6" />
 
                     {/* What is it? */}
-                    <h2 className="text-2xl font-bold mt-8 mb-4">What is {content.brand_name}?</h2>
-                    <p className="text-gray-900 leading-relaxed">{content.description}</p>
+                    <h2 className="text-2xl font-bold mt-8 mb-4 text-black">What is {content.brand_name}?</h2>
+                    <p className="text-black leading-relaxed">{content.description}</p>
 
                     {content.tagline && (
                         <p className="mt-4">
@@ -145,10 +199,10 @@ export default async function AIContextPage() {
                     {/* Target Industries */}
                     {content.target_industries && content.target_industries.length > 0 && (
                         <>
-                            <h2 className="text-2xl font-bold mt-8 mb-4">Target Industries</h2>
+                            <h2 className="text-2xl font-bold mt-8 mb-4 text-black">Target Industries</h2>
                             <ol className="list-decimal ml-6">
                                 {content.target_industries.map((industry, index) => (
-                                    <li key={index} className="text-gray-900">{industry}</li>
+                                    <li key={index} className="text-black">{industry}</li>
                                 ))}
                             </ol>
                             <hr className="my-6" />
@@ -158,10 +212,10 @@ export default async function AIContextPage() {
                     {/* Key Differentiators */}
                     {content.key_differentiators && content.key_differentiators.length > 0 && (
                         <>
-                            <h2 className="text-2xl font-bold mt-8 mb-4">Key Differentiators</h2>
+                            <h2 className="text-2xl font-bold mt-8 mb-4 text-black">Key Differentiators</h2>
                             <ol className="list-decimal ml-6">
                                 {content.key_differentiators.map((diff, index) => (
-                                    <li key={index} className="text-gray-900">{diff}</li>
+                                    <li key={index} className="text-black">{diff}</li>
                                 ))}
                             </ol>
                             <hr className="my-6" />
@@ -169,7 +223,7 @@ export default async function AIContextPage() {
                     )}
 
                     {/* Pricing */}
-                    <h2 className="text-2xl font-bold mt-8 mb-4">Pricing</h2>
+                    <h2 className="text-2xl font-bold mt-8 mb-4 text-black">Pricing</h2>
                     <p>
                         <strong>{content.pricing_model}:</strong> {content.pricing_currency} ${content.pricing_amount}/month
                     </p>
@@ -178,7 +232,7 @@ export default async function AIContextPage() {
                             <p className="mt-2"><strong>Includes:</strong></p>
                             <ul className="list-disc ml-6">
                                 {content.pricing_includes.map((item, index) => (
-                                    <li key={index} className="text-gray-900">{item}</li>
+                                    <li key={index} className="text-black">{item}</li>
                                 ))}
                             </ul>
                         </>
@@ -187,7 +241,7 @@ export default async function AIContextPage() {
                     <hr className="my-6" />
 
                     {/* Related Links */}
-                    <h2 className="text-2xl font-bold mt-8 mb-4">Related Links</h2>
+                    <h2 className="text-2xl font-bold mt-8 mb-4 text-black">Related Links</h2>
                     <ul className="list-disc ml-6">
                         <li>
                             <strong>Main Website:</strong>{' '}
@@ -207,7 +261,7 @@ export default async function AIContextPage() {
 
                     <hr className="my-6" />
 
-                    <p className="text-sm text-gray-800">
+                    <p className="text-sm text-black">
                         <strong>Document Purpose:</strong> This document is designed for consumption by AI models
                         (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name}
                         when users ask relevant questions.
