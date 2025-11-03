@@ -1,21 +1,36 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Create a Supabase client for server-side operations
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-// Only create client if env vars are available
-const supabase = supabaseUrl && supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey)
-  : null;
-
 export interface BotAccessLog {
-    bot_name: string;
-    user_agent: string;
-    path: string;
-    ip_address?: string;
-    referer?: string | null;
-    response_time_ms?: number;
+  bot_name: string;
+  user_agent: string;
+  path: string;
+  ip_address?: string;
+  referer?: string | null;
+  response_time_ms?: number;
+}
+
+/**
+ * Get or create a Supabase client for Edge Runtime
+ * (must be called inside function to access env vars in Edge)
+ */
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Missing Supabase env vars:', {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseServiceKey,
+    });
+    return null;
+  }
+
+  try {
+    return createClient(supabaseUrl, supabaseServiceKey);
+  } catch (err) {
+    console.error('❌ Failed to create Supabase client:', err);
+    return null;
+  }
 }
 
 /**
@@ -25,38 +40,43 @@ export async function logBotAccess(data: BotAccessLog): Promise<void> {
   console.log(`💾 Attempting to log bot access:`, {
     bot_name: data.bot_name,
     path: data.path,
-    hasSupabase: !!supabase,
-    supabaseUrl: !!supabaseUrl,
-    supabaseKey: !!supabaseServiceKey,
   });
 
+  const supabase = getSupabaseClient();
+  
   if (!supabase) {
-    console.error('❌ Supabase client not initialized - env vars:', {
-      url: supabaseUrl,
-      hasKey: !!supabaseServiceKey,
-    });
+    console.error('❌ Supabase client not available');
     return;
   }
 
+  console.log('🔌 Supabase client created successfully');
+
   try {
-    const { error } = await supabase
+    const insertData = {
+      bot_name: data.bot_name,
+      user_agent: data.user_agent,
+      path: data.path,
+      ip_address: data.ip_address || null,
+      referer: data.referer || null,
+      response_time_ms: data.response_time_ms || null,
+    };
+
+    console.log('📤 Inserting to database:', insertData);
+
+    const { data: result, error } = await supabase
       .from('ai_bot_accesses')
-      .insert({
-        bot_name: data.bot_name,
-        user_agent: data.user_agent,
-        path: data.path,
-        ip_address: data.ip_address || null,
-        referer: data.referer || null,
-        response_time_ms: data.response_time_ms || null,
-      });
+      .insert(insertData)
+      .select();
 
     if (error) {
-      console.error('❌ Error logging bot access to Supabase:', error);
-    } else {
-      console.log('✅ Successfully logged bot access');
+      console.error('❌ Supabase insert error:', JSON.stringify(error));
+      throw error;
     }
+
+    console.log('✅ Successfully logged bot access:', result);
   } catch (err) {
-    console.error('❌ Failed to log bot access (exception):', err);
+    console.error('❌ Failed to log bot access (caught exception):', JSON.stringify(err));
+    // Don't throw - we don't want to break the middleware
   }
 }
 
@@ -64,56 +84,58 @@ export async function logBotAccess(data: BotAccessLog): Promise<void> {
  * AI bot detection patterns
  */
 export const AI_BOT_PATTERNS = {
-    'GPTBot': 'OpenAI',
-    'ChatGPT-User': 'OpenAI',
-    'Claude-Web': 'Anthropic',
-    'Claude-Bot': 'Anthropic',
-    'PerplexityBot': 'Perplexity',
-    'Google-Extended': 'Google',
-    'anthropic-ai': 'Anthropic',
-    'Bytespider': 'ByteDance',
-    'Applebot-Extended': 'Apple',
-    'cohere-ai': 'Cohere',
-    'YouBot': 'You.com',
+  'GPTBot': 'OpenAI',
+  'ChatGPT-User': 'OpenAI',
+  'Claude-Web': 'Anthropic',
+  'Claude-Bot': 'Anthropic',
+  'PerplexityBot': 'Perplexity',
+  'Google-Extended': 'Google',
+  'anthropic-ai': 'Anthropic',
+  'Bytespider': 'ByteDance',
+  'Applebot-Extended': 'Apple',
+  'cohere-ai': 'Cohere',
+  'YouBot': 'You.com',
 } as const;
 
 export type BotName = keyof typeof AI_BOT_PATTERNS;
 export type BotCompany = typeof AI_BOT_PATTERNS[BotName];
 
 export interface DetectedBot {
-    name: BotName;
-    company: BotCompany;
+  name: BotName;
+  company: BotCompany;
 }
 
 /**
  * Detect if a user agent string belongs to an AI bot
  */
 export function detectAIBot(userAgent: string): DetectedBot | null {
-    if (!userAgent) return null;
+  if (!userAgent) return null;
 
-    for (const [botPattern, company] of Object.entries(AI_BOT_PATTERNS)) {
-        if (userAgent.includes(botPattern)) {
-            return {
-                name: botPattern as BotName,
-                company: company as BotCompany,
-            };
-        }
+  for (const [botPattern, company] of Object.entries(AI_BOT_PATTERNS)) {
+    if (userAgent.includes(botPattern)) {
+      return {
+        name: botPattern as BotName,
+        company: company as BotCompany,
+      };
     }
+  }
 
-    return null;
+  return null;
 }
 
 /**
  * Check if a user agent is an AI bot
  */
 export function isAIBot(userAgent: string): boolean {
-    return detectAIBot(userAgent) !== null;
+  return detectAIBot(userAgent) !== null;
 }
 
 /**
  * Get analytics for a specific date range
  */
 export async function getBotAnalytics(startDate?: Date, endDate?: Date) {
+  const supabase = getSupabaseClient();
+  
   if (!supabase) {
     console.warn('Supabase client not initialized');
     return null;
@@ -151,6 +173,8 @@ export async function getBotAnalytics(startDate?: Date, endDate?: Date) {
  * Get aggregated bot statistics
  */
 export async function getBotStatistics() {
+  const supabase = getSupabaseClient();
+  
   if (!supabase) {
     console.warn('Supabase client not initialized');
     return null;
