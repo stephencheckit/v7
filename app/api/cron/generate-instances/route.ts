@@ -11,11 +11,15 @@ import { FormCadence } from '@/lib/types/cadence';
  */
 export async function GET(req: NextRequest) {
   try {
-    // Verify cron secret
+    // Verify this is a legitimate Vercel Cron request
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    // Allow Vercel Cron (which doesn't send auth headers) OR manual requests with CRON_SECRET
+    const isVercelCron = req.headers.get('user-agent')?.includes('vercel-cron');
+    const isAuthorizedManual = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+    if (!isVercelCron && !isAuthorizedManual) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

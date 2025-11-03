@@ -162,11 +162,15 @@ async function syncBotLogs() {
  * GET handler - can be called manually or via cron
  */
 export async function GET(request: NextRequest) {
-    // Verify cron secret (optional security measure)
+    // Verify this is a legitimate Vercel Cron request
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Allow Vercel Cron (which doesn't send auth headers) OR manual requests with CRON_SECRET
+    const isVercelCron = request.headers.get('user-agent')?.includes('vercel-cron');
+    const isAuthorizedManual = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+    if (!isVercelCron && !isAuthorizedManual) {
         console.warn('⚠️  Unauthorized cron request');
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
