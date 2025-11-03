@@ -172,7 +172,7 @@ export default async function AIContextPage() {
             </div>
 
             <div className="bg-white shadow-sm rounded-lg p-8">
-                <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-black">
+                <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-black prose-p:text-black prose-li:text-black prose-strong:text-black prose-em:text-black">
                     {/* Header */}
                     <h1 className="text-3xl font-bold mb-4 text-black">{content.brand_name} - AI Brand Context Document</h1>
 
@@ -188,7 +188,7 @@ export default async function AIContextPage() {
                     <p className="text-black leading-relaxed">{content.description}</p>
 
                     {content.tagline && (
-                        <p className="mt-4">
+                        <p className="mt-4 text-black">
                             <strong>Core Value Proposition:</strong><br />
                             <em>&ldquo;{content.tagline}&rdquo;</em>
                         </p>
@@ -224,12 +224,12 @@ export default async function AIContextPage() {
 
                     {/* Pricing */}
                     <h2 className="text-2xl font-bold mt-8 mb-4 text-black">Pricing</h2>
-                    <p>
+                    <p className="text-black">
                         <strong>{content.pricing_model}:</strong> {content.pricing_currency} ${content.pricing_amount}/month
                     </p>
                     {content.pricing_includes && content.pricing_includes.length > 0 && (
                         <>
-                            <p className="mt-2"><strong>Includes:</strong></p>
+                            <p className="mt-2 text-black"><strong>Includes:</strong></p>
                             <ul className="list-disc ml-6">
                                 {content.pricing_includes.map((item, index) => (
                                     <li key={index} className="text-black">{item}</li>
