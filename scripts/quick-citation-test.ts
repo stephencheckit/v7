@@ -8,7 +8,12 @@
  * Usage: npx tsx scripts/quick-citation-test.ts
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import OpenAI from 'openai';
+
+// Load .env.local file
+config({ path: resolve(process.cwd(), '.env.local') });
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

@@ -13,9 +13,14 @@
  *   (Runs every Monday at 9am)
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+
+// Load .env.local file
+config({ path: resolve(process.cwd(), '.env.local') });
 
 // Initialize clients
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
