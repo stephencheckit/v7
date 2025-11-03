@@ -9,10 +9,13 @@ export async function GET(request: NextRequest) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase environment variables');
+      console.error('Missing Supabase environment variables:', {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseServiceKey,
+      });
       return NextResponse.json(
         { 
-          error: 'Server configuration error',
+          error: 'Server configuration error - Missing environment variables',
           summary: {
             totalVisits: 0,
             uniqueBots: 0,
@@ -27,6 +30,8 @@ export async function GET(request: NextRequest) {
         { status: 200 }
       );
     }
+
+    console.log('Supabase connection initialized successfully');
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
         const searchParams = request.nextUrl.searchParams;
@@ -45,10 +50,25 @@ export async function GET(request: NextRequest) {
         if (accessError) {
             console.error('Error fetching accesses:', accessError);
             return NextResponse.json(
-                { error: 'Failed to fetch analytics' },
-                { status: 500 }
+                { 
+                  error: 'Failed to fetch analytics',
+                  details: accessError.message,
+                  summary: {
+                    totalVisits: 0,
+                    uniqueBots: 0,
+                    mostActiveBot: 'None',
+                    lastVisit: null,
+                  },
+                  botCounts: {},
+                  timeSeriesData: [],
+                  recentAccesses: [],
+                  statistics: [],
+                },
+                { status: 200 }
             );
         }
+
+        console.log(`Fetched ${accesses?.length || 0} bot accesses`);
 
         // Get aggregated statistics
         const { data: stats, error: statsError } = await supabase

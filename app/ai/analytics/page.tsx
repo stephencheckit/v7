@@ -57,18 +57,37 @@ export default function AIAnalyticsPage() {
         fetchAnalytics();
     }, [dateRange]);
 
-    const fetchAnalytics = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`/api/ai-analytics?days=${dateRange}`);
-            const result = await response.json();
-            setData(result);
-        } catch (error) {
-            console.error('Failed to fetch analytics:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/ai-analytics?days=${dateRange}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      
+      // Ensure data has required structure
+      const safeData = {
+        summary: result.summary || { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
+        botCounts: result.botCounts || {},
+        timeSeriesData: result.timeSeriesData || [],
+        recentAccesses: result.recentAccesses || [],
+      };
+      
+      setData(safeData);
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+      // Set empty data on error
+      setData({
+        summary: { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
+        botCounts: {},
+        timeSeriesData: [],
+        recentAccesses: [],
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
     if (loading) {
         return (
