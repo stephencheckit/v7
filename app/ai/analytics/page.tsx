@@ -48,17 +48,42 @@ const BOT_COLORS: Record<string, string> = {
     'Applebot-Extended': '#555555',
 };
 
-const BOT_ICONS: Record<string, string> = {
-    'GPTBot': '🤖',
-    'ChatGPT-User': '💬',
-    'Claude-Bot': '🧠',
-    'Claude-Web': '💭',
-    'PerplexityBot': '🔍',
-    'Google-Extended': '🔎',
-    'Bytespider': '🕷️',
-    'Applebot-Extended': '🍎',
-    'cohere-ai': '⚡',
-    'YouBot': '👤',
+// Map bot names to company logo files
+const BOT_LOGOS: Record<string, string> = {
+    'GPTBot': '/openai.webp',
+    'ChatGPT-User': '/openai.webp',
+    'Claude-Bot': '/claude.png',
+    'Claude-Web': '/claude.png',
+    'anthropic-ai': '/claude.png',
+    'PerplexityBot': '/perplexity-color.png',
+    'Google-Extended': '/google.webp',
+    'Bytespider': '🕷️', // Keep emoji for now
+    'Applebot-Extended': '🍎', // Keep emoji for now
+    'cohere-ai': '⚡', // Keep emoji for now
+    'YouBot': '👤', // Keep emoji for now
+};
+
+// Helper to render bot icon/logo
+const BotIcon = ({ botName, size = 'md' }: { botName: string; size?: 'sm' | 'md' | 'lg' }) => {
+    const logo = BOT_LOGOS[botName];
+    const sizeClasses = {
+        sm: 'w-4 h-4',
+        md: 'w-6 h-6',
+        lg: 'w-8 h-8',
+    };
+
+    if (logo && logo.startsWith('/')) {
+        return (
+            <img
+                src={logo}
+                alt={botName}
+                className={`${sizeClasses[size]} object-contain`}
+            />
+        );
+    }
+
+    // Fallback to emoji
+    return <span className={size === 'sm' ? 'text-base' : size === 'lg' ? 'text-3xl' : 'text-xl'}>{logo || '🤖'}</span>;
 };
 
 // Generate realistic demo data for demonstration purposes
@@ -66,40 +91,40 @@ function getDemoData(days: number): AnalyticsData {
     const now = new Date();
     const bots = ['GPTBot', 'Claude-Bot', 'PerplexityBot', 'ChatGPT-User', 'Google-Extended', 'Claude-Web'];
     const paths = ['/ai/', '/ai/context.json'];
-    
+
     // Generate time series data
     const timeSeriesData = [];
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
         const dateStr = format(date, 'yyyy-MM-dd');
-        
+
         const dayData: any = { date: dateStr };
         // Add varying bot activity (more recent = more activity)
         const activityMultiplier = 1 + (days - i) / days; // Recent days have more activity
-        
+
         bots.forEach(bot => {
             const baseActivity = bot === 'GPTBot' ? 8 : bot === 'Claude-Bot' ? 6 : bot === 'PerplexityBot' ? 4 : 3;
             dayData[bot] = Math.floor(baseActivity * activityMultiplier * (0.5 + Math.random()));
         });
-        
+
         timeSeriesData.push(dayData);
     }
-    
+
     // Calculate bot counts
     const botCounts: Record<string, number> = {};
     bots.forEach(bot => {
         const baseCount = bot === 'GPTBot' ? 180 : bot === 'Claude-Bot' ? 135 : bot === 'PerplexityBot' ? 90 : 65;
         botCounts[bot] = Math.floor(baseCount * (days / 30));
     });
-    
+
     // Generate recent accesses
     const recentAccesses = [];
     for (let i = 0; i < 50; i++) {
         const bot = bots[Math.floor(Math.random() * bots.length)];
         const path = paths[Math.floor(Math.random() * paths.length)];
         const accessTime = new Date(now.getTime() - Math.random() * days * 24 * 60 * 60 * 1000);
-        
+
         recentAccesses.push({
             id: `demo-${i}`,
             bot_name: bot,
@@ -109,12 +134,12 @@ function getDemoData(days: number): AnalyticsData {
             ip_address: `35.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
         });
     }
-    
+
     // Sort by most recent first
     recentAccesses.sort((a, b) => new Date(b.accessed_at).getTime() - new Date(a.accessed_at).getTime());
-    
+
     const totalVisits = Object.values(botCounts).reduce((sum, count) => sum + count, 0);
-    
+
     return {
         summary: {
             totalVisits,
@@ -138,45 +163,45 @@ export default function AIAnalyticsPage() {
         fetchAnalytics();
     }, [dateRange, activeTab]);
 
-  const fetchAnalytics = async () => {
-    setLoading(true);
-    try {
-      if (activeTab === 'demo') {
-        // Load demo data
-        const demoData = getDemoData(dateRange);
-        setData(demoData);
-        setLoading(false);
-        return;
-      }
+    const fetchAnalytics = async () => {
+        setLoading(true);
+        try {
+            if (activeTab === 'demo') {
+                // Load demo data
+                const demoData = getDemoData(dateRange);
+                setData(demoData);
+                setLoading(false);
+                return;
+            }
 
-      const response = await fetch(`/api/ai-analytics?days=${dateRange}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      
-      // Ensure data has required structure
-      const safeData = {
-        summary: result.summary || { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
-        botCounts: result.botCounts || {},
-        timeSeriesData: result.timeSeriesData || [],
-        recentAccesses: result.recentAccesses || [],
-      };
-      
-      setData(safeData);
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
-      // Set empty data on error
-      setData({
-        summary: { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
-        botCounts: {},
-        timeSeriesData: [],
-        recentAccesses: [],
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+            const response = await fetch(`/api/ai-analytics?days=${dateRange}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+
+            // Ensure data has required structure
+            const safeData = {
+                summary: result.summary || { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
+                botCounts: result.botCounts || {},
+                timeSeriesData: result.timeSeriesData || [],
+                recentAccesses: result.recentAccesses || [],
+            };
+
+            setData(safeData);
+        } catch (error) {
+            console.error('Failed to fetch analytics:', error);
+            // Set empty data on error
+            setData({
+                summary: { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
+                botCounts: {},
+                timeSeriesData: [],
+                recentAccesses: [],
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -224,21 +249,19 @@ export default function AIAnalyticsPage() {
                 <div className="flex gap-8">
                     <button
                         onClick={() => setActiveTab('real')}
-                        className={`pb-4 px-1 border-b-2 font-medium transition-colors ${
-                            activeTab === 'real'
+                        className={`pb-4 px-1 border-b-2 font-medium transition-colors ${activeTab === 'real'
                                 ? 'border-blue-600 text-blue-600'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
+                            }`}
                     >
                         Real Data
                     </button>
                     <button
                         onClick={() => setActiveTab('demo')}
-                        className={`pb-4 px-1 border-b-2 font-medium transition-colors ${
-                            activeTab === 'demo'
+                        className={`pb-4 px-1 border-b-2 font-medium transition-colors ${activeTab === 'demo'
                                 ? 'border-blue-600 text-blue-600'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
+                            }`}
                     >
                         Demo Data
                         <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
@@ -276,8 +299,8 @@ export default function AIAnalyticsPage() {
                         key={days}
                         onClick={() => setDateRange(days)}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${dateRange === days
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         Last {days} days
@@ -309,10 +332,8 @@ export default function AIAnalyticsPage() {
                     <div className="text-sm font-medium text-gray-600 mb-1">
                         Most Active Bot
                     </div>
-                    <div className="text-xl font-bold text-gray-900 truncate flex items-center gap-2">
-                        <span className="text-2xl">
-                            {BOT_ICONS[data.summary.mostActiveBot] || '🤖'}
-                        </span>
+                    <div className="text-xl font-bold text-gray-900 truncate flex items-center gap-3">
+                        <BotIcon botName={data.summary.mostActiveBot} size="lg" />
                         {data.summary.mostActiveBot}
                     </div>
                 </div>
@@ -422,12 +443,10 @@ export default function AIAnalyticsPage() {
                             {data.recentAccesses.slice(0, 50).map((access) => (
                                 <tr key={access.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg">
-                                                {BOT_ICONS[access.bot_name] || '🤖'}
-                                            </span>
+                                        <div className="flex items-center gap-3">
+                                            <BotIcon botName={access.bot_name} size="sm" />
                                             <div
-                                                className="w-2 h-2 rounded-full"
+                                                className="w-2 h-2 rounded-full flex-shrink-0"
                                                 style={{
                                                     backgroundColor:
                                                         BOT_COLORS[access.bot_name] || '#999999',
