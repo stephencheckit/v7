@@ -10,6 +10,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1,
     },
+    // AI subdomain - HIGH PRIORITY for bot crawlers
+    {
+      url: `${baseUrl}/ai`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/ai/context.json`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
     {
       url: `${baseUrl}/dashboard`,
       lastModified: new Date(),
