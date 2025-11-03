@@ -10,21 +10,26 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/ai/')) {
     const userAgent = request.headers.get('user-agent') || '';
     const botMatch = detectAIBot(userAgent);
-
+    
     if (botMatch) {
       const response = NextResponse.next();
       const responseTime = Date.now() - startTime;
-
+      
+      // Get IP address from headers (Vercel provides this)
+      const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                        request.headers.get('x-real-ip') || 
+                        undefined;
+      
       // Log to Supabase (fire and forget - don't block the response)
       logBotAccess({
         bot_name: botMatch.name,
         user_agent: userAgent,
         path: pathname,
-        ip_address: request.ip,
+        ip_address: ipAddress,
         referer: request.headers.get('referer'),
         response_time_ms: responseTime,
       }).catch(console.error);
-
+      
       return response;
     }
   }
