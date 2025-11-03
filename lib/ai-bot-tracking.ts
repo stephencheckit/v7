@@ -22,8 +22,19 @@ export interface BotAccessLog {
  * Log an AI bot access to the database
  */
 export async function logBotAccess(data: BotAccessLog): Promise<void> {
+  console.log(`💾 Attempting to log bot access:`, {
+    bot_name: data.bot_name,
+    path: data.path,
+    hasSupabase: !!supabase,
+    supabaseUrl: !!supabaseUrl,
+    supabaseKey: !!supabaseServiceKey,
+  });
+
   if (!supabase) {
-    console.warn('Supabase client not initialized - skipping bot access log');
+    console.error('❌ Supabase client not initialized - env vars:', {
+      url: supabaseUrl,
+      hasKey: !!supabaseServiceKey,
+    });
     return;
   }
 
@@ -40,10 +51,12 @@ export async function logBotAccess(data: BotAccessLog): Promise<void> {
       });
 
     if (error) {
-      console.error('Error logging bot access:', error);
+      console.error('❌ Error logging bot access to Supabase:', error);
+    } else {
+      console.log('✅ Successfully logged bot access');
     }
   } catch (err) {
-    console.error('Failed to log bot access:', err);
+    console.error('❌ Failed to log bot access (exception):', err);
   }
 }
 

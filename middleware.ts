@@ -7,11 +7,15 @@ export async function middleware(request: NextRequest) {
   const startTime = Date.now();
 
   // Track AI bot visits to /ai/* paths
-  if (pathname.startsWith('/ai/')) {
+  if (pathname.startsWith('/ai')) {
     const userAgent = request.headers.get('user-agent') || '';
+    console.log(`🔍 Checking path: ${pathname}, User-Agent: ${userAgent}`);
+    
     const botMatch = detectAIBot(userAgent);
 
     if (botMatch) {
+      console.log(`🤖 Detected bot: ${botMatch.name} on ${pathname}`);
+      
       const response = NextResponse.next();
       const responseTime = Date.now() - startTime;
 
@@ -28,9 +32,13 @@ export async function middleware(request: NextRequest) {
         ip_address: ipAddress,
         referer: request.headers.get('referer'),
         response_time_ms: responseTime,
-      }).catch(console.error);
+      }).catch((error) => {
+        console.error('❌ Failed to log bot access:', error);
+      });
 
       return response;
+    } else {
+      console.log(`⚪ Not a bot: ${pathname}`);
     }
   }
 
