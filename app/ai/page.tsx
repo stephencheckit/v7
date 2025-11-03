@@ -82,12 +82,12 @@ async function getAIContent(): Promise<AIContent | null> {
 
     try {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        
+
         const { data, error } = await supabase
             .from('ai_content_active')
             .select('*')
             .single();
-        
+
         if (!error && data) {
             return data as AIContent;
         }

@@ -10,6 +10,12 @@
  * Then paste bot visit details when prompted
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load environment variables from .env.local
+config({ path: resolve(process.cwd(), '.env.local') });
+
 import { createClient } from '@supabase/supabase-js';
 import * as readline from 'readline';
 
@@ -38,7 +44,7 @@ async function addBotVisit() {
 
   console.log('\n🤖 Manual Bot Visit Import');
   console.log('═══════════════════════════════════════\n');
-  
+
   const botName = await question('Bot name (e.g., GPTBot, Claude-Bot): ');
   const userAgent = await question('User agent (paste full string): ');
   const path = await question('Path (e.g., /ai/context.json): ');
@@ -52,7 +58,7 @@ async function addBotVisit() {
   console.log(`  Path: ${path}`);
   console.log(`  IP: ${ipAddress || 'N/A'}`);
   console.log(`  Time: ${accessedAt.toISOString()}`);
-  
+
   const confirm = await question('\n✅ Import this visit? (y/n): ');
 
   if (confirm.toLowerCase() !== 'y') {
@@ -78,7 +84,7 @@ async function addBotVisit() {
   }
 
   const another = await question('\n➕ Add another? (y/n): ');
-  
+
   if (another.toLowerCase() === 'y') {
     await addBotVisit();
   } else {
