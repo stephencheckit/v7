@@ -11,10 +11,6 @@
     {
       "path": "/api/cron/generate-summaries",
       "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/sync-bot-logs",
-      "schedule": "*/5 * * * *"
     }
   ],
   "buildCommand": "npm run build",
