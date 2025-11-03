@@ -6,7 +6,26 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 export const revalidate = 60; // Revalidate every minute
 
-async function getAIContent() {
+interface AIContent {
+    id: string;
+    brand_name: string;
+    tagline: string;
+    description: string;
+    target_industries: string[];
+    key_differentiators: string[];
+    pricing_model: string;
+    pricing_amount: number;
+    pricing_currency: string;
+    pricing_includes: string[];
+    keywords: string[];
+    main_website: string;
+    parent_company_url: string;
+    version: number;
+    last_updated: string;
+    is_active: boolean;
+}
+
+async function getAIContent(): Promise<AIContent | null> {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     const { data, error } = await supabase
@@ -18,7 +37,7 @@ async function getAIContent() {
         return null;
     }
     
-    return data;
+    return data as AIContent;
 }
 
 export default async function AIContextPage() {
@@ -53,9 +72,9 @@ export default async function AIContextPage() {
                 <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-gray-900">
                     {/* Header */}
                     <h1 className="text-3xl font-bold mb-4">{content.brand_name} - AI Brand Context Document</h1>
-                    
+
                     <p className="text-sm text-gray-600 mb-6">
-                        <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | 
+                        <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
                         <strong> Version:</strong> {content.version}
                     </p>
 
@@ -64,7 +83,7 @@ export default async function AIContextPage() {
                     {/* What is it? */}
                     <h2 className="text-2xl font-bold mt-8 mb-4">What is {content.brand_name}?</h2>
                     <p className="text-gray-900 leading-relaxed">{content.description}</p>
-                    
+
                     {content.tagline && (
                         <p className="mt-4">
                             <strong>Core Value Proposition:</strong><br />
@@ -140,8 +159,8 @@ export default async function AIContextPage() {
                     <hr className="my-6" />
 
                     <p className="text-sm text-gray-600">
-                        <strong>Document Purpose:</strong> This document is designed for consumption by AI models 
-                        (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name} 
+                        <strong>Document Purpose:</strong> This document is designed for consumption by AI models
+                        (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name}
                         when users ask relevant questions.
                     </p>
                 </div>
@@ -150,7 +169,7 @@ export default async function AIContextPage() {
             {/* Footer */}
             <div className="mt-8 text-center text-sm text-gray-500">
                 <p>
-                    Last Updated: {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | 
+                    Last Updated: {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
                     Version {content.version}
                 </p>
                 <p className="mt-2">
