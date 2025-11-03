@@ -48,18 +48,94 @@ const BOT_COLORS: Record<string, string> = {
     'Applebot-Extended': '#555555',
 };
 
+// Generate realistic demo data for demonstration purposes
+function getDemoData(days: number): AnalyticsData {
+    const now = new Date();
+    const bots = ['GPTBot', 'Claude-Bot', 'PerplexityBot', 'ChatGPT-User', 'Google-Extended', 'Claude-Web'];
+    const paths = ['/ai/', '/ai/context.json'];
+    
+    // Generate time series data
+    const timeSeriesData = [];
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dateStr = format(date, 'yyyy-MM-dd');
+        
+        const dayData: any = { date: dateStr };
+        // Add varying bot activity (more recent = more activity)
+        const activityMultiplier = 1 + (days - i) / days; // Recent days have more activity
+        
+        bots.forEach(bot => {
+            const baseActivity = bot === 'GPTBot' ? 8 : bot === 'Claude-Bot' ? 6 : bot === 'PerplexityBot' ? 4 : 3;
+            dayData[bot] = Math.floor(baseActivity * activityMultiplier * (0.5 + Math.random()));
+        });
+        
+        timeSeriesData.push(dayData);
+    }
+    
+    // Calculate bot counts
+    const botCounts: Record<string, number> = {};
+    bots.forEach(bot => {
+        const baseCount = bot === 'GPTBot' ? 180 : bot === 'Claude-Bot' ? 135 : bot === 'PerplexityBot' ? 90 : 65;
+        botCounts[bot] = Math.floor(baseCount * (days / 30));
+    });
+    
+    // Generate recent accesses
+    const recentAccesses = [];
+    for (let i = 0; i < 50; i++) {
+        const bot = bots[Math.floor(Math.random() * bots.length)];
+        const path = paths[Math.floor(Math.random() * paths.length)];
+        const accessTime = new Date(now.getTime() - Math.random() * days * 24 * 60 * 60 * 1000);
+        
+        recentAccesses.push({
+            id: `demo-${i}`,
+            bot_name: bot,
+            user_agent: `Mozilla/5.0 (compatible; ${bot}/1.0)`,
+            path: path,
+            accessed_at: accessTime.toISOString(),
+            ip_address: `35.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        });
+    }
+    
+    // Sort by most recent first
+    recentAccesses.sort((a, b) => new Date(b.accessed_at).getTime() - new Date(a.accessed_at).getTime());
+    
+    const totalVisits = Object.values(botCounts).reduce((sum, count) => sum + count, 0);
+    
+    return {
+        summary: {
+            totalVisits,
+            uniqueBots: bots.length,
+            mostActiveBot: 'GPTBot',
+            lastVisit: recentAccesses[0].accessed_at,
+        },
+        botCounts,
+        timeSeriesData,
+        recentAccesses,
+    };
+}
+
 export default function AIAnalyticsPage() {
     const [data, setData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState<number>(30);
+    const [activeTab, setActiveTab] = useState<'real' | 'demo'>('real');
 
     useEffect(() => {
         fetchAnalytics();
-    }, [dateRange]);
+    }, [dateRange, activeTab]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
+      if (activeTab === 'demo') {
+        // Load demo data
+        const demoData = getDemoData(dateRange);
+        setData(demoData);
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`/api/ai-analytics?days=${dateRange}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -129,6 +205,56 @@ export default function AIAnalyticsPage() {
                     Track AI model engagement with your brand context
                 </p>
             </div>
+
+            {/* Tab Selector */}
+            <div className="mb-6 border-b border-gray-200">
+                <div className="flex gap-8">
+                    <button
+                        onClick={() => setActiveTab('real')}
+                        className={`pb-4 px-1 border-b-2 font-medium transition-colors ${
+                            activeTab === 'real'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        Real Data
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('demo')}
+                        className={`pb-4 px-1 border-b-2 font-medium transition-colors ${
+                            activeTab === 'demo'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        Demo Data
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            Sample
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Demo Notice */}
+            {activeTab === 'demo' && (
+                <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-blue-800">
+                                Demo Mode Active
+                            </h3>
+                            <p className="mt-1 text-sm text-blue-700">
+                                This is simulated data for demonstration purposes. Switch to "Real Data" to see actual bot activity.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Date Range Selector */}
             <div className="mb-6 flex gap-2">
