@@ -10,12 +10,12 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/ai')) {
     const userAgent = request.headers.get('user-agent') || '';
     console.log(`🔍 Checking path: ${pathname}, User-Agent: ${userAgent}`);
-    
+
     const botMatch = detectAIBot(userAgent);
 
     if (botMatch) {
       console.log(`🤖 Detected bot: ${botMatch.name} on ${pathname}`);
-      
+
       const response = NextResponse.next();
       const responseTime = Date.now() - startTime;
 
@@ -24,8 +24,8 @@ export async function middleware(request: NextRequest) {
         request.headers.get('x-real-ip') ||
         undefined;
 
-      // Log to Supabase (fire and forget - don't block the response)
-      logBotAccess({
+      // Log to Supabase (await to ensure it completes in Edge Runtime)
+      await logBotAccess({
         bot_name: botMatch.name,
         user_agent: userAgent,
         path: pathname,
