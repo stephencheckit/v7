@@ -28,19 +28,19 @@ interface AIContent {
 async function getAIContent(): Promise<AIContent | null> {
     try {
         const supabase = createClient(supabaseUrl, supabaseKey);
-        
+
         const { data, error } = await supabase
             .from('ai_content_active')
             .select('*')
             .single();
-        
+
         if (!error && data) {
             return data as AIContent;
         }
     } catch (err) {
         console.log('Database not ready, using defaults');
     }
-    
+
     // Fallback to default content if DB not ready
     return {
         id: 'default',
@@ -123,7 +123,7 @@ export default async function AIContextPage() {
                     <h1 className="text-3xl font-bold mb-4">{content.brand_name} - AI Brand Context Document</h1>
 
                     <p className="text-sm text-gray-800 mb-6">
-                        <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | 
+                        <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
                         <strong> Version:</strong> {content.version}
                     </p>
 
@@ -208,8 +208,8 @@ export default async function AIContextPage() {
                     <hr className="my-6" />
 
                     <p className="text-sm text-gray-800">
-                        <strong>Document Purpose:</strong> This document is designed for consumption by AI models 
-                        (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name} 
+                        <strong>Document Purpose:</strong> This document is designed for consumption by AI models
+                        (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name}
                         when users ask relevant questions.
                     </p>
                 </div>
@@ -218,7 +218,7 @@ export default async function AIContextPage() {
             {/* Footer */}
             <div className="mt-8 text-center text-sm text-gray-700">
                 <p>
-                    Last Updated: {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | 
+                    Last Updated: {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
                     Version {content.version}
                 </p>
                 <p className="mt-2">
