@@ -187,7 +187,7 @@ export default function AIContentEditor() {
                                 type="text"
                                 value={content.brand_name}
                                 onChange={(e) => updateField('brand_name', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                             />
                         </div>
 
@@ -199,7 +199,7 @@ export default function AIContentEditor() {
                                 type="text"
                                 value={content.tagline}
                                 onChange={(e) => updateField('tagline', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                 placeholder="Your value proposition in one sentence"
                             />
                         </div>
@@ -212,7 +212,7 @@ export default function AIContentEditor() {
                                 value={content.description}
                                 onChange={(e) => updateField('description', e.target.value)}
                                 rows={4}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                 placeholder="What is your product? Who is it for?"
                             />
                         </div>
@@ -229,7 +229,7 @@ export default function AIContentEditor() {
                                     type="text"
                                     value={industry}
                                     onChange={(e) => updateArrayItem('target_industries', index, e.target.value)}
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                     placeholder="e.g., Food Manufacturing"
                                 />
                                 <button
@@ -259,7 +259,7 @@ export default function AIContentEditor() {
                                     type="text"
                                     value={diff}
                                     onChange={(e) => updateArrayItem('key_differentiators', index, e.target.value)}
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                     placeholder="What makes you unique?"
                                 />
                                 <button
@@ -291,7 +291,7 @@ export default function AIContentEditor() {
                                 type="text"
                                 value={content.pricing_model}
                                 onChange={(e) => updateField('pricing_model', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                 placeholder="e.g., Subscription"
                             />
                         </div>
@@ -303,7 +303,7 @@ export default function AIContentEditor() {
                                 type="number"
                                 value={content.pricing_amount}
                                 onChange={(e) => updateField('pricing_amount', parseFloat(e.target.value))}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                             />
                         </div>
                         <div>
@@ -314,7 +314,7 @@ export default function AIContentEditor() {
                                 type="text"
                                 value={content.pricing_currency}
                                 onChange={(e) => updateField('pricing_currency', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                             />
                         </div>
                     </div>
@@ -330,7 +330,7 @@ export default function AIContentEditor() {
                                         type="text"
                                         value={item}
                                         onChange={(e) => updateArrayItem('pricing_includes', index, e.target.value)}
-                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                         placeholder="e.g., Unlimited users"
                                     />
                                     <button
@@ -361,7 +361,7 @@ export default function AIContentEditor() {
                                     type="text"
                                     value={keyword}
                                     onChange={(e) => updateArrayItem('keywords', index, e.target.value)}
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                     placeholder="e.g., AI form builder"
                                 />
                                 <button
@@ -393,7 +393,7 @@ export default function AIContentEditor() {
                                 type="url"
                                 value={content.main_website}
                                 onChange={(e) => updateField('main_website', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                             />
                         </div>
                         <div>
@@ -404,7 +404,7 @@ export default function AIContentEditor() {
                                 type="url"
                                 value={content.parent_company_url}
                                 onChange={(e) => updateField('parent_company_url', e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                             />
                         </div>
                     </div>
