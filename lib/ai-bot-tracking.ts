@@ -1,10 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Create a Supabase client for server-side operations
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Only create client if env vars are available
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 export interface BotAccessLog {
     bot_name: string;
@@ -19,24 +22,29 @@ export interface BotAccessLog {
  * Log an AI bot access to the database
  */
 export async function logBotAccess(data: BotAccessLog): Promise<void> {
-    try {
-        const { error } = await supabase
-            .from('ai_bot_accesses')
-            .insert({
-                bot_name: data.bot_name,
-                user_agent: data.user_agent,
-                path: data.path,
-                ip_address: data.ip_address || null,
-                referer: data.referer || null,
-                response_time_ms: data.response_time_ms || null,
-            });
+  if (!supabase) {
+    console.warn('Supabase client not initialized - skipping bot access log');
+    return;
+  }
 
-        if (error) {
-            console.error('Error logging bot access:', error);
-        }
-    } catch (err) {
-        console.error('Failed to log bot access:', err);
+  try {
+    const { error } = await supabase
+      .from('ai_bot_accesses')
+      .insert({
+        bot_name: data.bot_name,
+        user_agent: data.user_agent,
+        path: data.path,
+        ip_address: data.ip_address || null,
+        referer: data.referer || null,
+        response_time_ms: data.response_time_ms || null,
+      });
+
+    if (error) {
+      console.error('Error logging bot access:', error);
     }
+  } catch (err) {
+    console.error('Failed to log bot access:', err);
+  }
 }
 
 /**
@@ -93,52 +101,62 @@ export function isAIBot(userAgent: string): boolean {
  * Get analytics for a specific date range
  */
 export async function getBotAnalytics(startDate?: Date, endDate?: Date) {
-    try {
-        let query = supabase
-            .from('ai_bot_accesses')
-            .select('*')
-            .order('accessed_at', { ascending: false });
+  if (!supabase) {
+    console.warn('Supabase client not initialized');
+    return null;
+  }
 
-        if (startDate) {
-            query = query.gte('accessed_at', startDate.toISOString());
-        }
+  try {
+    let query = supabase
+      .from('ai_bot_accesses')
+      .select('*')
+      .order('accessed_at', { ascending: false });
 
-        if (endDate) {
-            query = query.lte('accessed_at', endDate.toISOString());
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-            console.error('Error fetching bot analytics:', error);
-            return null;
-        }
-
-        return data;
-    } catch (err) {
-        console.error('Failed to fetch bot analytics:', err);
-        return null;
+    if (startDate) {
+      query = query.gte('accessed_at', startDate.toISOString());
     }
+
+    if (endDate) {
+      query = query.lte('accessed_at', endDate.toISOString());
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching bot analytics:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Failed to fetch bot analytics:', err);
+    return null;
+  }
 }
 
 /**
  * Get aggregated bot statistics
  */
 export async function getBotStatistics() {
-    try {
-        const { data, error } = await supabase
-            .from('ai_bot_analytics')
-            .select('*');
+  if (!supabase) {
+    console.warn('Supabase client not initialized');
+    return null;
+  }
 
-        if (error) {
-            console.error('Error fetching bot statistics:', error);
-            return null;
-        }
+  try {
+    const { data, error } = await supabase
+      .from('ai_bot_analytics')
+      .select('*');
 
-        return data;
-    } catch (err) {
-        console.error('Failed to fetch bot statistics:', err);
-        return null;
+    if (error) {
+      console.error('Error fetching bot statistics:', error);
+      return null;
     }
+
+    return data;
+  } catch (err) {
+    console.error('Failed to fetch bot statistics:', err);
+    return null;
+  }
 }
 
