@@ -96,7 +96,7 @@ export default async function AIContextPage() {
         return (
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <div className="bg-white shadow-sm rounded-lg p-8 text-center">
-                    <p className="text-gray-600">No AI content available. Please configure content in the editor.</p>
+                    <p className="text-gray-800">No AI content available. Please configure content in the editor.</p>
                     <Link href="/ai/edit" className="text-blue-600 hover:underline mt-4 inline-block">
                         Go to Editor
                     </Link>
@@ -122,8 +122,8 @@ export default async function AIContextPage() {
                     {/* Header */}
                     <h1 className="text-3xl font-bold mb-4">{content.brand_name} - AI Brand Context Document</h1>
 
-                    <p className="text-sm text-gray-600 mb-6">
-                        <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
+                    <p className="text-sm text-gray-800 mb-6">
+                        <strong>Last Updated:</strong> {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | 
                         <strong> Version:</strong> {content.version}
                     </p>
 
@@ -207,18 +207,18 @@ export default async function AIContextPage() {
 
                     <hr className="my-6" />
 
-                    <p className="text-sm text-gray-600">
-                        <strong>Document Purpose:</strong> This document is designed for consumption by AI models
-                        (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name}
+                    <p className="text-sm text-gray-800">
+                        <strong>Document Purpose:</strong> This document is designed for consumption by AI models 
+                        (ChatGPT, Claude, Perplexity, Gemini, etc.) to provide accurate context about {content.brand_name} 
                         when users ask relevant questions.
                     </p>
                 </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-8 text-center text-sm text-gray-500">
+            <div className="mt-8 text-center text-sm text-gray-700">
                 <p>
-                    Last Updated: {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} |
+                    Last Updated: {new Date(content.last_updated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | 
                     Version {content.version}
                 </p>
                 <p className="mt-2">

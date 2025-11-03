@@ -136,7 +136,7 @@ export default function AIContentEditor() {
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading editor...</p>
+                    <p className="text-gray-800">Loading editor...</p>
                 </div>
             </div>
         );
@@ -157,7 +157,7 @@ export default function AIContentEditor() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     AI Content Editor
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-800">
                     Edit your AI brand context - updates will be reflected on <code>/ai/</code> and <code>/ai/context.json</code>
                 </p>
             </div>
@@ -180,7 +180,7 @@ export default function AIContentEditor() {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Brand Name
                             </label>
                             <input
@@ -192,7 +192,7 @@ export default function AIContentEditor() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Tagline
                             </label>
                             <input
@@ -205,7 +205,7 @@ export default function AIContentEditor() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Description
                             </label>
                             <textarea
@@ -284,7 +284,7 @@ export default function AIContentEditor() {
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Pricing</h2>
                     <div className="grid grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Pricing Model
                             </label>
                             <input
@@ -296,7 +296,7 @@ export default function AIContentEditor() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Amount
                             </label>
                             <input
@@ -307,7 +307,7 @@ export default function AIContentEditor() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Currency
                             </label>
                             <input
@@ -320,7 +320,7 @@ export default function AIContentEditor() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-900 mb-2">
                             What's Included
                         </label>
                         <div className="space-y-2">
@@ -386,7 +386,7 @@ export default function AIContentEditor() {
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Important Links</h2>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Main Website
                             </label>
                             <input
@@ -397,7 +397,7 @@ export default function AIContentEditor() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Parent Company URL
                             </label>
                             <input
@@ -415,14 +415,14 @@ export default function AIContentEditor() {
             <div className="mt-8 flex gap-4 justify-between">
                 <button
                     onClick={() => router.push('/ai')}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50"
                 >
                     Cancel
                 </button>
                 <div className="flex gap-4">
                     <button
                         onClick={() => router.push('/ai')}
-                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                        className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50"
                     >
                         Preview
                     </button>
