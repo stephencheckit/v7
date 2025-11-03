@@ -132,10 +132,10 @@ Return ONLY valid JSON, no other text.`;
 
     // Step 3: Normalize field values (fuzzy match for radio/select options with emojis)
     const normalizedUpdates: Record<string, any> = {};
-    
+
     Object.entries(result.field_updates || {}).forEach(([fieldId, value]) => {
       const field = formSchema.fields.find((f: any) => f.id === fieldId || f.name === fieldId);
-      
+
       if (!field) {
         normalizedUpdates[fieldId] = value;
         return;
@@ -149,16 +149,16 @@ Return ONLY valid JSON, no other text.`;
         } else {
           // Fuzzy match: find option that contains the value (case-insensitive)
           const cleanValue = String(value).toLowerCase().trim();
-          const match = field.options.find((opt: string) => 
+          const match = field.options.find((opt: string) =>
             opt.toLowerCase().includes(cleanValue) || cleanValue.includes(opt.toLowerCase())
           );
           normalizedUpdates[fieldId] = match || value; // Use match if found, otherwise original
-          
+
           if (match && match !== value) {
             console.log(`[Voice-to-Form] 🔧 Fuzzy matched "${value}" → "${match}" for field: ${field.label}`);
           }
         }
-      } 
+      }
       // For checkbox fields, fuzzy match each item in the array
       else if (field.type === 'checkbox' && field.options && Array.isArray(field.options) && Array.isArray(value)) {
         const matchedItems = value.map((item: string) => {
@@ -166,7 +166,7 @@ Return ONLY valid JSON, no other text.`;
             return item;
           } else {
             const cleanItem = String(item).toLowerCase().trim();
-            const match = field.options.find((opt: string) => 
+            const match = field.options.find((opt: string) =>
               opt.toLowerCase().includes(cleanItem) || cleanItem.includes(opt.toLowerCase())
             );
             if (match && match !== item) {

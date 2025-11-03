@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     // Fetch workspace context if available (for both image and text flows)
     let enhancedSystemPrompt = FORM_BUILDER_SYSTEM_PROMPT;
-    
+
     // Add current form fields to the prompt if available
     if (currentFields && Array.isArray(currentFields) && currentFields.length > 0) {
       const fieldsContext = `\n\n## Current Form Fields\n\nThe form currently has ${currentFields.length} field(s):\n\n` +
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
           }
           return fieldInfo;
         }).join('\n\n');
-      
+
       enhancedSystemPrompt += fieldsContext;
       console.log('[API] ✅ Added current fields context to prompt');
     }
@@ -50,16 +50,16 @@ export async function POST(req: Request) {
         console.log('[API] 🔍 Fetching workspace context for workspaceId:', workspaceId);
         // Note: Edge runtime limitation - need to import the module properly
         const { getWorkspaceContext, formatContextForAI } = await import('@/lib/ai/workspace-context');
-        
+
         // Get user from Supabase
         const { createClient } = await import('@/lib/supabase/server');
         const supabase = await createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
+
         if (authError) {
           console.error('[API] ❌ Auth error:', authError);
         }
-        
+
         if (user) {
           console.log('[API] ✅ User authenticated:', user.id);
           const workspaceContext = await getWorkspaceContext(workspaceId, user.id, false);
@@ -90,22 +90,22 @@ export async function POST(req: Request) {
     // If an image is provided, call Anthropic API directly
     if (image && messages.length > 0) {
       console.log('[API] Using direct Anthropic API for vision request...');
-      
+
       const lastMessage = messages[messages.length - 1];
-      
+
       // Extract media type and base64 data from data URL
       const matches = image.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
         console.error('[API] Invalid image format - expected data URL');
         throw new Error('Invalid image format');
       }
-      
+
       const mediaType = matches[1];
       const base64Data = matches[2];
-      
+
       console.log('[API] Image media type:', mediaType);
       console.log('[API] Base64 data length:', base64Data.length);
-      
+
       // Call Anthropic API directly
       // Filter out empty assistant messages before sending to API
       const filteredHistoryMessages = messages.slice(0, -1).filter((msg: any) => {
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
         role: msg.role,
         content: typeof msg.content === 'string' ? msg.content : msg.content,
       }));
-      
+
       const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -161,13 +161,13 @@ export async function POST(req: Request) {
 
       const data = await anthropicResponse.json();
       console.log('[API] Anthropic response received');
-      
+
       // Convert to text stream format expected by the client
       const textContent = data.content
         .filter((block: any) => block.type === 'text')
         .map((block: any) => block.text)
         .join('\n');
-      
+
       // Create a streaming response that matches the AI SDK format
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
@@ -190,7 +190,7 @@ export async function POST(req: Request) {
 
     // Normal text-only flow using AI SDK
     console.log('[API] Starting streamText with Anthropic...');
-    
+
     // Filter out empty messages (they cause API errors)
     const filteredMessages = messages.filter((msg: any) => {
       if (msg.role === 'assistant' && (!msg.content || msg.content.trim() === '')) {
@@ -200,7 +200,7 @@ export async function POST(req: Request) {
       return true;
     });
     console.log('[API] Filtered messages:', filteredMessages.length, 'of', messages.length);
-    
+
     const result = streamText({
       model: anthropic('claude-3-7-sonnet-20250219'),
       system: enhancedSystemPrompt,
@@ -528,7 +528,7 @@ export async function POST(req: Request) {
         },
       }),
     },*/
-  });
+    });
 
     console.log('[API] streamText configured, returning response...');
     const response = result.toTextStreamResponse();
@@ -540,15 +540,15 @@ export async function POST(req: Request) {
     console.error('Error message:', error instanceof Error ? error.message : String(error));
     console.error('Error stack:', error instanceof Error ? error.stack : 'N/A');
     console.error('Full error:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error', 
+      JSON.stringify({
+        error: 'Internal server error',
         message: error instanceof Error ? error.message : 'Unknown error'
-      }), 
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
       }
     );
   }

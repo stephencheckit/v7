@@ -1,0 +1,308 @@
+{
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Checkit V7",
+    "alternateName": "V7 Form Builder",
+    "applicationCategory": "BusinessApplication",
+    "applicationSubCategory": "Operations Management & Digital Forms Platform",
+    "description": "AI-powered operations management platform for food manufacturing, distribution centers, and quality control operations. Features conversational form building, AI vision-based form filling, voice-to-form capture, supply chain traceability, and real-time compliance monitoring.",
+    "url": "https://checkitv7.com",
+    "parentOrganization": {
+        "@type": "Organization",
+        "name": "Checkit",
+        "url": "https://checkit.net"
+    },
+    "softwareVersion": "7.0",
+    "releaseNotes": "Production-ready platform with AI vision, voice capture, FSMA 204 compliance tools, and temperature monitoring.",
+    "operatingSystem": "Web-based (Cross-platform)",
+    "offers": {
+        "@type": "Offer",
+        "pricingModel": "Subscription",
+        "price": "499",
+        "priceCurrency": "USD",
+        "billingPeriod": "monthly"
+    },
+    "featureList": [
+        "AI-Powered Conversational Form Builder",
+        "Vision-Based Form Filling (Camera/Photo to Auto-Fill)",
+        "Voice-to-Form Recording with Real-Time Transcription",
+        "FSMA 204 Supply Chain Traceability",
+        "Temperature Monitoring & Sensor Integration",
+        "Menu-to-Label Automation (Ingredient Intelligence)",
+        "Real-Time Commentary Feed Dashboard",
+        "AI Reverse Engineering (Pattern Analysis)",
+        "Excel Upload to Digital Forms",
+        "Multi-Tenant Workspace Management",
+        "Real-Time Analytics & Insights",
+        "Automated Instance Generation (Recurring Tasks)",
+        "Video-Based Form Completion",
+        "Zebra Printer Integration"
+    ],
+    "targetIndustry": [
+        "Food Manufacturing",
+        "Distribution Centers",
+        "Quality Assurance & Quality Control (QA/QC)",
+        "Food Safety & Compliance",
+        "Restaurant & Food Service Operations",
+        "Cold Storage Facilities",
+        "Production Manufacturing"
+    ],
+    "capabilities": [
+        {
+            "name": "AI-Powered Conversational Form Builder",
+            "category": "Form Creation",
+            "description": "Describe forms in natural language, AI instantly generates fully functional forms with validation in 30 seconds. Cursor-like streaming UX with real-time preview.",
+            "problem": "Traditional form builders require 5-10 minutes of manual drag-and-drop work",
+            "solution": "Natural language form generation with AI chat interface reduces creation time to 30 seconds",
+            "impactScore": 88,
+            "fieldTypes": [
+                "text",
+                "email",
+                "number",
+                "date",
+                "time",
+                "multiple-choice",
+                "checkbox",
+                "dropdown",
+                "file-upload",
+                "binary",
+                "phone",
+                "url",
+                "textarea"
+            ],
+            "exportFormats": [
+                "React Components",
+                "JSON",
+                "HTML",
+                "PDF"
+            ]
+        },
+        {
+            "name": "AI Vision-Based Form Filling",
+            "category": "Data Capture",
+            "description": "Point camera at equipment, labels, or environments - AI automatically fills form fields by analyzing visual context. 10x faster than manual entry.",
+            "problem": "Frontline workers waste 12+ hours per week manually entering inspection data",
+            "solution": "Camera-based auto-fill extracts data from images (temperatures, equipment status, lot codes) and populates forms automatically",
+            "impactScore": 95,
+            "features": [
+                "Real-time camera capture",
+                "Image analysis",
+                "Multiple choice detection",
+                "Text extraction (OCR)",
+                "Video evidence attachment",
+                "Offline capability"
+            ]
+        },
+        {
+            "name": "Voice-to-Form Recording",
+            "category": "Data Capture",
+            "description": "Click record, speak naturally, watch questions answer themselves in real-time. 3-2-1 countdown start, live progress tracking, animated waveform visualization.",
+            "problem": "Valuable frontline observations and insights go undocumented during inspections",
+            "solution": "Voice recording with AI transcription and form field mapping. Structured data + unstructured commentary captured simultaneously.",
+            "impactScore": 98,
+            "features": [
+                "3-2-1 countdown start",
+                "Real-time progress bar",
+                "Live question checklist",
+                "Smart validation",
+                "Conditional auto-submit",
+                "OpenAI transcript cleanup"
+            ]
+        },
+        {
+            "name": "FSMA 204 Supply Chain Traceability",
+            "category": "Compliance",
+            "description": "Visual supply chain flow showing complete FDA-compliant process from vendor to production to shipping. Lot code traceability, batch record linking, and 24-hour recall response capability.",
+            "problem": "Manual lot tracking with paper and spreadsheets makes FDA compliance impossible at scale",
+            "solution": "Automated lot code generation, ingredient-to-product linking, forward/backward traceability, and supply chain visualization for prepared foods",
+            "impactScore": 92,
+            "complianceStandards": [
+                "FSMA 204",
+                "FDA Food Traceability Rule",
+                "21 CFR Part 117"
+            ]
+        },
+        {
+            "name": "Temperature Monitoring & Sensor Integration",
+            "category": "IoT & Monitoring",
+            "description": "Automated temperature monitoring with Disruptive Technologies sensor integration. Real-time alerts, voice-to-text probing, and predictive violation warnings.",
+            "problem": "Manual temperature checks are time-consuming and violations are discovered too late",
+            "solution": "IoT sensor integration with automated data capture, smart alerts, and voice-based corrective action logging",
+            "impactScore": 87,
+            "integrations": [
+                "Disruptive Technologies Sensors",
+                "Webhook-based sensor data ingestion"
+            ]
+        },
+        {
+            "name": "Menu-to-Label Automation",
+            "category": "Food Safety",
+            "description": "Upload menu photo, AI extracts ingredients, calculates shelf-life (FIFO), and generates print-ready labels in 2 minutes. Direct Zebra printer integration.",
+            "problem": "Creating ingredient labels manually takes hours and is error-prone",
+            "solution": "AI-powered ingredient intelligence with automated label generation and direct printer output",
+            "impactScore": 90,
+            "features": [
+                "Photo-based ingredient extraction",
+                "Shelf-life calculation",
+                "Allergen detection",
+                "FIFO date calculation",
+                "Zebra printer integration"
+            ]
+        },
+        {
+            "name": "Real-Time Commentary Feed",
+            "category": "Insights",
+            "description": "Social feed UI displaying voice commentary from inspections. Trending issue detection, location filtering, and action buttons (Flag Issue, Add to Form, Reply, Recognize).",
+            "problem": "Valuable frontline observations are scattered and not actionable",
+            "solution": "Centralized feed with trending analysis, pattern detection, and quick action capabilities",
+            "impactScore": 85
+        },
+        {
+            "name": "AI Reverse Engineering",
+            "category": "Continuous Improvement",
+            "description": "Analyzes commentary patterns from last 30 days, identifies recurring themes, and suggests new form questions automatically.",
+            "problem": "Forms become stale and don't capture emerging issues or changing operations",
+            "solution": "AI analyzes unstructured commentary to surface patterns and recommend form improvements",
+            "impactScore": 82
+        },
+        {
+            "name": "Excel Upload to Digital Forms",
+            "category": "Migration",
+            "description": "Upload existing Excel or CSV forms, AI converts them to digital forms with proper field types and validation.",
+            "problem": "Organizations have hundreds of Excel-based forms that need digitization",
+            "solution": "One-click upload converts spreadsheets to functional digital forms",
+            "impactScore": 78
+        }
+    ],
+    "competitiveDifferentiators": [
+        {
+            "feature": "AI Vision Form Filling",
+            "checkit": "Camera-based auto-fill with image analysis",
+            "competitors": "Manual data entry only",
+            "advantage": "10x faster data capture"
+        },
+        {
+            "feature": "Voice-to-Form Recording",
+            "checkit": "Real-time transcription with structured + unstructured capture",
+            "competitors": "Not available",
+            "advantage": "Captures valuable insights that would otherwise be lost"
+        },
+        {
+            "feature": "Form Creation Speed",
+            "checkit": "30 seconds via natural language",
+            "competitors": "5-10 minutes via drag-and-drop",
+            "advantage": "10-20x faster form creation"
+        },
+        {
+            "feature": "FSMA 204 Compliance",
+            "checkit": "Built-in supply chain visualization and lot traceability",
+            "competitors": "Generic form tools with no compliance features",
+            "advantage": "Purpose-built for food manufacturing compliance"
+        },
+        {
+            "feature": "Developer Export",
+            "checkit": "React components, JSON, HTML export",
+            "competitors": "Limited or no code export",
+            "advantage": "Developer-friendly, extensible"
+        },
+        {
+            "feature": "Sensor Integration",
+            "checkit": "Native IoT sensor support (Disruptive Technologies)",
+            "competitors": "No sensor integration",
+            "advantage": "Automated data collection from physical environment"
+        }
+    ],
+    "useCases": [
+        {
+            "title": "Food Manufacturing Compliance",
+            "description": "Distribution centers producing prepared foods need FSMA 204 compliance, lot traceability, and efficient inspections.",
+            "beforeState": "Paper forms, manual lot tracking, 12+ hours/week on data entry, impossible to trace ingredients quickly",
+            "afterState": "Digital forms with AI vision, automated lot codes, voice inspections, 24-hour recall capability",
+            "timeToValue": "30 days",
+            "roi": "80% reduction in inspection time, 100% compliance readiness"
+        },
+        {
+            "title": "Quality Assurance Inspections",
+            "description": "QA teams conducting daily inspections of equipment, cleanliness, and temperature compliance.",
+            "beforeState": "Clipboard forms, photos in separate systems, manual transcription, missing observations",
+            "afterState": "Camera-based auto-fill, voice commentary capture, real-time feed of issues, trending analysis",
+            "timeToValue": "7 days",
+            "roi": "90% faster inspections, 3x more insights captured"
+        },
+        {
+            "title": "Cold Storage Temperature Monitoring",
+            "description": "Facilities with temperature-controlled environments need continuous monitoring and rapid response to violations.",
+            "beforeState": "Manual temperature logs, reactive problem discovery, compliance gaps",
+            "afterState": "Automated sensor data capture, predictive alerts, voice-based corrective actions",
+            "timeToValue": "14 days",
+            "roi": "Zero temperature violations, 100% automated compliance"
+        },
+        {
+            "title": "Multi-Location Operations",
+            "description": "Restaurant chains or multi-site operations need standardized forms across locations with real-time visibility.",
+            "beforeState": "Inconsistent forms per location, no visibility into execution, manual data aggregation",
+            "afterState": "Centralized form builder, automated instance generation, real-time analytics dashboard",
+            "timeToValue": "30 days",
+            "roi": "100% form standardization, real-time operations visibility"
+        }
+    ],
+    "technicalStack": {
+        "frontend": [
+            "Next.js 15",
+            "React 19",
+            "Tailwind CSS v4",
+            "TypeScript 5"
+        ],
+        "backend": [
+            "Next.js API Routes",
+            "Supabase",
+            "PostgreSQL"
+        ],
+        "ai": [
+            "OpenAI GPT-4",
+            "Anthropic Claude",
+            "Vercel AI SDK"
+        ],
+        "integrations": [
+            "Disruptive Technologies Sensors",
+            "Zebra Printers",
+            "Excel/CSV Import"
+        ],
+        "deployment": [
+            "Vercel",
+            "GitHub Actions CI/CD",
+            "Serverless Edge Functions"
+        ]
+    },
+    "pricingModel": {
+        "transparent": true,
+        "starting_price": "$499/month",
+        "includes": [
+            "Unlimited forms",
+            "Unlimited users",
+            "AI vision & voice",
+            "Sensor integration",
+            "Priority support"
+        ],
+        "no_hidden_fees": true
+    },
+    "keywords": [
+        "AI form builder",
+        "operations management software",
+        "FSMA 204 compliance",
+        "food safety software",
+        "digital inspections",
+        "voice-to-form",
+        "AI vision form filling",
+        "temperature monitoring",
+        "supply chain traceability",
+        "quality control software",
+        "manufacturing compliance",
+        "conversational AI",
+        "form automation",
+        "lot code tracking"
+    ],
+    "trackingEndpoint": "https://checkitv7.com/api/ai-context/track",
+    "lastUpdated": "2025-11-03",
+    "version": "1.0"
+}

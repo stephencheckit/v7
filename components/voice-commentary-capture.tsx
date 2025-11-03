@@ -193,15 +193,15 @@ export function VoiceCommentaryCapture({
               const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
               if (field) {
                 const fieldKey = field.id || field.name;
-                
+
                 // Validate value is meaningful
-                const hasValidValue = value !== null && 
-                                      value !== undefined && 
-                                      value !== '' && 
-                                      (Array.isArray(value) ? value.length > 0 : true);
-                
+                const hasValidValue = value !== null &&
+                  value !== undefined &&
+                  value !== '' &&
+                  (Array.isArray(value) ? value.length > 0 : true);
+
                 console.log(`[Voice] Updating field: ${field.label} (${fieldKey}) = ${JSON.stringify(value)} [valid: ${hasValidValue}]`);
-                
+
                 if (hasValidValue) {
                   onFieldUpdate(fieldKey, value);
                   // Mark as 100% complete ONLY if value is valid
@@ -268,15 +268,15 @@ export function VoiceCommentaryCapture({
             const field = formSchema.fields.find(f => f.id === fieldId || f.name === fieldId);
             if (field) {
               const fieldKey = field.id || field.name;
-              
+
               // Validate value is meaningful
-              const hasValidValue = value !== null && 
-                                    value !== undefined && 
-                                    value !== '' && 
-                                    (Array.isArray(value) ? value.length > 0 : true);
-              
+              const hasValidValue = value !== null &&
+                value !== undefined &&
+                value !== '' &&
+                (Array.isArray(value) ? value.length > 0 : true);
+
               console.log(`[Voice] Final pass - updating field: ${field.label} (${fieldKey}) = ${JSON.stringify(value)} [valid: ${hasValidValue}]`);
-              
+
               if (hasValidValue) {
                 onFieldUpdate(fieldKey, value);
                 setFieldProgress(prev => new Map(prev).set(fieldKey, 100));
@@ -411,79 +411,79 @@ export function VoiceCommentaryCapture({
             </div>
           </div>
         )}
-        
+
         <div className="w-full mb-4">
           <Card className="bg-gradient-to-r from-[#c4dfc4]/10 to-[#c8e0f5]/10 border-[#c4dfc4]/30 p-3">
             {/* Top row: audio controls */}
             <div className="flex items-center gap-3 mb-3">
-            {/* Recording indicator */}
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                {formatTime(timeElapsed)}
-              </span>
-            </div>
-
-            {/* Compact Waveform */}
-            <div className="flex-1">
-              <AudioWaveform isRecording={isRecording} size="sm" />
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                onClick={handleCancel}
-                size="sm"
-                variant="ghost"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={stopRecordingAndSubmit}
-                size="sm"
-                disabled={isProcessing}
-                className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Processing
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Submit
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Bottom row: single overall progress bar */}
-          {(() => {
-            const totalFields = formSchema.fields.length;
-            const answeredCount = Array.from(fieldProgress.values()).filter(p => p >= 100).length;
-            const overallProgress = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
-            const isComplete = overallProgress >= 100;
-
-            return (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-                  <span>{answeredCount} of {totalFields} questions answered</span>
-                  <span>{Math.round(overallProgress)}%</span>
-                </div>
-                <div className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
-                  <div
-                    className={`absolute left-0 h-full transition-all duration-300 ${isComplete ? 'bg-green-500' : 'bg-[#c4dfc4]'
-                      }`}
-                    style={{ width: `${overallProgress}%` }}
-                  />
-                </div>
+              {/* Recording indicator */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                  {formatTime(timeElapsed)}
+                </span>
               </div>
-            );
-          })()}
-        </Card>
+
+              {/* Compact Waveform */}
+              <div className="flex-1">
+                <AudioWaveform isRecording={isRecording} size="sm" />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  onClick={handleCancel}
+                  size="sm"
+                  variant="ghost"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={stopRecordingAndSubmit}
+                  size="sm"
+                  disabled={isProcessing}
+                  className="bg-[#c4dfc4] hover:bg-[#b5d0b5] text-[#0a0a0a]"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Processing
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Submit
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Bottom row: single overall progress bar */}
+            {(() => {
+              const totalFields = formSchema.fields.length;
+              const answeredCount = Array.from(fieldProgress.values()).filter(p => p >= 100).length;
+              const overallProgress = totalFields > 0 ? (answeredCount / totalFields) * 100 : 0;
+              const isComplete = overallProgress >= 100;
+
+              return (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                    <span>{answeredCount} of {totalFields} questions answered</span>
+                    <span>{Math.round(overallProgress)}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                    <div
+                      className={`absolute left-0 h-full transition-all duration-300 ${isComplete ? 'bg-green-500' : 'bg-[#c4dfc4]'
+                        }`}
+                      style={{ width: `${overallProgress}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+          </Card>
         </div>
       </>
     );

@@ -1,7 +1,34 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { detectAIBot, logBotAccess } from '@/lib/ai-bot-tracking';
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const startTime = Date.now();
+
+  // Track AI bot visits to /ai/* paths
+  if (pathname.startsWith('/ai/')) {
+    const userAgent = request.headers.get('user-agent') || '';
+    const botMatch = detectAIBot(userAgent);
+
+    if (botMatch) {
+      const response = NextResponse.next();
+      const responseTime = Date.now() - startTime;
+
+      // Log to Supabase (fire and forget - don't block the response)
+      logBotAccess({
+        bot_name: botMatch.name,
+        user_agent: userAgent,
+        path: pathname,
+        ip_address: request.ip,
+        referer: request.headers.get('referer'),
+        response_time_ms: responseTime,
+      }).catch(console.error);
+
+      return response;
+    }
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -58,7 +85,7 @@ export async function middleware(request: NextRequest) {
   // Redirect to dashboard if authenticated and trying to access auth pages
   const authPages = ['/signin', '/signup'];
   const isAuthPage = authPages.some((page) => request.nextUrl.pathname === page);
-  
+
   if (isAuthPage && session) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }

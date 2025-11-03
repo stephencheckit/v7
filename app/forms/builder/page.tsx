@@ -1338,7 +1338,7 @@ function FormsPageContent() {
   const handleAutoSave = async () => {
     // Silent auto-save - no alerts
     // Allow saving blank forms (user can add fields later)
-    
+
     // Validate required fields before saving
     if (!formName || formName.trim() === '' || formName === 'Untitled Form') {
       console.warn('⚠️ Skipping auto-save for untitled blank form');
@@ -1781,8 +1781,8 @@ function FormsPageContent() {
                         <button
                           onClick={() => setFormStatus("draft")}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "draft"
-                              ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
-                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                         >
                           <FileText className="w-4 h-4" />
@@ -1791,8 +1791,8 @@ function FormsPageContent() {
                         <button
                           onClick={() => setFormStatus("published")}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "published"
-                              ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -1922,8 +1922,8 @@ function FormsPageContent() {
                       <button
                         onClick={() => setActiveSettingsSection("general")}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "general"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          ? "bg-[#c4dfc4]/20 text-white font-medium"
+                          : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                           }`}
                       >
                         <div className="text-sm">General</div>
@@ -1935,8 +1935,8 @@ function FormsPageContent() {
                       <button
                         onClick={() => setActiveSettingsSection("thankyou")}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "thankyou"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          ? "bg-[#c4dfc4]/20 text-white font-medium"
+                          : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                           }`}
                       >
                         <div className="text-sm">Thank You Page</div>
@@ -1948,8 +1948,8 @@ function FormsPageContent() {
                       <button
                         onClick={() => setActiveSettingsSection("publish")}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "publish"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          ? "bg-[#c4dfc4]/20 text-white font-medium"
+                          : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                           }`}
                       >
                         <div className="text-sm">Publish & Share</div>
@@ -1961,8 +1961,8 @@ function FormsPageContent() {
                       <button
                         onClick={() => setActiveSettingsSection("cadence")}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${activeSettingsSection === "cadence"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          ? "bg-[#c4dfc4]/20 text-white font-medium"
+                          : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                           }`}
                       >
                         <div className="text-sm">Cadence</div>
@@ -2268,8 +2268,8 @@ function FormsPageContent() {
                                     value={shareUrl || ''}
                                     readOnly
                                     className={`border-border/50 font-mono text-sm ${formStatus === "draft"
-                                        ? "bg-[#0a0a0a]/50 text-gray-500 opacity-50"
-                                        : "bg-[#0a0a0a] text-gray-100"
+                                      ? "bg-[#0a0a0a]/50 text-gray-500 opacity-50"
+                                      : "bg-[#0a0a0a] text-gray-100"
                                       }`}
                                   />
                                   <Button
@@ -2329,8 +2329,8 @@ function FormsPageContent() {
                         <button
                           onClick={() => setFormStatus("draft")}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "draft"
-                              ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
-                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                         >
                           <FileText className="w-4 h-4" />
@@ -2339,8 +2339,8 @@ function FormsPageContent() {
                         <button
                           onClick={() => setFormStatus("published")}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "published"
-                              ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -2472,8 +2472,8 @@ function FormsPageContent() {
                       <button
                         onClick={() => setSelectedResponseId("all")}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${selectedResponseId === "all"
-                            ? "bg-[#c4dfc4]/20 text-white font-medium"
-                            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                          ? "bg-[#c4dfc4]/20 text-white font-medium"
+                          : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                           }`}
                       >
                         <div className="text-sm">All Responses</div>
@@ -2502,8 +2502,8 @@ function FormsPageContent() {
                                   key={submission.id}
                                   onClick={() => setSelectedResponseId(submission.id)}
                                   className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${selectedResponseId === submission.id
-                                      ? "bg-[#c4dfc4]/20 text-white font-medium"
-                                      : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                                    ? "bg-[#c4dfc4]/20 text-white font-medium"
+                                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                                     }`}
                                 >
                                   <div className="text-sm truncate">{identifier}</div>
@@ -2920,8 +2920,8 @@ function FormsPageContent() {
                         <button
                           onClick={() => setFormStatus("draft")}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "draft"
-                              ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
-                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            ? "bg-amber-500/20 text-amber-400 font-medium border border-amber-500/40 shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                         >
                           <FileText className="w-4 h-4" />
@@ -2930,8 +2930,8 @@ function FormsPageContent() {
                         <button
                           onClick={() => setFormStatus("published")}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${formStatus === "published"
-                              ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
-                              : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
+                            ? "bg-[#c4dfc4] text-[#0a0a0a] font-medium shadow-md"
+                            : "bg-transparent text-gray-500 hover:bg-white/5 hover:text-gray-300"
                             }`}
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -3119,8 +3119,8 @@ function EmptyDropZone({ isOver }: { isOver: boolean }) {
     <div
       ref={setNodeRef}
       className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${isOver
-          ? "border-[#c4dfc4] bg-[#c4dfc4]/10 scale-105"
-          : "border-border/50"
+        ? "border-[#c4dfc4] bg-[#c4dfc4]/10 scale-105"
+        : "border-border/50"
         }`}
     >
       <p className="text-muted-foreground text-sm">
