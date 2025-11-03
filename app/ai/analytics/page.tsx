@@ -79,6 +79,7 @@ const BOT_LOGOS: Record<string, string> = {
     'ChatGPT-User': '/openai.webp',
     'Claude-Bot': '/claude.png',
     'Claude-Web': '/claude.png',
+    'Claude-User': '/claude.png',
     'anthropic-ai': '/claude.png',
     'PerplexityBot': '/perplexity-color.png',
     'Google-Extended': '/google.webp',
@@ -86,6 +87,12 @@ const BOT_LOGOS: Record<string, string> = {
     'Applebot-Extended': '🍎', // Keep emoji for now
     'cohere-ai': '⚡', // Keep emoji for now
     'YouBot': '👤', // Keep emoji for now
+};
+
+// Map AI model names (from citation tests) to bot logos
+const AI_MODEL_LOGOS: Record<string, string> = {
+    'chatgpt': '/openai.webp',
+    'claude': '/claude.png',
 };
 
 // Helper to render bot icon/logo
@@ -109,6 +116,29 @@ const BotIcon = ({ botName, size = 'md' }: { botName: string; size?: 'sm' | 'md'
 
     // Fallback to emoji
     return <span className={size === 'sm' ? 'text-base' : size === 'lg' ? 'text-3xl' : 'text-xl'}>{logo || '🤖'}</span>;
+};
+
+// Helper to render AI model icon/logo (for citation tests)
+const AIModelIcon = ({ modelName, size = 'md' }: { modelName: string; size?: 'sm' | 'md' | 'lg' }) => {
+    const logo = AI_MODEL_LOGOS[modelName.toLowerCase()];
+    const sizeClasses = {
+        sm: 'w-4 h-4',
+        md: 'w-6 h-6',
+        lg: 'w-8 h-8',
+    };
+
+    if (logo && logo.startsWith('/')) {
+        return (
+            <img
+                src={logo}
+                alt={modelName}
+                className={`${sizeClasses[size]} object-contain`}
+            />
+        );
+    }
+
+    // Default to robot emoji if no logo found
+    return <span className={size === 'sm' ? 'text-base' : size === 'lg' ? 'text-3xl' : 'text-xl'}>🤖</span>;
 };
 
 // Generate realistic demo data for demonstration purposes
@@ -680,7 +710,7 @@ export default function AIAnalyticsPage() {
                                         <tr key={test.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-2">
-                                                    <BotIcon botName={test.ai_model === 'chatgpt-4o' ? 'GPTBot' : 'Claude-Bot'} size="sm" />
+                                                    <AIModelIcon modelName={test.ai_model} size="sm" />
                                                     <span className="text-sm font-medium text-gray-900">
                                                         {test.ai_model}
                                                     </span>
