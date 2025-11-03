@@ -48,6 +48,19 @@ const BOT_COLORS: Record<string, string> = {
     'Applebot-Extended': '#555555',
 };
 
+const BOT_ICONS: Record<string, string> = {
+    'GPTBot': '🤖',
+    'ChatGPT-User': '💬',
+    'Claude-Bot': '🧠',
+    'Claude-Web': '💭',
+    'PerplexityBot': '🔍',
+    'Google-Extended': '🔎',
+    'Bytespider': '🕷️',
+    'Applebot-Extended': '🍎',
+    'cohere-ai': '⚡',
+    'YouBot': '👤',
+};
+
 // Generate realistic demo data for demonstration purposes
 function getDemoData(days: number): AnalyticsData {
     const now = new Date();
@@ -296,7 +309,10 @@ export default function AIAnalyticsPage() {
                     <div className="text-sm font-medium text-gray-600 mb-1">
                         Most Active Bot
                     </div>
-                    <div className="text-xl font-bold text-gray-900 truncate">
+                    <div className="text-xl font-bold text-gray-900 truncate flex items-center gap-2">
+                        <span className="text-2xl">
+                            {BOT_ICONS[data.summary.mostActiveBot] || '🤖'}
+                        </span>
                         {data.summary.mostActiveBot}
                     </div>
                 </div>
@@ -406,9 +422,12 @@ export default function AIAnalyticsPage() {
                             {data.recentAccesses.slice(0, 50).map((access) => (
                                 <tr key={access.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg">
+                                                {BOT_ICONS[access.bot_name] || '🤖'}
+                                            </span>
                                             <div
-                                                className="w-2 h-2 rounded-full mr-2"
+                                                className="w-2 h-2 rounded-full"
                                                 style={{
                                                     backgroundColor:
                                                         BOT_COLORS[access.bot_name] || '#999999',
