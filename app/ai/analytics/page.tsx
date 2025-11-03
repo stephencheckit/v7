@@ -37,6 +37,31 @@ interface AnalyticsData {
     }>;
 }
 
+interface CitationAnalyticsData {
+    summary: {
+        totalTests: number;
+        successfulMentions: number;
+        citationRate: string;
+        topQuery: string;
+        topQueryRate: string;
+    };
+    modelStats: Record<string, { total: number; mentions: number; rate: string }>;
+    timeSeriesData: Array<{
+        date: string;
+        [key: string]: string | number;
+    }>;
+    recentTests: Array<{
+        id: string;
+        ai_model: string;
+        query: string;
+        was_mentioned: boolean;
+        position_in_response: number | null;
+        competitors_mentioned: string[] | null;
+        tested_at: string;
+    }>;
+    competitorMentions: Record<string, number>;
+}
+
 const BOT_COLORS: Record<string, string> = {
     'GPTBot': '#10a37f',
     'ChatGPT-User': '#19c37d',
@@ -155,6 +180,7 @@ function getDemoData(days: number): AnalyticsData {
 
 export default function AIAnalyticsPage() {
     const [data, setData] = useState<AnalyticsData | null>(null);
+    const [citationData, setCitationData] = useState<CitationAnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState<number>(30);
     const [activeTab, setActiveTab] = useState<'real' | 'demo'>('real');
@@ -174,21 +200,47 @@ export default function AIAnalyticsPage() {
                 return;
             }
 
-            const response = await fetch(`/api/ai-analytics?days=${dateRange}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Fetch both bot visits and citation analytics
+            const [botResponse, citationResponse] = await Promise.all([
+                fetch(`/api/ai-analytics?days=${dateRange}`),
+                fetch(`/api/ai-citation-analytics?days=${dateRange}`)
+            ]);
+
+            if (!botResponse.ok) {
+                throw new Error(`Bot analytics HTTP error! status: ${botResponse.status}`);
             }
-            const result = await response.json();
+            const botResult = await botResponse.json();
 
             // Ensure data has required structure
             const safeData = {
-                summary: result.summary || { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
-                botCounts: result.botCounts || {},
-                timeSeriesData: result.timeSeriesData || [],
-                recentAccesses: result.recentAccesses || [],
+                summary: botResult.summary || { totalVisits: 0, uniqueBots: 0, mostActiveBot: 'None', lastVisit: null },
+                botCounts: botResult.botCounts || {},
+                timeSeriesData: botResult.timeSeriesData || [],
+                recentAccesses: botResult.recentAccesses || [],
             };
 
             setData(safeData);
+
+            // Handle citation data (might not exist yet)
+            if (citationResponse.ok) {
+                const citationResult = await citationResponse.json();
+                setCitationData({
+                    summary: citationResult.summary || { totalTests: 0, successfulMentions: 0, citationRate: '0', topQuery: 'N/A', topQueryRate: '0' },
+                    modelStats: citationResult.modelStats || {},
+                    timeSeriesData: citationResult.timeSeriesData || [],
+                    recentTests: citationResult.recentTests || [],
+                    competitorMentions: citationResult.competitorMentions || {},
+                });
+            } else {
+                // No citation data yet
+                setCitationData({
+                    summary: { totalTests: 0, successfulMentions: 0, citationRate: '0', topQuery: 'N/A', topQueryRate: '0' },
+                    modelStats: {},
+                    timeSeriesData: [],
+                    recentTests: [],
+                    competitorMentions: {},
+                });
+            }
         } catch (error) {
             console.error('Failed to fetch analytics:', error);
             // Set empty data on error
@@ -197,6 +249,13 @@ export default function AIAnalyticsPage() {
                 botCounts: {},
                 timeSeriesData: [],
                 recentAccesses: [],
+            });
+            setCitationData({
+                summary: { totalTests: 0, successfulMentions: 0, citationRate: '0', topQuery: 'N/A', topQueryRate: '0' },
+                modelStats: {},
+                timeSeriesData: [],
+                recentTests: [],
+                competitorMentions: {},
             });
         } finally {
             setLoading(false);
@@ -472,6 +531,191 @@ export default function AIAnalyticsPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Citation Analytics Section */}
+            {citationData && citationData.summary.totalTests > 0 && (
+                <div className="mt-12">
+                    <div className="mb-8 border-t pt-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                            🎯 AI Citation Tracking
+                        </h2>
+                        <p className="text-gray-600">
+                            Monitor how often AI models mention CheckIt V7 in their responses
+                        </p>
+                    </div>
+
+                    {/* Citation Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="text-sm font-medium text-gray-600 mb-1">
+                                Total Tests
+                            </div>
+                            <div className="text-3xl font-bold text-gray-900">
+                                {citationData.summary.totalTests}
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="text-sm font-medium text-gray-600 mb-1">
+                                Citation Rate
+                            </div>
+                            <div className="text-3xl font-bold text-gray-900">
+                                {citationData.summary.citationRate}%
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="text-sm font-medium text-gray-600 mb-1">
+                                Successful Mentions
+                            </div>
+                            <div className="text-3xl font-bold text-green-600">
+                                {citationData.summary.successfulMentions}
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="text-sm font-medium text-gray-600 mb-1">
+                                Top Query Rate
+                            </div>
+                            <div className="text-3xl font-bold text-blue-600">
+                                {citationData.summary.topQueryRate}%
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Model Comparison Chart */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                Citation Rate by AI Model
+                            </h3>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart
+                                    data={Object.entries(citationData.modelStats).map(([name, stats]) => ({
+                                        name,
+                                        rate: parseFloat(stats.rate),
+                                        mentions: stats.mentions,
+                                        total: stats.total,
+                                    }))}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis label={{ value: 'Citation Rate (%)', angle: -90, position: 'insideLeft' }} />
+                                    <Tooltip
+                                        formatter={(value: any, name: any, props: any) => {
+                                            if (name === 'rate') {
+                                                return [`${value}% (${props.payload.mentions}/${props.payload.total})`, 'Citation Rate'];
+                                            }
+                                            return [value, name];
+                                        }}
+                                    />
+                                    <Bar dataKey="rate" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        {/* Competitors Mentioned */}
+                        {Object.keys(citationData.competitorMentions).length > 0 && (
+                            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Competitors Mentioned
+                                </h3>
+                                <div className="space-y-3">
+                                    {Object.entries(citationData.competitorMentions)
+                                        .sort(([, a], [, b]) => b - a)
+                                        .slice(0, 10)
+                                        .map(([competitor, count]) => (
+                                            <div key={competitor} className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-700 font-medium truncate mr-4">
+                                                    {competitor}
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <div
+                                                        className="h-2 bg-red-400 rounded"
+                                                        style={{
+                                                            width: `${Math.min((count / citationData.summary.totalTests) * 200, 100)}px`,
+                                                        }}
+                                                    ></div>
+                                                    <span className="text-sm text-gray-600 font-semibold w-8 text-right">
+                                                        {count}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Recent Citation Tests Table */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div className="p-6 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Recent Citation Tests
+                            </h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Model
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Query
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Result
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Position
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tested At
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {citationData.recentTests.map((test) => (
+                                        <tr key={test.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-2">
+                                                    <BotIcon botName={test.ai_model === 'chatgpt-4o' ? 'GPTBot' : 'Claude-Bot'} size="sm" />
+                                                    <span className="text-sm font-medium text-gray-900">
+                                                        {test.ai_model}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-700 max-w-md truncate">
+                                                    {test.query}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {test.was_mentioned ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        ✓ Mentioned
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        ✗ Not Mentioned
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                {test.position_in_response !== null ? `#${test.position_in_response}` : 'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                {format(new Date(test.tested_at), 'MMM d, h:mm a')}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Refresh Button */}
             <div className="mt-6 text-center">
